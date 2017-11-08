@@ -139,52 +139,6 @@ public class PID {
         return ResultImage;
     }
     
-    public static BufferedImage Mediana (BufferedImage imagem) {
-        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
-        int [][]mascaraMediana = {{1,1,1},
-                                {1,1,1},
-                                {1,1,1}};
-
-        int r = 0, g = 0, b = 0;
-        int coluna = imagem.getWidth();
-        int linha = imagem.getHeight();
-        Color vet[] = new Color[9];
-        int v= 0;
-        for (int i = 1; i + 1 < linha; i++) {
-            for (int j = 1; j + 1 < coluna; j++) {
-                for (int l = -1; l <= 1; l++) {
-                    for (int k = -1; k <= 1; k++) {
-                        
-                        int rgb = imagem.getRGB(j + k, i + l);
-
-                        r += (mascaraMediana[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
-                        g += (mascaraMediana[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
-                        b += (mascaraMediana[1 + l][1 + k] * (int)((rgb&0x000000FF)));
-                        Color temp = new Color(r,g,b);
-                        vet[v] = temp;
-                        //Arrays.sort(vet, linha, linha);
-                        int p = vet.length/2;
-                        
-                        r += (vet[p].getRed());
-                        g += (vet[p].getGreen());
-                        b += (vet[p].getBlue());
-                    }
-
-                }
-
-                Color tempColor = new Color(r, g, b);
-                
-                ResultImage.setRGB(j, i, tempColor.getRGB());
-                r = g = b = 0;
-                for (int t = 0;  t < vet.length; t++) {
-                    vet[t] = null;
-                }
-            }
-        }
-        ResultImage.getSubimage(1, 1, coluna-1, linha-1);
-        return ResultImage;
-    }
-    
     public static BufferedImage Gaussiano (BufferedImage imagem) {
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
         int [][]mascaraGaussiano = {{1,2,1},
