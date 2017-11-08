@@ -8,12 +8,11 @@ package pid;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.GridLayout;
-import java.awt.image.BufferedImage;
+import java.awt.List;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import javax.imageio.ImageIO;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -26,7 +25,8 @@ import javax.swing.JScrollPane;
  */
 
 class Exibicao {
-    //Exibição
+    //Exibição 
+    //NÃO SERÁ USADO
     public static void exibirImagem(BufferedImage imagem) {
         ImageIcon icon = new ImageIcon(imagem);
         JLabel imagemLabel = new JLabel(icon);
@@ -55,11 +55,11 @@ class Exibicao {
     }
 }
 public class PID {
-    //FILTRO
-    //método de aplicação do filtro escala de cinza
-    //recebe como parâmetro uma imagemm
     public static BufferedImage escalaDeCinza(BufferedImage imagem) {
-        //pegar coluna e linha da imagemm
+        //Imagem resultante
+        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        
+        //pegar coluna e linha da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
 
@@ -80,58 +80,76 @@ public class PID {
                 //criar uma instância de Color
                 Color color = new Color(media, media, media);
                 //setar o valor do pixel com a nova cor
-                imagem.setRGB(i, j, color.getRGB());
+                ResultImage.setRGB(i, j, color.getRGB());
             }
         }
-        return imagem;
+        return ResultImage;
     }
+    
     public static BufferedImage negativo(BufferedImage imagem) {
+        //Imagem resultante
+        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        
+        //pegar coluna e linha da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
+        //laço para varrer a matriz de pixels da imagem
         for (int i = 0; i < coluna; i++) {
-            for (int j = 0; j < linha; j++) {               
+            for (int j = 0; j < linha; j++) {  
+                //rgb recebe o valor RGB do pixel em questão 
                 int rgb = imagem.getRGB(i, j);               
                 //a cor inversa é dado por 255 menos o valor da cor                 
                 int r = 255 - (int)((rgb&0x00FF0000)>>>16);
                 int g = 255 - (int)((rgb&0x0000FF00)>>>8);
                 int b = 255 - (int) (rgb&0x000000FF);
                 Color color = new Color(r, g, b);
-                imagem.setRGB(i, j, color.getRGB());
+                ResultImage.setRGB(i, j, color.getRGB());
             }
         }
-        return imagem;
+        return ResultImage;
     }
     
     public static BufferedImage Media (BufferedImage imagem) {
+        //imagem resultante
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        
+        //mascara de média
         int [][]mascaraMedia = {{1,1,1},
                                 {1,1,1},
                                 {1,1,1}};
-
+        //soma dos valores da máscara
         int valorMascara = 9;
-
+        
+        //cores primarias
         int r = 0, g = 0, b = 0;
+        
+        //pegar coluna e linha da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
         
+        //percorre a imagem
         for (int i = 1; i + 1 < linha; i++) {
             for (int j = 1; j + 1 < coluna; j++) {
+                //percorre a máscara
                 for (int l = -1; l <= 1; l++) {
                     for (int k = -1; k <= 1; k++) {
-                        
+                        //rgb = rgb do pixel
                         int rgb = imagem.getRGB(j + k, i + l);
-
+                        //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
                         r += (mascaraMedia[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
                         g += (mascaraMedia[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
                         b += (mascaraMedia[1 + l][1 + k] * (int)((rgb&0x000000FF)));
                     }
-
                 }
+                //dividia as cores pelo valor da máscara
                 r = r / valorMascara;
                 g = g / valorMascara;
                 b = b / valorMascara;
+                //nova cor do pixel
                 Color tempColor = new Color(r, g, b);
+                //setar o respectivel pixel na nova imagem
                 ResultImage.setRGB(j, i, tempColor.getRGB());
+                //zerar valor das cores primarias
                 r = g = b = 0;
             }
         }
@@ -140,32 +158,39 @@ public class PID {
     }
     
     public static BufferedImage Gaussiano (BufferedImage imagem) {
+        //imagem resultante
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        //mascara
         int [][]mascaraGaussiano = {{1,2,1},
                                 {2,4,2},
                                 {1,2,1}};
         int valorMascara = 16;
 
         int r = 0, g = 0, b = 0;
+        //tamanho imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
+        //percorre imagem
         for (int i = 1; i + 1 < linha; i++) {
             for (int j = 1; j + 1 < coluna; j++) {
+                //percorre mascara
                 for (int l = -1; l <= 1; l++) {
                     for (int k = -1; k <= 1; k++) {
-                        
+                        //rgb
                         int rgb = imagem.getRGB(j + k, i + l);
-
+                        //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
                         r += (mascaraGaussiano[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
                         g += (mascaraGaussiano[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
                         b += (mascaraGaussiano[1 + l][1 + k] * (int)((rgb&0x000000FF)));
                     }
 
                 }
+                //dividindo as cores pelo valor da máscara
                 r = r / valorMascara;
                 g = g / valorMascara;
                 b = b / valorMascara;
                 Color tempColor = new Color(r, g, b);
+                //setar novo valor do pixel na imagem resultante
                 ResultImage.setRGB(j, i, tempColor.getRGB());
                 r = g = b = 0;
             }
@@ -175,8 +200,9 @@ public class PID {
     }
 
     public static BufferedImage Laplaciano (BufferedImage imagem) {
+        //imagem resultante
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
-       
+        //mascaras
         int [][]mascaraL1 = {{0,-1,0},
                             {-1,4,-1},
                             {0,-1,0}};
@@ -186,42 +212,46 @@ public class PID {
                             {1,1,1}};
 
         int r = 0, g = 0, b = 0;
+        //tamanho imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
-        
+        //percorre imagem
         for (int i = 1; i + 1 < linha; i++) {
             for (int j = 1; j + 1 < coluna; j++) {
+                //percorre mascara
                 for (int l = -1; l <= 1; l++) {
                     for (int k = -1; k <= 1; k++) {
-                        
+                        //rgb
                         int rgb = imagem.getRGB(j + k, i + l);
-
+                        //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
                         r += (mascaraL1[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
                         g += (mascaraL1[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
                         b += (mascaraL1[1 + l][1 + k] * (int)((rgb&0x000000FF)));
                     }
 
                 }
-                
+                //arredondamento de valores
                 Color tempColor = new Color(Math.min(255, Math.max(0, r)), Math.min(255, Math.max(0, g)), Math.min(255, Math.max(0, b)));
                 ResultImage.setRGB(j, i, tempColor.getRGB());
                 r = g = b = 0;
             }
         }
+        //percorre imagem
         for (int i = 1; i + 1 < imagem.getHeight(); i++) {
             for (int j = 1; j + 1 < imagem.getWidth(); j++) {
+                //percorre mascara
                 for (int l = -1; l <= 1; l++) {
                     for (int k = -1; k <= 1; k++) {
-                        
+                        //rgb
                         int rgb = imagem.getRGB(j + k, i + l);
-
+                        //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
                         r += (mascaraL2[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
                         g += (mascaraL2[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
                         b += (mascaraL2[1 + l][1 + k] * (int)((rgb&0x000000FF)));
                     }
 
                 }
-                
+                //arredondamento de valores
                 Color tempColor = new Color(Math.min(255, Math.max(0, r)), Math.min(255, Math.max(0, g)), Math.min(255, Math.max(0, b)));
                 ResultImage.setRGB(j, i, tempColor.getRGB());
                 r = g = b = 0;
@@ -232,7 +262,9 @@ public class PID {
     }
     
     public static BufferedImage Sobel (BufferedImage imagem) {
+        //imagem resultante
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        //mascaras
         int [][]mascaraS1 = {{-1,-2,-1},
                              {0,0,0},
                              {1,2,1}};
@@ -241,42 +273,47 @@ public class PID {
                              {-1,0,1}};
 
         int r = 0, g = 0, b = 0;
+        //tamanho da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
         
+        //percorre imagem
         for (int i = 1; i + 1 < linha; i++) {
             for (int j = 1; j + 1 < coluna; j++) {
+                //percorre mascara
                 for (int l = -1; l <= 1; l++) {
                     for (int k = -1; k <= 1; k++) {
-                        
+                        //rgb
                         int rgb = imagem.getRGB(j + k, i + l);
-
+                        //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
                         r += (mascaraS1[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
                         g += (mascaraS1[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
                         b += (mascaraS1[1 + l][1 + k] * (int)((rgb&0x000000FF)));
                     }
 
                 }
-                
+                //arredondamento de valores
                 Color tempColor = new Color(Math.min(255, Math.max(0, r)), Math.min(255, Math.max(0, g)), Math.min(255, Math.max(0, b)));
                 ResultImage.setRGB(j, i, tempColor.getRGB());
                 r = g = b = 0;
             }
         }
+        //percorrer imagem
         for (int i = 1; i + 1 < imagem.getHeight(); i++) {
             for (int j = 1; j + 1 < imagem.getWidth(); j++) {
+                //Percorrer máscara
                 for (int l = -1; l <= 1; l++) {
                     for (int k = -1; k <= 1; k++) {
-                        
+                        //RGB
                         int rgb = imagem.getRGB(j + k, i + l);
-
+                        //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
                         r += (mascaraS2[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
                         g += (mascaraS2[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
                         b += (mascaraS2[1 + l][1 + k] * (int)((rgb&0x000000FF)));
                     }
 
                 }
-                
+                //Arredondamento dos valores
                 Color tempColor = new Color(Math.min(255, Math.max(0, r)), Math.min(255, Math.max(0, g)), Math.min(255, Math.max(0, b)));
                 ResultImage.setRGB(j, i, tempColor.getRGB());
                 r = g = b = 0;
