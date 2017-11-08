@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
@@ -389,9 +390,31 @@ public class PID {
         return ResultImage;
     }
     
+    public static BufferedImage Brilho (BufferedImage imagem, float x) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+
+        RescaleOp rescaleOp = new RescaleOp(x, 0, null);
+        rescaleOp.filter(imagem, ResultImage); 
+        
+        return ResultImage;
+    }
+    
+    public static BufferedImage Contraste (BufferedImage imagem, float x) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+
+        RescaleOp rescaleOp = new RescaleOp(1.0f, x, null);
+        rescaleOp.filter(imagem, ResultImage); 
+        
+        return ResultImage;
+    }
+    
     public static void main(String[] args) throws IOException{
         try {
+            float x = -50f;
             List<Integer> pesos = new ArrayList<Integer>();
+            
             pesos.add(2);
             pesos.add(2);
             pesos.add(2);
@@ -416,7 +439,7 @@ public class PID {
             BufferedImage imagem = ImageIO.read(new File("lena.jpg"));
             //instancia um filtro e aplica a escala de cinza
             PID filtro = new PID();
-            BufferedImage nova = filtro.Convolucao(imagem,4,4,pesos);
+            BufferedImage nova = filtro.Contraste(imagem,x);
             if (nova != null) {
                 ImageIO.write(nova,"jpg",new File("imagem2.jpg"));
                 //aqui apenas para demonstração,
