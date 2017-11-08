@@ -8,16 +8,16 @@ package pid;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.GridLayout;
-import java.awt.List;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -55,7 +55,7 @@ class Exibicao {
     }
 }
 public class PID {
-    public static BufferedImage escalaDeCinza(BufferedImage imagem) {
+    public static BufferedImage EscalaDeCinza(BufferedImage imagem) {
         //Imagem resultante
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
         
@@ -86,7 +86,7 @@ public class PID {
         return ResultImage;
     }
     
-    public static BufferedImage negativo(BufferedImage imagem) {
+    public static BufferedImage Negativo(BufferedImage imagem) {
         //Imagem resultante
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
         
@@ -323,21 +323,110 @@ public class PID {
         return ResultImage;
     }
     
+    public static BufferedImage Convolucao (BufferedImage imagem,int linhas, int colunas, List <Integer> pesos) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        if (linhas != colunas) {
+            System.out.println("ERRO: A matriz deve ser quadrada e ímpar");
+            return null;
+        }else if (linhas % 2 == 0) {
+            System.out.println("ERRO: A matriz deve ser quadrada e ímpar");
+            return null;
+        }else {
+            //mascara de média
+            int [][]mascaraConvolucao = new int [linhas][colunas];
+            int ponteiro = 0;
+            for (int i = 0; i < linhas; i++){
+                for (int j = 0; j < colunas; j++) {
+                    mascaraConvolucao[i][j] = pesos.get(ponteiro);
+                    ponteiro++;
+                }
+            }
+            //soma dos valores da máscara
+            int valorMascara = 0;
+            for (int i = 0; i < mascaraConvolucao.length; i++) {
+                for (int j = 0; j < mascaraConvolucao[i].length; j++) {
+                    valorMascara += mascaraConvolucao[i][j];   
+                } 
+            }
+
+            //cores primarias
+            int r = 0, g = 0, b = 0;
+
+            //pegar coluna e linha da imagem
+            int coluna = imagem.getWidth();
+            int linha = imagem.getHeight();
+            int inicial = (int)Math.floor(linhas/2);
+
+            //percorre a imagem
+            for (int i = inicial; i + inicial < linha; i++) {
+                for (int j = inicial; j + inicial < coluna; j++) {
+                    //percorre a máscara
+                    for (int l = -inicial; l <= inicial; l++) {
+                        for (int k = -inicial; k <= inicial; k++) {
+                            //rgb = rgb do pixel
+                            int rgb = imagem.getRGB(j + k, i + l);
+                            //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
+                            r += (mascaraConvolucao[inicial + l][inicial + k] * (int)((rgb&0x00FF0000)>>>16));
+                            g += (mascaraConvolucao[inicial + l][inicial + k] * (int)((rgb&0x0000FF00)>>>8));
+                            b += (mascaraConvolucao[inicial + l][inicial + k] * (int)((rgb&0x000000FF)));
+                        }
+                    }
+                    //dividia as cores pelo valor da máscara
+                    r = r / valorMascara;
+                    g = g / valorMascara;
+                    b = b / valorMascara;
+                    //nova cor do pixel
+                    Color tempColor = new Color(r, g, b);
+                    //setar o respectivel pixel na nova imagem
+                    ResultImage.setRGB(j, i, tempColor.getRGB());
+                    //zerar valor das cores primarias
+                    r = g = b = 0;
+                }
+            }
+            ResultImage.getSubimage(inicial, inicial, coluna-inicial, linha-inicial);
+        }
+        return ResultImage;
+    }
+    
     public static void main(String[] args) throws IOException{
         try {
+            List<Integer> pesos = new ArrayList<Integer>();
+            pesos.add(2);
+            pesos.add(2);
+            pesos.add(2);
+            pesos.add(2);
+            
+            pesos.add(2);
+            pesos.add(2);
+            pesos.add(2);
+            pesos.add(2);
+            
+            pesos.add(2);
+            pesos.add(2);
+            pesos.add(2);
+            pesos.add(2);
+            
+            pesos.add(2);
+            pesos.add(2);
+            pesos.add(2);
+            pesos.add(2);
+
             //carrega nova imagem
             BufferedImage imagem = ImageIO.read(new File("lena.jpg"));
             //instancia um filtro e aplica a escala de cinza
             PID filtro = new PID();
-            ImageIO.write(filtro.Media(imagem),"jpg",new File("imagem2.jpg"));
-
-            //aqui apenas para demonstração,
-            //carreguei novamente as duas imagemns para exibi-las dentro de um JFrame
-            imagem = ImageIO.read(new File("lena.jpg"));
-            BufferedImage imagem2 = ImageIO.read(new File("imagem2.jpg"));
-            Exibicao show = new Exibicao();
-            show.exibirImagem(imagem, imagem2);
-            System.out.println("Filtro aplicado com sucesso!");
+            BufferedImage nova = filtro.Convolucao(imagem,4,4,pesos);
+            if (nova != null) {
+                ImageIO.write(nova,"jpg",new File("imagem2.jpg"));
+                //aqui apenas para demonstração,
+                //carreguei novamente as duas imagemns para exibi-las dentro de um JFrame
+                imagem = ImageIO.read(new File("lena.jpg"));
+                BufferedImage imagem2 = ImageIO.read(new File("imagem2.jpg"));
+                Exibicao show = new Exibicao();
+                show.exibirImagem(imagem, imagem2);
+                System.out.println("Filtro aplicado com sucesso!");
+            }
         }catch(IOException e){
             System.out.println("Erro! Verifique se o arquivo especificado existe e tente novamente.");
         }
