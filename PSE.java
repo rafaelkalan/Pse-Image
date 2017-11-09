@@ -74,8 +74,8 @@ public class PSE extends JFrame {
     private int convolucaoLinhas = 3;
     private int convolucaoColunas = 3;
     private ArrayList<Integer> convolucaoPesos = new ArrayList<Integer>(Arrays.asList(1,1,1,1,1,1,1,1,1));
-    private float brilhoFloat = 1;
-    private float contrasteFloat = 1;
+    private int brilhoFloat = 0;
+    private int contrasteFloat = 0;
 
     
     
@@ -365,14 +365,14 @@ public class PSE extends JFrame {
 
                     JPanel parameters = new JPanel();
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
-                    parameters.add(new JLabel("Brilho:"));
+                    parameters.add(new JLabel("Brilho(%):"));
                     parameters.add(xField);
  
                     int result = JOptionPane.showConfirmDialog(null, parameters,
                             "Parâmetros do filtro de brilho", JOptionPane.OK_CANCEL_OPTION);
                     if (result == JOptionPane.OK_OPTION) { 
                         try {
-                            float tempBrilho = Float.parseFloat(xField.getText());
+                            int tempBrilho = Integer.parseInt(xField.getText());
                             brilhoFloat = tempBrilho;
                             System.out.println(brilhoFloat);
                         } catch(Exception e) {
@@ -396,14 +396,14 @@ public class PSE extends JFrame {
 
                     JPanel parameters = new JPanel();
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
-                    parameters.add(new JLabel("Contraste:"));
+                    parameters.add(new JLabel("Contraste(%):"));
                     parameters.add(xField);
  
                     int result = JOptionPane.showConfirmDialog(null, parameters,
                             "Parâmetros do filtro de contraste", JOptionPane.OK_CANCEL_OPTION);
                     if (result == JOptionPane.OK_OPTION) { 
                         try {
-                            float tempContraste = Float.parseFloat(xField.getText());
+                            int tempContraste = Integer.parseInt(xField.getText());
                             contrasteFloat = tempContraste;
                             System.out.println(contrasteFloat);
                         } catch(Exception e) {
@@ -438,6 +438,7 @@ public class PSE extends JFrame {
         // Func99
         JButton f99Button = new JButton(f99);
         f99Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE");
             resetTimeline();
         });
         f99Button.setBackground(Color.WHITE);
@@ -618,10 +619,10 @@ public class PSE extends JFrame {
             else if (name.equals(f7)) {
                 mainImage = Convolucao(mainImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
             } 
-            else if (name.equals(f7)) {
+            else if (name.equals(f8)) {
                 mainImage = Brilho(mainImage, brilhoFloat);
             } 
-            else if (name.equals(f7)) {
+            else if (name.equals(f9)) {
                 mainImage = Contraste(mainImage, contrasteFloat);
             }
             return true;
@@ -967,17 +968,21 @@ public class PSE extends JFrame {
         return ResultImage;
     }
     
-    public static BufferedImage Brilho (BufferedImage imagem, float x) {
+    public static BufferedImage Brilho (BufferedImage imagem, int x) {
         //imagem resultante
+        String temp = 1 + "."+(x/10)+"f";
+        float f = Float.parseFloat(temp);
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
 
-        RescaleOp rescaleOp = new RescaleOp(x, 0, null);
+        RescaleOp rescaleOp = new RescaleOp(f, 0, null);
         rescaleOp.filter(imagem, ResultImage); 
         
         return ResultImage;
     }
     
-    public static BufferedImage Contraste (BufferedImage imagem, float x) {
+    public static BufferedImage Contraste (BufferedImage imagem, int x) {
+        String temp = x+"f";
+        float f = Float.parseFloat(temp);
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
 
