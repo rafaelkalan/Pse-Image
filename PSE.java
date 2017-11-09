@@ -39,10 +39,10 @@ public class PSE extends JFrame {
     private int timelineButton1X = 285;
     private int timelineButton2X = 285;
     private int timelineX = windowX - timelineButton1X - timelineButton2X;
-    private int timelineY = 60;
+    private int timelineY = 40;
     private int timelineButton1Y = timelineY;
     private int timelineButton2Y = timelineY;
-    private int buttonX = 125;
+    private int buttonX = 100;
     private int buttonY = windowY - timelineY;
     private int gridX = windowX - buttonX;
     private int gridY = windowY - timelineY;
@@ -57,7 +57,7 @@ public class PSE extends JFrame {
     private JLabel mainImageLabel;
     private Boolean mustProcess = true;
     // Nomes das funções
-    private final String f1 = "Escala Cinza";
+    private final String f1 = "Cinza";
     private final String f2 = "Negativo";
     private final String f3 = "Media";
     private final String f4 = "Gaussiano";
@@ -206,7 +206,7 @@ public class PSE extends JFrame {
         timelinePanel = new JPanel();
         timelinePanel.setPreferredSize(new Dimension(timelineX, timelineY));
         timelinePanel.setLayout(new GridLayout(1, 10));
-        timelinePanel.setBackground(Color.LIGHT_GRAY);
+        timelinePanel.setBackground(Color.GRAY);
         add(timelinePanel);
 
         // TimeLine Button Panel 2
@@ -448,7 +448,7 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         drawPanel = new JPanel();
         drawPanel.setPreferredSize(new Dimension(gridX, gridY));
-        drawPanel.setBackground(Color.LIGHT_GRAY);
+        drawPanel.setBackground(Color.WHITE);
         add(drawPanel);
     }
     
@@ -970,8 +970,21 @@ public class PSE extends JFrame {
     
     public static BufferedImage Brilho (BufferedImage imagem, int x) {
         //imagem resultante
-        String temp = 1 + "."+(x/10)+"f";
-        float f = Float.parseFloat(temp);
+        float f;
+        if (x < 0) {
+            int tempx = 1 - (x/100);
+            String temp = 0 + "." + tempx;
+            f = Float.parseFloat(temp);
+        }else if (x > 0 && x < 100){
+            String temp = 1 + "."+(x/10)+"f";
+            f = Float.parseFloat(temp); 
+        } else if (x == 100) {
+            f = 2;
+        }else {
+            String temp = x+"f";
+            f = Float.parseFloat(temp);
+        }
+        
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
 
         RescaleOp rescaleOp = new RescaleOp(f, 0, null);
