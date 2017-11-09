@@ -143,6 +143,7 @@ public class PSE extends JFrame {
                 }
                 component.repaint();
                 component.validate();
+                showImage();
         }
     }
     );
@@ -320,8 +321,15 @@ public class PSE extends JFrame {
             if (mainImageLabel != null) {
                 drawPanel.remove(mainImageLabel);
             }
-            mainImageLabel = new JLabel(new ImageIcon(mainImage));
-            drawPanel.add(mainImageLabel);
+            float drawWidth = (float)drawPanel.getSize().getWidth();
+            float drawHeight = (float)drawPanel.getSize().getHeight();
+            float imgWidth = mainImage.getWidth();
+            float imgHeight = mainImage.getHeight();
+            float imgWidthNew  = (imgWidth >= imgHeight)? drawWidth  : imgWidth*(drawHeight/imgHeight);
+            float imgHeightNew = (imgWidth < imgHeight)?  drawHeight : imgHeight*(drawWidth/imgWidth);            
+            Image tempImage = mainImage.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
+            mainImageLabel = new JLabel(new ImageIcon(tempImage));
+            drawPanel.add(mainImageLabel, BorderLayout.CENTER);
             drawPanel.repaint();
             drawPanel.validate();
         }
