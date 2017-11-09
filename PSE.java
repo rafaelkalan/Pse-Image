@@ -6,16 +6,26 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -26,10 +36,10 @@ public class PSE extends JFrame {
     private final int borderY = 55;
     private int windowX = 1000;
     private int windowY = 650;
-    private int timelineButton1X = 180;
-    private int timelineButton2X = 180;
+    private int timelineButton1X = 285;
+    private int timelineButton2X = 285;
     private int timelineX = windowX - timelineButton1X - timelineButton2X;
-    private int timelineY = 50;
+    private int timelineY = 60;
     private int timelineButton1Y = timelineY;
     private int timelineButton2Y = timelineY;
     private int buttonX = 125;
@@ -41,8 +51,11 @@ public class PSE extends JFrame {
     private JPanel timelineButtonPanel2;
     private JPanel buttonPanel;
     private JPanel drawPanel;
+    private BufferedImage originalImage;
     private BufferedImage mainImage;
+    private ArrayList<BufferedImage> imageHistory;
     private JLabel mainImageLabel;
+    private Boolean mustProcess = true;
     // Nomes das funções
     private final String f1 = "Escala Cinza";
     private final String f2 = "Negativo";
@@ -50,12 +63,19 @@ public class PSE extends JFrame {
     private final String f4 = "Gaussiano";
     private final String f5 = "Laplaciano";
     private final String f6 = "Sobel";
-    private final String f7 = "Func7";
-    private final String f8 = "Func8";
-    private final String f9 = "Func9";
-    private final String f10 = "Func10";
-    private final String f11 = "Func11";
-    private final String f12 = "Func12";
+    private final String f7 = "Convolução";
+    private final String f8 = "Brilho";
+    private final String f9 = "Contraste";
+    private final String f10 = "-";
+    private final String f11 = "-";
+    private final String f12 = "-";
+    private final String f99 = "Restar";
+    // Argumentos das funções que precisam deles
+    private int convolucaoLinhas = 3;
+    private int convolucaoColunas = 3;
+    private ArrayList<Integer> convolucaoPesos = new ArrayList<Integer>(Arrays.asList(1,1,1,1,1,1,1,1,1));
+    private float brilhoFloat = 1;
+    private float contrasteFloat = 1;
 
     
     
@@ -91,13 +111,13 @@ public class PSE extends JFrame {
                 Dimension size = component.getBounds().getSize();
                 windowX = (int)Math.round(size.getWidth()) - borderX;
                 windowY = (int)Math.round(size.getHeight()) - borderY;
-                timelineButton1X = 180;
-                timelineButton2X = 180;
+                //timelineButton1X = 180;
+                //timelineButton2X = 180;
                 timelineX = windowX - timelineButton1X - timelineButton2X;
-                timelineY = 50;
+                //timelineY = 50;
                 timelineButton1Y = timelineY;
                 timelineButton2Y = timelineY;
-                buttonX = 125;
+                //buttonX = 125;
                 buttonY = windowY - timelineY;
                 gridX = windowX - buttonX;
                 gridY = windowY - timelineY;
@@ -165,9 +185,19 @@ public class PSE extends JFrame {
         // Process
         JButton processButton = new JButton("Processar");
         processButton.addActionListener((ActionEvent event) -> {
-          new ProcessFunctionsWorker().execute();
+            if (mainImage != null) new ProcessFunctionsWorker().execute();
         });
         timelineButtonPanel1.add(processButton);
+        // View original image
+        JButton originalButton = new JButton("Original");
+        originalButton.addActionListener((ActionEvent event) -> {
+            if (originalImage != null) {
+                setTitle("PSE - Visualizando: Imagem original");
+                mainImage = originalImage;
+                showImage();
+            }
+        });
+        timelineButtonPanel1.add(originalButton);
 
         // TimeLine Panel
         // -------------------------------------------------------------------------
@@ -184,8 +214,26 @@ public class PSE extends JFrame {
         timelineButtonPanel2.setLayout(new GridLayout(1, 2));
         timelineButtonPanel2.setBackground(Color.DARK_GRAY);
         add(timelineButtonPanel2);
+        // View result image
+        JButton resultButton = new JButton("Resultado");
+        resultButton.addActionListener((ActionEvent event) -> {
+            if (mainImage != null) {
+                if (mustProcess) {
+                    new ProcessFunctionsWorker().execute();
+                    while (mustProcess != false) {
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(1000);
+                        } catch (Exception e) {}
+                    }
+                }
+                setTitle("PSE - Visualizando: Imagem resultado");
+                mainImage = imageHistory.get(imageHistory.size()-1);
+                showImage();
+            }
+        });
+        timelineButtonPanel2.add(resultButton);
         // Save Image
-        JButton saveButton = new JButton("Guardar");
+        JButton saveButton = new JButton("Salvar");
         saveButton.addActionListener((ActionEvent event) -> {
             setTitle("PSE - Guardar");
             saveImage();
@@ -203,7 +251,7 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-        buttonPanel.setLayout(new GridLayout(12, 1));
+        buttonPanel.setLayout(new GridLayout(13, 1));
         buttonPanel.setBackground(Color.DARK_GRAY);
         add(buttonPanel);
         // Func1
@@ -248,25 +296,118 @@ public class PSE extends JFrame {
             addTimeline(f6);
         });
         buttonPanel.add(f6Button);
-        // Func7
+        // Func7 (Convolução)
         JButton f7Button = new JButton(f7);
         f7Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f7);
             addTimeline(f7);
         });
+        f7Button.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent click) {
+                if (SwingUtilities.isRightMouseButton(click)) {
+                    JTextField xField = new JTextField(3);
+                    JTextField yField = new JTextField(3);
+                    JTextField weightField = new JTextField(9);
+
+                    JPanel parameters = new JPanel();
+                    parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
+                    JPanel p1 = new JPanel();
+                    p1.add(new JLabel("Número de linhas da máscara:"));
+                    p1.add(xField);
+                    p1.add(Box.createHorizontalStrut(15)); // a spacer
+                    p1.add(new JLabel("Número de colunas da máscara:"));
+                    p1.add(yField);
+                    parameters.add(p1);
+                    parameters.add(new JLabel("Pesos da máscara separados por vírgula:"));
+                    parameters.add(weightField);
+ 
+                    int result = JOptionPane.showConfirmDialog(null, parameters,
+                            "Parâmetros do filtro de convolução", JOptionPane.OK_CANCEL_OPTION);
+                    if (result == JOptionPane.OK_OPTION) { 
+                        try {
+                            int tempLinhas = Integer.parseInt(xField.getText());
+                            int tempColunas = Integer.parseInt(yField.getText());
+                            if (tempLinhas%2 != 1 || tempColunas%2 != 1) {
+                                JOptionPane.showMessageDialog(new JFrame(), "Número de linhas e colunas deve ser ímpar!");
+                            }
+                            ArrayList tempPesos = new ArrayList();
+                            String stringPesos[] = weightField.getText().split(",");
+                            if (stringPesos.length != tempLinhas * tempColunas) {
+                            JOptionPane.showMessageDialog(new JFrame(), "Número de pesos não esta de acordo com número de linhas e colunas!");
+                            }
+                            convolucaoLinhas = tempLinhas;
+                            convolucaoColunas = tempColunas;
+                            for (int i=0; i<stringPesos.length; i++) {
+                                convolucaoPesos.add(Integer.parseInt(stringPesos[i]));
+                            }
+                        } catch(Exception e) {
+                            JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
+                        }
+                    }
+                }
+            }
+        });
         buttonPanel.add(f7Button);
-        // Func8
+        // Func8 (Brilho)
         JButton f8Button = new JButton(f8);
         f8Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f8);
             addTimeline(f8);
         });
+        f8Button.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent click) {
+                if (SwingUtilities.isRightMouseButton(click)) {
+                    JTextField xField = new JTextField(3);
+
+                    JPanel parameters = new JPanel();
+                    parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
+                    parameters.add(new JLabel("Brilho:"));
+                    parameters.add(xField);
+ 
+                    int result = JOptionPane.showConfirmDialog(null, parameters,
+                            "Parâmetros do filtro de brilho", JOptionPane.OK_CANCEL_OPTION);
+                    if (result == JOptionPane.OK_OPTION) { 
+                        try {
+                            float tempBrilho = Float.parseFloat(xField.getText());
+                            brilhoFloat = tempBrilho;
+                            System.out.println(brilhoFloat);
+                        } catch(Exception e) {
+                            JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
+                        }
+                    }
+                }
+            }
+        });
         buttonPanel.add(f8Button);
-        // Func9
+        // Func9 (Contraste)
         JButton f9Button = new JButton(f9);
         f9Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f9);
             addTimeline(f9);
+        });
+        f9Button.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent click) {
+                if (SwingUtilities.isRightMouseButton(click)) {
+                    JTextField xField = new JTextField(3);
+
+                    JPanel parameters = new JPanel();
+                    parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
+                    parameters.add(new JLabel("Contraste:"));
+                    parameters.add(xField);
+ 
+                    int result = JOptionPane.showConfirmDialog(null, parameters,
+                            "Parâmetros do filtro de contraste", JOptionPane.OK_CANCEL_OPTION);
+                    if (result == JOptionPane.OK_OPTION) { 
+                        try {
+                            float tempContraste = Float.parseFloat(xField.getText());
+                            contrasteFloat = tempContraste;
+                            System.out.println(contrasteFloat);
+                        } catch(Exception e) {
+                            JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
+                        }
+                    }
+                }
+            }
         });
         buttonPanel.add(f9Button);
         // Func10
@@ -290,6 +431,12 @@ public class PSE extends JFrame {
             addTimeline(f12);
         });
         buttonPanel.add(f12Button);
+        // Func99
+        JButton f99Button = new JButton(f99);
+        f99Button.addActionListener((ActionEvent event) -> {
+            resetTimeline();
+        });
+        buttonPanel.add(f99Button);
 
         // Draw Panel
         // -------------------------------------------------------------------------
@@ -306,10 +453,11 @@ public class PSE extends JFrame {
         imageChooser.setFileFilter(filter);
         int returnVal = imageChooser.showOpenDialog(drawPanel);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            System.out.println("You chose to open this file: "
-                    + imageChooser.getSelectedFile().getName());
+//            System.out.println("You chose to open this file: "
+//                    + imageChooser.getSelectedFile().getName());
             try {
                 mainImage = ImageIO.read(imageChooser.getSelectedFile());
+                originalImage = mainImage;
                 showImage();
             } catch (IOException e) {
             }
@@ -355,19 +503,57 @@ public class PSE extends JFrame {
 
     private void addTimeline(String func) {
       JButton Button = new JButton(func);
+//      Button.addActionListener((ActionEvent event) -> {
+//          setTitle("PSE - " + func + " X");
+//          timelinePanel.remove(Button);
+//          timelinePanel.validate();
+//      });
+      mustProcess = true;
       Button.addActionListener((ActionEvent event) -> {
-          setTitle("PSE - " + func + " X");
-          timelinePanel.remove(Button);
-          timelinePanel.validate();
+          JButton button = (JButton)event.getSource();
+          if (mustProcess) {
+              new ProcessFunctionsWorker().execute();
+              while (mustProcess != false) try {
+                    TimeUnit.MILLISECONDS.sleep(1000);
+                } catch (Exception e) {}
+          }
+          setTitle("PSE - Visualizando: " + func);
+          Color defaultColor = button.getBackground();
+          Component component[] = timelinePanel.getComponents();
+            for (int i = 0; i < timelinePanel.getComponentCount(); i++) {
+                JButton testButton = (JButton) component[i];
+                if (testButton == button) {
+                    mainImage = imageHistory.get(i);
+                    showImage();
+                }
+            }               
       });
       timelinePanel.add(Button);
       timelinePanel.validate();
+    }
+    
+    private void resetTimeline() {
+        if (mainImage != null) {
+            mainImage = originalImage;
+            showImage();
+        }
+        Component component[] = timelinePanel.getComponents();
+        for (int i = timelinePanel.getComponentCount()-1; i>=0; i--) {
+            JButton button = (JButton)component[i];
+            timelinePanel.remove(button);
+        }
+        mustProcess = true;
+        timelinePanel.repaint();
+        timelinePanel.validate();
     }
     
     public class ProcessFunctionsWorker extends SwingWorker<Integer, String> {
         @Override
         protected Integer doInBackground() throws Exception {
             setTitle("PSE - Processar");
+            mainImage = originalImage;
+            imageHistory = new ArrayList<BufferedImage>();
+            showImage();
             Component component[] = timelinePanel.getComponents();
             for (int i = 0; i < timelinePanel.getComponentCount(); i++) {
                 JButton button = (JButton) component[i];
@@ -380,21 +566,20 @@ public class PSE extends JFrame {
                     button.setText(defaultText + " " + t * 10 + "%");
                     button.validate();
                     try {
-                        TimeUnit.MILLISECONDS.sleep(200);
-                    } catch (Exception e) {
-                    }
+                        TimeUnit.MILLISECONDS.sleep(100);
+                    } catch (Exception e) {}
                     button.validate();
                     timelinePanel.validate();
                     validate();
                 }
-                try {
-                    TimeUnit.MILLISECONDS.sleep(200);
-                } catch (Exception e) {
-                }
                 if (mainImage != null) {
                     functionChooser(defaultText);
+                    imageHistory.add(mainImage);
                     showImage();
                 }
+                try {
+                    TimeUnit.MILLISECONDS.sleep(500);
+                } catch (Exception e) {}
                 button.setText(defaultText);
                 button.setBackground(defaultColor);
                 button.validate();
@@ -402,6 +587,7 @@ public class PSE extends JFrame {
                 validate();
             }
             setTitle("PSE - Processamento - 100% - Completo");
+            mustProcess = false;
             return 0;
         }
         
@@ -423,6 +609,15 @@ public class PSE extends JFrame {
             }
             else if (name.equals(f6)) {
                 mainImage = Sobel(mainImage);
+            }
+            else if (name.equals(f7)) {
+                mainImage = Convolucao(mainImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
+            } 
+            else if (name.equals(f7)) {
+                mainImage = Brilho(mainImage, brilhoFloat);
+            } 
+            else if (name.equals(f7)) {
+                mainImage = Contraste(mainImage, contrasteFloat);
             }
             return true;
         }
@@ -698,6 +893,92 @@ public class PSE extends JFrame {
             }
         }
         ResultImage.getSubimage(1, 1, coluna-1, linha-1);
+        return ResultImage;
+    }
+    
+    public static BufferedImage Convolucao (BufferedImage imagem,int linhas, int colunas, java.util.List <Integer> pesos) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        if (linhas != colunas) {
+            System.out.println("ERRO: A matriz deve ser quadrada e ímpar");
+            return null;
+        }else if (linhas % 2 == 0) {
+            System.out.println("ERRO: A matriz deve ser quadrada e ímpar");
+            return null;
+        }else {
+            //mascara de média
+            int [][]mascaraConvolucao = new int [linhas][colunas];
+            int ponteiro = 0;
+            for (int i = 0; i < linhas; i++){
+                for (int j = 0; j < colunas; j++) {
+                    mascaraConvolucao[i][j] = pesos.get(ponteiro);
+                    ponteiro++;
+                }
+            }
+            //soma dos valores da máscara
+            int valorMascara = 0;
+            for (int i = 0; i < mascaraConvolucao.length; i++) {
+                for (int j = 0; j < mascaraConvolucao[i].length; j++) {
+                    valorMascara += mascaraConvolucao[i][j];   
+                } 
+            }
+
+            //cores primarias
+            int r = 0, g = 0, b = 0;
+
+            //pegar coluna e linha da imagem
+            int coluna = imagem.getWidth();
+            int linha = imagem.getHeight();
+            int inicial = (int)Math.floor(linhas/2);
+
+            //percorre a imagem
+            for (int i = inicial; i + inicial < linha; i++) {
+                for (int j = inicial; j + inicial < coluna; j++) {
+                    //percorre a máscara
+                    for (int l = -inicial; l <= inicial; l++) {
+                        for (int k = -inicial; k <= inicial; k++) {
+                            //rgb = rgb do pixel
+                            int rgb = imagem.getRGB(j + k, i + l);
+                            //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
+                            r += (mascaraConvolucao[inicial + l][inicial + k] * (int)((rgb&0x00FF0000)>>>16));
+                            g += (mascaraConvolucao[inicial + l][inicial + k] * (int)((rgb&0x0000FF00)>>>8));
+                            b += (mascaraConvolucao[inicial + l][inicial + k] * (int)((rgb&0x000000FF)));
+                        }
+                    }
+                    //dividia as cores pelo valor da máscara
+                    r = r / valorMascara;
+                    g = g / valorMascara;
+                    b = b / valorMascara;
+                    //nova cor do pixel
+                    Color tempColor = new Color(r, g, b);
+                    //setar o respectivel pixel na nova imagem
+                    ResultImage.setRGB(j, i, tempColor.getRGB());
+                    //zerar valor das cores primarias
+                    r = g = b = 0;
+                }
+            }
+            ResultImage.getSubimage(inicial, inicial, coluna-inicial, linha-inicial);
+        }
+        return ResultImage;
+    }
+    
+    public static BufferedImage Brilho (BufferedImage imagem, float x) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+
+        RescaleOp rescaleOp = new RescaleOp(x, 0, null);
+        rescaleOp.filter(imagem, ResultImage); 
+        
+        return ResultImage;
+    }
+    
+    public static BufferedImage Contraste (BufferedImage imagem, float x) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+
+        RescaleOp rescaleOp = new RescaleOp(1.0f, x, null);
+        rescaleOp.filter(imagem, ResultImage); 
+        
         return ResultImage;
     }
 }
