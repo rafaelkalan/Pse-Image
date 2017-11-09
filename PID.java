@@ -390,17 +390,21 @@ public class PID {
         return ResultImage;
     }
     
-    public static BufferedImage Brilho (BufferedImage imagem, float x) {
+    public static BufferedImage Brilho (BufferedImage imagem, int x) {
         //imagem resultante
+        String temp = 1 + "."+(x/10)+"f";
+        float f = Float.parseFloat(temp);
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
 
-        RescaleOp rescaleOp = new RescaleOp(x, 0, null);
+        RescaleOp rescaleOp = new RescaleOp(f, 0, null);
         rescaleOp.filter(imagem, ResultImage); 
         
         return ResultImage;
     }
     
-    public static BufferedImage Contraste (BufferedImage imagem, float x) {
+    public static BufferedImage Contraste (BufferedImage imagem, int x) {
+        String temp = x+"f";
+        float f = Float.parseFloat(temp);
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
 
@@ -412,7 +416,8 @@ public class PID {
     
     public static void main(String[] args) throws IOException{
         try {
-            float x = -50f;
+            int x = 50;
+            //float x = 1.5f;
             List<Integer> pesos = new ArrayList<Integer>();
             
             pesos.add(2);
@@ -439,7 +444,7 @@ public class PID {
             BufferedImage imagem = ImageIO.read(new File("lena.jpg"));
             //instancia um filtro e aplica a escala de cinza
             PID filtro = new PID();
-            BufferedImage nova = filtro.Contraste(imagem,x);
+            BufferedImage nova = filtro.Brilho(imagem,x);
             if (nova != null) {
                 ImageIO.write(nova,"jpg",new File("imagem2.jpg"));
                 //aqui apenas para demonstração,
