@@ -4,15 +4,14 @@ import java.awt.GridLayout;
 import javax.swing.JButton;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import java.util.concurrent.TimeUnit;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -25,18 +24,26 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class PSE extends JFrame {
     private final int borderX = 35;
     private final int borderY = 55;
-    private final int windowX = 1000;
-    private final int windowY = 650;
-    private final int timelineButton1X = windowX * 2/11;
-    private final int timelineButton2X = windowX * 2/11;
-    private final int timelineX = windowX - timelineButton1X - timelineButton2X;
-    private final int timelineY = windowY * 1/13;
-    private final int timelineButton1Y = timelineY;
-    private final int timelineButton2Y = timelineY;
-    private final int buttonX = windowX * 1/8;
-    private final int buttonY = windowY - timelineY;
-    private final int gridX = windowX - buttonX;
-    private final int gridY = windowY - timelineY;
+    private int windowX = 1000;
+    private int windowY = 650;
+    private int timelineButton1X = 180;
+    private int timelineButton2X = 180;
+    private int timelineX = windowX - timelineButton1X - timelineButton2X;
+    private int timelineY = 50;
+    private int timelineButton1Y = timelineY;
+    private int timelineButton2Y = timelineY;
+    private int buttonX = 125;
+    private int buttonY = windowY - timelineY;
+    private int gridX = windowX - buttonX;
+    private int gridY = windowY - timelineY;
+    private JPanel timelinePanel;
+    private JPanel timelineButtonPanel1;
+    private JPanel timelineButtonPanel2;
+    private JPanel buttonPanel;
+    private JPanel drawPanel;
+    private BufferedImage mainImage;
+    private JLabel mainImageLabel;
+    // Nomes das funções
     private final String f1 = "Escala Cinza";
     private final String f2 = "Negativo";
     private final String f3 = "Media";
@@ -49,11 +56,9 @@ public class PSE extends JFrame {
     private final String f10 = "Func10";
     private final String f11 = "Func11";
     private final String f12 = "Func12";
-    private JPanel timelinePanel;
-    private JPanel drawPanel;
-    private BufferedImage mainImage;
-    private JLabel mainImageLabel;
 
+    
+    
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
@@ -79,10 +84,72 @@ public class PSE extends JFrame {
         getContentPane().setBackground(Color.DARK_GRAY);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        // Resizing
+        addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent evt) {
+                Component component = (Component) evt.getSource();
+                Dimension size = component.getBounds().getSize();
+                windowX = (int)Math.round(size.getWidth()) - borderX;
+                windowY = (int)Math.round(size.getHeight()) - borderY;
+                timelineButton1X = 180;
+                timelineButton2X = 180;
+                timelineX = windowX - timelineButton1X - timelineButton2X;
+                timelineY = 50;
+                timelineButton1Y = timelineY;
+                timelineButton2Y = timelineY;
+                buttonX = 125;
+                buttonY = windowY - timelineY;
+                gridX = windowX - buttonX;
+                gridY = windowY - timelineY;
+                if (timelinePanel != null) {
+                    timelinePanel.setPreferredSize(new Dimension(timelineX, timelineY));
+                    timelinePanel.setSize(new Dimension(timelineX, timelineY));
+                    timelinePanel.setMinimumSize(new Dimension(timelineX, timelineY));
+                    timelinePanel.setMaximumSize(new Dimension(timelineX, timelineY));
+                    timelinePanel.repaint();
+                    timelinePanel.validate();
+                }
+                if (timelineButtonPanel1 != null) {
+                    timelineButtonPanel1.setPreferredSize(new Dimension(timelineButton1X, timelineButton1Y));
+                    timelineButtonPanel1.setSize(new Dimension(timelineButton1X, timelineButton1Y));
+                    timelineButtonPanel1.setMinimumSize(new Dimension(timelineButton1X, timelineButton1Y));
+                    timelineButtonPanel1.setMaximumSize(new Dimension(timelineButton1X, timelineButton1Y));
+                    timelineButtonPanel1.repaint();
+                    timelineButtonPanel1.validate();
+                }
+                if (timelineButtonPanel2 != null) {
+                    timelineButtonPanel2.setPreferredSize(new Dimension(timelineButton2X, timelineButton2Y));
+                    timelineButtonPanel2.setSize(new Dimension(timelineButton2X, timelineButton2Y));
+                    timelineButtonPanel2.setMinimumSize(new Dimension(timelineButton2X, timelineButton2Y));
+                    timelineButtonPanel2.setMaximumSize(new Dimension(timelineButton2X, timelineButton2Y));
+                    timelineButtonPanel2.repaint();
+                    timelineButtonPanel2.validate();
+                }
+                if (buttonPanel != null) {
+                    buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
+                    buttonPanel.setSize(new Dimension(buttonX, buttonY));
+                    buttonPanel.setMinimumSize(new Dimension(buttonX, buttonY));
+                    buttonPanel.setMaximumSize(new Dimension(buttonX, buttonY));
+                    buttonPanel.repaint();
+                    buttonPanel.validate();
+                }
+                if (drawPanel != null) {
+                    drawPanel.setPreferredSize(new Dimension(gridX, gridY));
+                    drawPanel.setSize(new Dimension(gridX, gridY));
+                    drawPanel.setMinimumSize(new Dimension(gridX, gridY));
+                    drawPanel.setMaximumSize(new Dimension(gridX, gridY));
+                    drawPanel.repaint();
+                    drawPanel.validate();
+                }
+                component.repaint();
+                component.validate();
+        }
+    }
+    );
 
         // TimeLine Button Panel 1
         // -------------------------------------------------------------------------
-        JPanel timelineButtonPanel1 = new JPanel();
+        timelineButtonPanel1 = new JPanel();
         timelineButtonPanel1.setPreferredSize(new Dimension(timelineButton1X, timelineButton1Y));
         timelineButtonPanel1.setLayout(new GridLayout(1, 2));
         timelineButtonPanel1.setBackground(Color.DARK_GRAY);
@@ -111,7 +178,7 @@ public class PSE extends JFrame {
 
         // TimeLine Button Panel 2
         // -------------------------------------------------------------------------
-        JPanel timelineButtonPanel2 = new JPanel();
+        timelineButtonPanel2 = new JPanel();
         timelineButtonPanel2.setPreferredSize(new Dimension(timelineButton2X, timelineButton2Y));
         timelineButtonPanel2.setLayout(new GridLayout(1, 2));
         timelineButtonPanel2.setBackground(Color.DARK_GRAY);
@@ -133,7 +200,7 @@ public class PSE extends JFrame {
 
         // Button Panel
         // -------------------------------------------------------------------------
-        JPanel buttonPanel = new JPanel();
+        buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
         buttonPanel.setLayout(new GridLayout(12, 1));
         buttonPanel.setBackground(Color.DARK_GRAY);
@@ -302,8 +369,10 @@ public class PSE extends JFrame {
                     TimeUnit.MILLISECONDS.sleep(200);
                 } catch (Exception e) {
                 }
-                functionChooser(defaultText);
-                showImage();
+                if (mainImage != null) {
+                    functionChooser(defaultText);
+                    showImage();
+                }
                 button.setText(defaultText);
                 button.setBackground(defaultColor);
                 button.validate();
