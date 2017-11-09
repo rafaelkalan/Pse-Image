@@ -325,8 +325,22 @@ public class PSE extends JFrame {
             float drawHeight = (float)drawPanel.getSize().getHeight();
             float imgWidth = mainImage.getWidth();
             float imgHeight = mainImage.getHeight();
-            float imgWidthNew  = (imgWidth >= imgHeight)? drawWidth  : imgWidth*(drawHeight/imgHeight);
-            float imgHeightNew = (imgWidth < imgHeight)?  drawHeight : imgHeight*(drawWidth/imgWidth);            
+            float imgRatio = imgWidth / imgHeight;
+            float drawRatio = drawWidth / drawHeight;
+            float imgWidthNew = imgWidth;
+            float imgHeightNew = imgHeight;
+            if (imgRatio > drawRatio) {
+                imgWidthNew = drawWidth;
+                imgHeightNew = imgHeight*(drawWidth/imgWidth);
+            }
+            else if (imgRatio < drawRatio) {
+                imgWidthNew = imgWidth *(drawHeight/imgHeight);
+                imgHeightNew = drawHeight;
+            }
+            else {
+                imgWidth = drawWidth;
+                imgHeight = drawHeight;
+            }
             Image tempImage = mainImage.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
             mainImageLabel = new JLabel(new ImageIcon(tempImage));
             drawPanel.add(mainImageLabel, BorderLayout.CENTER);
