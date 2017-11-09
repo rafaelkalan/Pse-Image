@@ -69,7 +69,7 @@ public class PSE extends JFrame {
     private final String f10 = "-";
     private final String f11 = "-";
     private final String f12 = "-";
-    private final String f99 = "Restar";
+    private final String f99 = "Resetar";
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
     private int convolucaoColunas = 3;
@@ -181,12 +181,14 @@ public class PSE extends JFrame {
             setTitle("PSE - Abrir");
             openImage();
         });
+        openButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(openButton);
         // Process
         JButton processButton = new JButton("Processar");
         processButton.addActionListener((ActionEvent event) -> {
             if (mainImage != null) new ProcessFunctionsWorker().execute();
         });
+        processButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(processButton);
         // View original image
         JButton originalButton = new JButton("Original");
@@ -204,7 +206,7 @@ public class PSE extends JFrame {
         timelinePanel = new JPanel();
         timelinePanel.setPreferredSize(new Dimension(timelineX, timelineY));
         timelinePanel.setLayout(new GridLayout(1, 10));
-        timelinePanel.setBackground(Color.GRAY);
+        timelinePanel.setBackground(Color.LIGHT_GRAY);
         add(timelinePanel);
 
         // TimeLine Button Panel 2
@@ -238,6 +240,7 @@ public class PSE extends JFrame {
             setTitle("PSE - Guardar");
             saveImage();
         });
+        saveButton.setBackground(Color.WHITE);
         timelineButtonPanel2.add(saveButton);
         // Exit Image
         JButton exitButton = new JButton("Fechar");
@@ -245,6 +248,7 @@ public class PSE extends JFrame {
             setTitle("PSE - Fechar");
             System.exit(0);
         });
+        exitButton.setBackground(Color.WHITE);
         timelineButtonPanel2.add(exitButton);
 
         // Button Panel
@@ -436,6 +440,7 @@ public class PSE extends JFrame {
         f99Button.addActionListener((ActionEvent event) -> {
             resetTimeline();
         });
+        f99Button.setBackground(Color.WHITE);
         buttonPanel.add(f99Button);
 
         // Draw Panel
