@@ -392,8 +392,21 @@ public class PID {
     
     public static BufferedImage Brilho (BufferedImage imagem, int x) {
         //imagem resultante
-        String temp = 1 + "."+(x/10)+"f";
-        float f = Float.parseFloat(temp);
+        float f;
+        if (x < 0) {
+            int tempx = 1 - (x/100);
+            String temp = 0 + "." + tempx;
+            f = Float.parseFloat(temp);
+        }else if (x > 0 && x < 100){
+            String temp = 1 + "."+(x/10)+"f";
+            f = Float.parseFloat(temp); 
+        } else if (x == 100) {
+            f = 2;
+        }else {
+            String temp = x+"f";
+            f = Float.parseFloat(temp);
+        }
+        
         BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
 
         RescaleOp rescaleOp = new RescaleOp(f, 0, null);
