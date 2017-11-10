@@ -294,7 +294,6 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f1);
             addTimeline(f1);
         });
-        buttonPanel.add(f1Button);
         // Func2
         JButton f2Button = new JButton(f2);
         f2Button.setToolTipText("<html><p width=\"300\">" +f2tip+"</p></html>");
@@ -310,7 +309,6 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f3);
             addTimeline(f3);
         });
-        buttonPanel.add(f3Button);
         // Func4
         JButton f4Button = new JButton(f4);
         f4Button.setToolTipText("<html><p width=\"300\">" +f4tip+"</p></html>");
@@ -318,7 +316,6 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f4);
             addTimeline(f4);
         });
-        buttonPanel.add(f4Button);
         // Func5
         JButton f5Button = new JButton(f5);
         f5Button.setToolTipText("<html><p width=\"300\">" +f5tip+"</p></html>");
@@ -326,7 +323,6 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f5);
             addTimeline(f5);
         });
-        buttonPanel.add(f5Button);
         // Func6
         JButton f6Button = new JButton(f6);
         f6Button.setToolTipText("<html><p width=\"300\">" +f6tip+"</p></html>");
@@ -334,7 +330,6 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f6);
             addTimeline(f6);
         });
-        buttonPanel.add(f6Button);
         // Func7 (Convolução)
         JButton f7Button = new JButton(f7);
         f7Button.setToolTipText("<html><p width=\"300\">" +f7tip+"</p></html>");
@@ -387,7 +382,6 @@ public class PSE extends JFrame {
                 }
             }
         });
-        buttonPanel.add(f7Button);
         // Func8 (Brilho)
         JButton f8Button = new JButton(f8);
         f8Button.setToolTipText("<html><p width=\"300\">" +f8tip+"</p></html>");
@@ -419,7 +413,6 @@ public class PSE extends JFrame {
                 }
             }
         });
-        buttonPanel.add(f8Button);
         // Func9 (Contraste)
         JButton f9Button = new JButton(f9);
         f9Button.setToolTipText("<html><p width=\"300\">" +f9tip+"</p></html>");
@@ -451,7 +444,6 @@ public class PSE extends JFrame {
                 }
             }
         });
-        buttonPanel.add(f9Button);
         // Func10
         JButton f10Button = new JButton(f10);
         f10Button.setToolTipText("<html><p width=\"300\">" +f10tip+"</p></html>");
@@ -459,7 +451,6 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f10);
             addTimeline(f10);
         });
-        buttonPanel.add(f10Button);
         // Func11
         JButton f11Button = new JButton(f11);
         f11Button.setToolTipText("<html><p width=\"300\">" +f11tip+"</p></html>");
@@ -467,7 +458,6 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f11);
             addTimeline(f11);
         });
-        buttonPanel.add(f11Button);
         // Func12
         JButton f12Button = new JButton(f12);
         f12Button.setToolTipText("<html><p width=\"300\">" +f12tip+"</p></html>");
@@ -475,7 +465,6 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f12);
             addTimeline(f12);
         });
-        buttonPanel.add(f12Button);
         // Func99
         JButton f99Button = new JButton(f99);
         f99Button.setToolTipText("<html><p width=\"300\">" +resettip+"</p></html>");
@@ -484,7 +473,21 @@ public class PSE extends JFrame {
             resetTimeline();
         });
         f99Button.setBackground(Color.WHITE);
-        buttonPanel.add(f99Button);
+        
+        // Add function buttons in desired order
+        buttonPanel.add(f8Button); // Brilho
+        buttonPanel.add(f9Button); // Contraste
+        buttonPanel.add(f2Button); // Negativo
+        buttonPanel.add(f1Button); // Cinza
+        buttonPanel.add(f3Button); // Media
+        buttonPanel.add(f4Button); // Gaussiano
+        buttonPanel.add(f5Button); // Laplaciano
+        buttonPanel.add(f6Button); // Sobel
+        buttonPanel.add(f7Button); // Convolução
+        buttonPanel.add(f10Button);// -
+        buttonPanel.add(f11Button);// -
+        buttonPanel.add(f12Button);// -
+        buttonPanel.add(f99Button);// Resetar
 
         // Draw Panel
         // -------------------------------------------------------------------------
