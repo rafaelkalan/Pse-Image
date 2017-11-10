@@ -1,3 +1,4 @@
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.GridLayout;
@@ -31,9 +32,8 @@ import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-
-
 public class PSE extends JFrame {
+
     private final int borderX = 35;
     private final int borderY = 55;
     private int windowX = 1000;
@@ -58,6 +58,7 @@ public class PSE extends JFrame {
     private ArrayList<BufferedImage> imageHistory;
     private JLabel mainImageLabel;
     private Boolean mustProcess = true;
+    private int lastProcessed = 0;
     // Nomes das funções
     private final String f1 = "Cinza";
     private final String f2 = "Negativo";
@@ -84,7 +85,7 @@ public class PSE extends JFrame {
     private final String f1tip = "Escala de Cinza:<br><br>Transforma a imágem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
     private final String f2tip = "Filtro Negativo:<br><br>Inverte todos os tons da imágem.<br><br>Geralmente usado para transformar uma imagem obtida em sua forma negativa para a sua positiva (imagem normal)";
     private final String f3tip = "Filtro de Média:<br><br>Percorre a imagem substituindo cada pixel pela média de seus vizinhos.<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
-    private final String f4tip = "Filtro Gaussiano:<br><br>Percorre a imagem aplicando um efeito \"borrado\".<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes." ;
+    private final String f4tip = "Filtro Gaussiano:<br><br>Percorre a imagem aplicando um efeito \"borrado\".<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
     private final String f5tip = "Operador de Laplace:<br><br>Percorre a imagem calculando a divergěncia de gradientes, identificando áreas de mudança rápida (bordas).<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem.";
     private final String f6tip = "Operador de Sobel:<br><br>Percorre a imagem calculando as normais dos gradientes, identificando potenciais bordas.<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem. ";
     private final String f7tip = "Filtro de Convolução:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem substituindo cada pixel pela média ponderada de seus vizinhos a partir de uma matriz de convolução.<br><br>Filtro de propósito geral usado quando se quer um maior controle no processamento da imagem.";
@@ -96,12 +97,10 @@ public class PSE extends JFrame {
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
     private int convolucaoColunas = 3;
-    private ArrayList<Integer> convolucaoPesos = new ArrayList<Integer>(Arrays.asList(1,1,1,1,1,1,1,1,1));
+    private ArrayList<Integer> convolucaoPesos = new ArrayList<Integer>(Arrays.asList(1, 1, 1, 1, 1, 1, 1, 1, 1));
     private int brilhoFloat = 0;
     private int contrasteFloat = 0;
 
-    
-    
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
@@ -123,7 +122,7 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         setTitle("PSE Image");
         setLayout(new FlowLayout());
-        setSize(windowX+borderX, windowY+borderY);
+        setSize(windowX + borderX, windowY + borderY);
         getContentPane().setBackground(Color.DARK_GRAY);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -132,8 +131,8 @@ public class PSE extends JFrame {
             public void componentResized(ComponentEvent evt) {
                 Component component = (Component) evt.getSource();
                 Dimension size = component.getBounds().getSize();
-                windowX = (int)Math.round(size.getWidth()) - borderX;
-                windowY = (int)Math.round(size.getHeight()) - borderY;
+                windowX = (int) Math.round(size.getWidth()) - borderX;
+                windowY = (int) Math.round(size.getHeight()) - borderY;
                 //timelineButton1X = 180;
                 //timelineButton2X = 180;
                 timelineX = windowX - timelineButton1X - timelineButton2X;
@@ -187,9 +186,9 @@ public class PSE extends JFrame {
                 component.repaint();
                 component.validate();
                 showImage();
+            }
         }
-    }
-    );
+        );
 
         // TimeLine Button Panel 1
         // -------------------------------------------------------------------------
@@ -200,7 +199,7 @@ public class PSE extends JFrame {
         add(timelineButtonPanel1);
         // Open Image
         JButton openButton = new JButton("Abrir");
-        openButton.setToolTipText("<html><p width=\"300\">" +opentip+"</p></html>");
+        openButton.setToolTipText("<html><p width=\"300\">" + opentip + "</p></html>");
         openButton.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - Abrir");
             openImage();
@@ -209,15 +208,17 @@ public class PSE extends JFrame {
         timelineButtonPanel1.add(openButton);
         // Process
         JButton processButton = new JButton("Processar");
-        processButton.setToolTipText("<html><p width=\"300\">" +processtip+"</p></html>");
+        processButton.setToolTipText("<html><p width=\"300\">" + processtip + "</p></html>");
         processButton.addActionListener((ActionEvent event) -> {
-            if (mainImage != null) new ProcessFunctionsWorker().execute();
+            if (mainImage != null) {
+                new ProcessFunctionsWorker().execute();
+            }
         });
         processButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(processButton);
         // View original image
         JButton originalButton = new JButton("Original");
-        originalButton.setToolTipText("<html><p width=\"300\">" +originaltip+"</p></html>");
+        originalButton.setToolTipText("<html><p width=\"300\">" + originaltip + "</p></html>");
         originalButton.addActionListener((ActionEvent event) -> {
             if (originalImage != null) {
                 setTitle("PSE Image - Visualizando: Imagem original");
@@ -244,7 +245,7 @@ public class PSE extends JFrame {
         add(timelineButtonPanel2);
         // View result image
         JButton resultButton = new JButton("Resultado");
-        resultButton.setToolTipText("<html><p width=\"300\">" +resulttip+"</p></html>");
+        resultButton.setToolTipText("<html><p width=\"300\">" + resulttip + "</p></html>");
         resultButton.addActionListener((ActionEvent event) -> {
             if (mainImage != null) {
                 if (mustProcess) {
@@ -252,18 +253,19 @@ public class PSE extends JFrame {
                     while (mustProcess != false) {
                         try {
                             TimeUnit.MILLISECONDS.sleep(1000);
-                        } catch (Exception e) {}
+                        } catch (Exception e) {
+                        }
                     }
                 }
                 setTitle("PSE Image - Visualizando: Imagem resultado");
-                mainImage = imageHistory.get(imageHistory.size()-1);
+                mainImage = imageHistory.get(imageHistory.size() - 1);
                 showImage();
             }
         });
         timelineButtonPanel2.add(resultButton);
         // Save Image
         JButton saveButton = new JButton("Salvar");
-        saveButton.setToolTipText("<html><p width=\"300\">" +savetip+"</p></html>");
+        saveButton.setToolTipText("<html><p width=\"300\">" + savetip + "</p></html>");
         saveButton.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - Salvar");
             saveImage();
@@ -272,7 +274,7 @@ public class PSE extends JFrame {
         timelineButtonPanel2.add(saveButton);
         // Exit Image
         JButton exitButton = new JButton("Fechar");
-        exitButton.setToolTipText("<html><p width=\"300\">" +quittip+"</p></html>");
+        exitButton.setToolTipText("<html><p width=\"300\">" + quittip + "</p></html>");
         exitButton.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - Fechar");
             System.exit(0);
@@ -289,14 +291,14 @@ public class PSE extends JFrame {
         add(buttonPanel);
         // Func1
         JButton f1Button = new JButton(f1);
-        f1Button.setToolTipText("<html><p width=\"300\">" +f1tip+"</p></html>");
+        f1Button.setToolTipText("<html><p width=\"300\">" + f1tip + "</p></html>");
         f1Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f1);
             addTimeline(f1);
         });
         // Func2
         JButton f2Button = new JButton(f2);
-        f2Button.setToolTipText("<html><p width=\"300\">" +f2tip+"</p></html>");
+        f2Button.setToolTipText("<html><p width=\"300\">" + f2tip + "</p></html>");
         f2Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f2);
             addTimeline(f2);
@@ -304,35 +306,35 @@ public class PSE extends JFrame {
         buttonPanel.add(f2Button);
         // Func3
         JButton f3Button = new JButton(f3);
-        f3Button.setToolTipText("<html><p width=\"300\">" +f3tip+"</p></html>");
+        f3Button.setToolTipText("<html><p width=\"300\">" + f3tip + "</p></html>");
         f3Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f3);
             addTimeline(f3);
         });
         // Func4
         JButton f4Button = new JButton(f4);
-        f4Button.setToolTipText("<html><p width=\"300\">" +f4tip+"</p></html>");
+        f4Button.setToolTipText("<html><p width=\"300\">" + f4tip + "</p></html>");
         f4Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f4);
             addTimeline(f4);
         });
         // Func5
         JButton f5Button = new JButton(f5);
-        f5Button.setToolTipText("<html><p width=\"300\">" +f5tip+"</p></html>");
+        f5Button.setToolTipText("<html><p width=\"300\">" + f5tip + "</p></html>");
         f5Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f5);
             addTimeline(f5);
         });
         // Func6
         JButton f6Button = new JButton(f6);
-        f6Button.setToolTipText("<html><p width=\"300\">" +f6tip+"</p></html>");
+        f6Button.setToolTipText("<html><p width=\"300\">" + f6tip + "</p></html>");
         f6Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f6);
             addTimeline(f6);
         });
         // Func7 (Convolução)
         JButton f7Button = new JButton(f7);
-        f7Button.setToolTipText("<html><p width=\"300\">" +f7tip+"</p></html>");
+        f7Button.setToolTipText("<html><p width=\"300\">" + f7tip + "</p></html>");
         f7Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f7);
             addTimeline(f7);
@@ -355,27 +357,27 @@ public class PSE extends JFrame {
                     parameters.add(p1);
                     parameters.add(new JLabel("Pesos da máscara separados por vírgula:"));
                     parameters.add(weightField);
- 
+
                     int result = JOptionPane.showConfirmDialog(null, parameters,
                             "Parâmetros do filtro de convolução", JOptionPane.OK_CANCEL_OPTION);
-                    if (result == JOptionPane.OK_OPTION) { 
+                    if (result == JOptionPane.OK_OPTION) {
                         try {
                             int tempLinhas = Integer.parseInt(xField.getText());
                             int tempColunas = Integer.parseInt(yField.getText());
-                            if (tempLinhas%2 != 1 || tempColunas%2 != 1) {
+                            if (tempLinhas % 2 != 1 || tempColunas % 2 != 1) {
                                 JOptionPane.showMessageDialog(new JFrame(), "Número de linhas e colunas deve ser ímpar!");
                             }
                             ArrayList tempPesos = new ArrayList();
                             String stringPesos[] = weightField.getText().split(",");
                             if (stringPesos.length != tempLinhas * tempColunas) {
-                            JOptionPane.showMessageDialog(new JFrame(), "Número de pesos não esta de acordo com número de linhas e colunas!");
+                                JOptionPane.showMessageDialog(new JFrame(), "Número de pesos não esta de acordo com número de linhas e colunas!");
                             }
                             convolucaoLinhas = tempLinhas;
                             convolucaoColunas = tempColunas;
-                            for (int i=0; i<stringPesos.length; i++) {
+                            for (int i = 0; i < stringPesos.length; i++) {
                                 convolucaoPesos.add(Integer.parseInt(stringPesos[i]));
                             }
-                        } catch(Exception e) {
+                        } catch (Exception e) {
                             JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
                         }
                     }
@@ -384,7 +386,7 @@ public class PSE extends JFrame {
         });
         // Func8 (Brilho)
         JButton f8Button = new JButton(f8);
-        f8Button.setToolTipText("<html><p width=\"300\">" +f8tip+"</p></html>");
+        f8Button.setToolTipText("<html><p width=\"300\">" + f8tip + "</p></html>");
         f8Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f8);
             addTimeline(f8);
@@ -398,15 +400,15 @@ public class PSE extends JFrame {
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
                     parameters.add(new JLabel("Brilho(%):"));
                     parameters.add(xField);
- 
+
                     int result = JOptionPane.showConfirmDialog(null, parameters,
                             "Parâmetros do filtro de brilho", JOptionPane.OK_CANCEL_OPTION);
-                    if (result == JOptionPane.OK_OPTION) { 
+                    if (result == JOptionPane.OK_OPTION) {
                         try {
                             int tempBrilho = Integer.parseInt(xField.getText());
                             brilhoFloat = tempBrilho;
                             System.out.println(brilhoFloat);
-                        } catch(Exception e) {
+                        } catch (Exception e) {
                             JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
                         }
                     }
@@ -415,7 +417,7 @@ public class PSE extends JFrame {
         });
         // Func9 (Contraste)
         JButton f9Button = new JButton(f9);
-        f9Button.setToolTipText("<html><p width=\"300\">" +f9tip+"</p></html>");
+        f9Button.setToolTipText("<html><p width=\"300\">" + f9tip + "</p></html>");
         f9Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f9);
             addTimeline(f9);
@@ -429,15 +431,15 @@ public class PSE extends JFrame {
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
                     parameters.add(new JLabel("Contraste(%):"));
                     parameters.add(xField);
- 
+
                     int result = JOptionPane.showConfirmDialog(null, parameters,
                             "Parâmetros do filtro de contraste", JOptionPane.OK_CANCEL_OPTION);
-                    if (result == JOptionPane.OK_OPTION) { 
+                    if (result == JOptionPane.OK_OPTION) {
                         try {
                             int tempContraste = Integer.parseInt(xField.getText());
                             contrasteFloat = tempContraste;
                             System.out.println(contrasteFloat);
-                        } catch(Exception e) {
+                        } catch (Exception e) {
                             JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
                         }
                     }
@@ -446,34 +448,34 @@ public class PSE extends JFrame {
         });
         // Func10
         JButton f10Button = new JButton(f10);
-        f10Button.setToolTipText("<html><p width=\"300\">" +f10tip+"</p></html>");
+        f10Button.setToolTipText("<html><p width=\"300\">" + f10tip + "</p></html>");
         f10Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f10);
             addTimeline(f10);
         });
         // Func11
         JButton f11Button = new JButton(f11);
-        f11Button.setToolTipText("<html><p width=\"300\">" +f11tip+"</p></html>");
+        f11Button.setToolTipText("<html><p width=\"300\">" + f11tip + "</p></html>");
         f11Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f11);
             addTimeline(f11);
         });
         // Func12
         JButton f12Button = new JButton(f12);
-        f12Button.setToolTipText("<html><p width=\"300\">" +f12tip+"</p></html>");
+        f12Button.setToolTipText("<html><p width=\"300\">" + f12tip + "</p></html>");
         f12Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f12);
             addTimeline(f12);
         });
         // Func99
         JButton f99Button = new JButton(f99);
-        f99Button.setToolTipText("<html><p width=\"300\">" +resettip+"</p></html>");
+        f99Button.setToolTipText("<html><p width=\"300\">" + resettip + "</p></html>");
         f99Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image");
             resetTimeline();
         });
         f99Button.setBackground(Color.WHITE);
-        
+
         // Add function buttons in desired order
         buttonPanel.add(f8Button); // Brilho
         buttonPanel.add(f9Button); // Contraste
@@ -493,13 +495,13 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         drawPanel = new JPanel();
         drawPanel.setPreferredSize(new Dimension(gridX, gridY));
-        drawPanel.setBackground(Color.WHITE);
+        drawPanel.setBackground(Color.GRAY);
         add(drawPanel);
-        
+
         // Tooltip configuration
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     }
-    
+
     private void openImage() {
         JFileChooser imageChooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -518,14 +520,14 @@ public class PSE extends JFrame {
             }
         }
     }
-    
+
     private void showImage() {
         if (mainImage != null) {
             if (mainImageLabel != null) {
                 drawPanel.remove(mainImageLabel);
             }
-            float drawWidth = (float)drawPanel.getSize().getWidth();
-            float drawHeight = (float)drawPanel.getSize().getHeight();
+            float drawWidth = (float) drawPanel.getSize().getWidth();
+            float drawHeight = (float) drawPanel.getSize().getHeight();
             float imgWidth = mainImage.getWidth();
             float imgHeight = mainImage.getHeight();
             float imgRatio = imgWidth / imgHeight;
@@ -534,13 +536,11 @@ public class PSE extends JFrame {
             float imgHeightNew = imgHeight;
             if (imgRatio > drawRatio) {
                 imgWidthNew = drawWidth;
-                imgHeightNew = imgHeight*(drawWidth/imgWidth);
-            }
-            else if (imgRatio < drawRatio) {
-                imgWidthNew = imgWidth *(drawHeight/imgHeight);
+                imgHeightNew = imgHeight * (drawWidth / imgWidth);
+            } else if (imgRatio < drawRatio) {
+                imgWidthNew = imgWidth * (drawHeight / imgHeight);
                 imgHeightNew = drawHeight;
-            }
-            else {
+            } else {
                 imgWidth = drawWidth;
                 imgHeight = drawHeight;
             }
@@ -563,7 +563,9 @@ public class PSE extends JFrame {
         int returnVal = imageChooser.showSaveDialog(null);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             String filePath = imageChooser.getSelectedFile().toString();
-            if (!filePath.endsWith(".png")) filePath += ".png";
+            if (!filePath.endsWith(".png")) {
+                filePath += ".png";
+            }
             File file = new File(filePath);
             try {
                 ImageIO.write(mainImage, "png", file);
@@ -576,71 +578,83 @@ public class PSE extends JFrame {
     }
 
     private void addTimeline(String func) {
-      JButton Button = new JButton(func);
-      mustProcess = true;
-      Button.setToolTipText("<html><p width=\"300\">" +timelinetip+"</p></html>");
-      Button.addActionListener((ActionEvent event) -> {
-          JButton button = (JButton)event.getSource();
-          if (mainImage == null) {
-              return;
-          }
-          if (mustProcess) {
-              new ProcessFunctionsWorker().execute();
-              while (mustProcess != false) try {
-                    TimeUnit.MILLISECONDS.sleep(1000);
-                } catch (Exception e) {}
-          }
-          setTitle("PSE Image - Visualizando: " + func);
-          Color defaultColor = button.getBackground();
-          Component component[] = timelinePanel.getComponents();
-            for (int i = 0; i < timelinePanel.getComponentCount(); i++) {
-                JButton testButton = (JButton) component[i];
-                if (testButton == button) {
-                    mainImage = imageHistory.get(i);
-                    showImage();
+        JButton button = new JButton(func);
+        mustProcess = true;
+        button.setToolTipText("<html><p width=\"300\">" + timelinetip + "</p></html>");
+        button.addActionListener((ActionEvent event) -> {
+            JButton sourceButton = (JButton) event.getSource();
+            if (mainImage == null) {
+                return;
+            }
+            if (mustProcess) {
+                new ProcessFunctionsWorker().execute();
+            }
+            else {
+                setTitle("PSE Image - Visualizando: " + func);
+                Color defaultColor = sourceButton.getBackground();
+                Component components[] = timelinePanel.getComponents();
+                for (int i = 0; i < timelinePanel.getComponentCount(); i++) {
+                    JButton testButton = (JButton) components[i];
+                    if (testButton == sourceButton) {
+                        mainImage = imageHistory.get(i);
+                        showImage();
+                    }
                 }
-            }               
-      });
-      Button.addMouseListener(new MouseAdapter() {
+            }
+        });
+        button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
                 if (SwingUtilities.isRightMouseButton(click)) {
                     mustProcess = true;
                     setTitle("PSE Image - " + func + " X");
-                    timelinePanel.remove(Button);
+                    Component component[] = timelinePanel.getComponents();
+                    for (int i = 0; i < timelinePanel.getComponentCount(); i++) {
+                        JButton testButton = (JButton) component[i];
+                        if (testButton == button) {
+                            if (i < lastProcessed) {
+                                lastProcessed = i;
+                            }
+                            break;
+                        }
+                    }
+                    timelinePanel.remove(button);
                     timelinePanel.validate();
-                    if (timelinePanel.getComponentCount() < 1) 
+                    if (timelinePanel.getComponentCount() < 1) {
                         resetTimeline();
+                    }
                 }
             }
         });
-      timelinePanel.add(Button);
-      timelinePanel.validate();
+        timelinePanel.add(button);
+        timelinePanel.validate();
     }
-    
+
     private void resetTimeline() {
         if (mainImage != null) {
             mainImage = originalImage;
             showImage();
         }
         Component component[] = timelinePanel.getComponents();
-        for (int i = timelinePanel.getComponentCount()-1; i>=0; i--) {
-            JButton button = (JButton)component[i];
+        for (int i = timelinePanel.getComponentCount() - 1; i >= 0; i--) {
+            JButton button = (JButton) component[i];
             timelinePanel.remove(button);
         }
         mustProcess = true;
+        lastProcessed = 0;
         timelinePanel.repaint();
         timelinePanel.validate();
     }
-    
+
     public class ProcessFunctionsWorker extends SwingWorker<Integer, String> {
+
         @Override
         protected Integer doInBackground() throws Exception {
             setTitle("PSE Image - Processar");
-            mainImage = originalImage;
-            imageHistory = new ArrayList<BufferedImage>();
+            mainImage = (lastProcessed == 0) ? originalImage : imageHistory.get(lastProcessed - 1);
+            imageHistory = (lastProcessed == 0) ? new ArrayList<BufferedImage>() : imageHistory;
             showImage();
             Component component[] = timelinePanel.getComponents();
-            for (int i = 0; i < timelinePanel.getComponentCount(); i++) {
+            for (int i = lastProcessed; i < timelinePanel.getComponentCount(); i++) {
                 JButton button = (JButton) component[i];
                 Color defaultColor = button.getBackground();
                 String defaultText = button.getText();
@@ -652,71 +666,65 @@ public class PSE extends JFrame {
                     button.validate();
                     try {
                         TimeUnit.MILLISECONDS.sleep(50);
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                    }
                     button.validate();
                     timelinePanel.validate();
                     validate();
                 }
                 if (mainImage != null) {
                     functionChooser(defaultText);
-                    imageHistory.add(mainImage);
+                    imageHistory.add(i, mainImage);
                     showImage();
                 }
                 try {
                     TimeUnit.MILLISECONDS.sleep(300);
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
                 button.setText(defaultText);
                 button.setBackground(defaultColor);
                 button.validate();
                 timelinePanel.validate();
                 validate();
+                lastProcessed = i+1;
             }
             setTitle("PSE Image - Processamento - 100% - Completo");
             mustProcess = false;
             return 0;
         }
-        
+
         private boolean functionChooser(String name) {
-                 if (name.equals(f1)) {
+            if (name.equals(f1)) {
                 mainImage = EscalaDeCinza(mainImage);
-            }
-            else if (name.equals(f2)) {
+            } else if (name.equals(f2)) {
                 mainImage = Negativo(mainImage);
-            }
-            else if (name.equals(f3)) {
+            } else if (name.equals(f3)) {
                 mainImage = Media(mainImage);
-            }
-            else if (name.equals(f4)) {
+            } else if (name.equals(f4)) {
                 mainImage = Gaussiano(mainImage);
-            }
-            else if (name.equals(f5)) {
+            } else if (name.equals(f5)) {
                 mainImage = Laplaciano(mainImage);
-            }
-            else if (name.equals(f6)) {
+            } else if (name.equals(f6)) {
                 mainImage = Sobel(mainImage);
-            }
-            else if (name.equals(f7)) {
+            } else if (name.equals(f7)) {
                 mainImage = Convolucao(mainImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
-            } 
-            else if (name.equals(f8)) {
+            } else if (name.equals(f8)) {
                 mainImage = Brilho(mainImage, brilhoFloat);
-            } 
-            else if (name.equals(f9)) {
+            } else if (name.equals(f9)) {
                 mainImage = Contraste(mainImage, contrasteFloat);
             }
             return true;
         }
     }
-    
+
 // ------------------------------------- INSERIR ALGORITMOS ABAIXO --------------------------------------------
 // ------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------
-    
     public static BufferedImage EscalaDeCinza(BufferedImage imagem) {
         //Imagem resultante
-        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
-        
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+
         //pegar coluna e linha da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
@@ -724,12 +732,12 @@ public class PSE extends JFrame {
         int media = 0;
         //laço para varrer a matriz de pixels da imagem
         for (int i = 0; i < coluna; i++) {
-            for (int j = 0; j < linha; j++) {               
+            for (int j = 0; j < linha; j++) {
                 //rgb recebe o valor RGB do pixel em questão                
-                int rgb = imagem.getRGB(i, j);              
-                int r = (int)((rgb&0x00FF0000)>>>16); //R
-                int g = (int)((rgb&0x0000FF00)>>>8);  //G
-                int b = (int) (rgb&0x000000FF);       //B
+                int rgb = imagem.getRGB(i, j);
+                int r = (int) ((rgb & 0x00FF0000) >>> 16); //R
+                int g = (int) ((rgb & 0x0000FF00) >>> 8);  //G
+                int b = (int) (rgb & 0x000000FF);       //B
 
                 //media dos valores do RGB
                 //será o valor do pixel na nova imagem
@@ -743,48 +751,48 @@ public class PSE extends JFrame {
         }
         return ResultImage;
     }
-    
+
     public static BufferedImage Negativo(BufferedImage imagem) {
         //Imagem resultante
-        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
-        
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+
         //pegar coluna e linha da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
         //laço para varrer a matriz de pixels da imagem
         for (int i = 0; i < coluna; i++) {
-            for (int j = 0; j < linha; j++) {  
+            for (int j = 0; j < linha; j++) {
                 //rgb recebe o valor RGB do pixel em questão 
-                int rgb = imagem.getRGB(i, j);               
+                int rgb = imagem.getRGB(i, j);
                 //a cor inversa é dado por 255 menos o valor da cor                 
-                int r = 255 - (int)((rgb&0x00FF0000)>>>16);
-                int g = 255 - (int)((rgb&0x0000FF00)>>>8);
-                int b = 255 - (int) (rgb&0x000000FF);
+                int r = 255 - (int) ((rgb & 0x00FF0000) >>> 16);
+                int g = 255 - (int) ((rgb & 0x0000FF00) >>> 8);
+                int b = 255 - (int) (rgb & 0x000000FF);
                 Color color = new Color(r, g, b);
                 ResultImage.setRGB(i, j, color.getRGB());
             }
         }
         return ResultImage;
     }
-    
-    public static BufferedImage Media (BufferedImage imagem) {
+
+    public static BufferedImage Media(BufferedImage imagem) {
         //imagem resultante
-        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
-        
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+
         //mascara de média
-        int [][]mascaraMedia = {{1,1,1},
-                                {1,1,1},
-                                {1,1,1}};
+        int[][] mascaraMedia = {{1, 1, 1},
+        {1, 1, 1},
+        {1, 1, 1}};
         //soma dos valores da máscara
         int valorMascara = 9;
-        
+
         //cores primarias
         int r = 0, g = 0, b = 0;
-        
+
         //pegar coluna e linha da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
-        
+
         //percorre a imagem
         for (int i = 1; i + 1 < linha; i++) {
             for (int j = 1; j + 1 < coluna; j++) {
@@ -794,9 +802,9 @@ public class PSE extends JFrame {
                         //rgb = rgb do pixel
                         int rgb = imagem.getRGB(j + k, i + l);
                         //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
-                        r += (mascaraMedia[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
-                        g += (mascaraMedia[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
-                        b += (mascaraMedia[1 + l][1 + k] * (int)((rgb&0x000000FF)));
+                        r += (mascaraMedia[1 + l][1 + k] * (int) ((rgb & 0x00FF0000) >>> 16));
+                        g += (mascaraMedia[1 + l][1 + k] * (int) ((rgb & 0x0000FF00) >>> 8));
+                        b += (mascaraMedia[1 + l][1 + k] * (int) ((rgb & 0x000000FF)));
                     }
                 }
                 //dividia as cores pelo valor da máscara
@@ -811,17 +819,17 @@ public class PSE extends JFrame {
                 r = g = b = 0;
             }
         }
-        ResultImage.getSubimage(1, 1, coluna-1, linha-1);
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
         return ResultImage;
     }
-    
-    public static BufferedImage Gaussiano (BufferedImage imagem) {
+
+    public static BufferedImage Gaussiano(BufferedImage imagem) {
         //imagem resultante
-        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
         //mascara
-        int [][]mascaraGaussiano = {{1,2,1},
-                                {2,4,2},
-                                {1,2,1}};
+        int[][] mascaraGaussiano = {{1, 2, 1},
+        {2, 4, 2},
+        {1, 2, 1}};
         int valorMascara = 16;
 
         int r = 0, g = 0, b = 0;
@@ -837,9 +845,9 @@ public class PSE extends JFrame {
                         //rgb
                         int rgb = imagem.getRGB(j + k, i + l);
                         //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
-                        r += (mascaraGaussiano[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
-                        g += (mascaraGaussiano[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
-                        b += (mascaraGaussiano[1 + l][1 + k] * (int)((rgb&0x000000FF)));
+                        r += (mascaraGaussiano[1 + l][1 + k] * (int) ((rgb & 0x00FF0000) >>> 16));
+                        g += (mascaraGaussiano[1 + l][1 + k] * (int) ((rgb & 0x0000FF00) >>> 8));
+                        b += (mascaraGaussiano[1 + l][1 + k] * (int) ((rgb & 0x000000FF)));
                     }
 
                 }
@@ -853,21 +861,21 @@ public class PSE extends JFrame {
                 r = g = b = 0;
             }
         }
-        ResultImage.getSubimage(1, 1, coluna-1, linha-1);
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
         return ResultImage;
     }
 
-    public static BufferedImage Laplaciano (BufferedImage imagem) {
+    public static BufferedImage Laplaciano(BufferedImage imagem) {
         //imagem resultante
-        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
         //mascaras
-        int [][]mascaraL1 = {{0,-1,0},
-                            {-1,4,-1},
-                            {0,-1,0}};
-        
-        int [][]mascaraL2 = {{1,1,1},
-                            {1,-8,1},
-                            {1,1,1}};
+        int[][] mascaraL1 = {{0, -1, 0},
+        {-1, 4, -1},
+        {0, -1, 0}};
+
+        int[][] mascaraL2 = {{1, 1, 1},
+        {1, -8, 1},
+        {1, 1, 1}};
 
         int r = 0, g = 0, b = 0;
         //tamanho imagem
@@ -882,9 +890,9 @@ public class PSE extends JFrame {
                         //rgb
                         int rgb = imagem.getRGB(j + k, i + l);
                         //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
-                        r += (mascaraL1[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
-                        g += (mascaraL1[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
-                        b += (mascaraL1[1 + l][1 + k] * (int)((rgb&0x000000FF)));
+                        r += (mascaraL1[1 + l][1 + k] * (int) ((rgb & 0x00FF0000) >>> 16));
+                        g += (mascaraL1[1 + l][1 + k] * (int) ((rgb & 0x0000FF00) >>> 8));
+                        b += (mascaraL1[1 + l][1 + k] * (int) ((rgb & 0x000000FF)));
                     }
 
                 }
@@ -903,9 +911,9 @@ public class PSE extends JFrame {
                         //rgb
                         int rgb = imagem.getRGB(j + k, i + l);
                         //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
-                        r += (mascaraL2[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
-                        g += (mascaraL2[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
-                        b += (mascaraL2[1 + l][1 + k] * (int)((rgb&0x000000FF)));
+                        r += (mascaraL2[1 + l][1 + k] * (int) ((rgb & 0x00FF0000) >>> 16));
+                        g += (mascaraL2[1 + l][1 + k] * (int) ((rgb & 0x0000FF00) >>> 8));
+                        b += (mascaraL2[1 + l][1 + k] * (int) ((rgb & 0x000000FF)));
                     }
 
                 }
@@ -915,26 +923,26 @@ public class PSE extends JFrame {
                 r = g = b = 0;
             }
         }
-        ResultImage.getSubimage(1, 1, coluna-1, linha-1);
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
         return ResultImage;
     }
-    
-    public static BufferedImage Sobel (BufferedImage imagem) {
+
+    public static BufferedImage Sobel(BufferedImage imagem) {
         //imagem resultante
-        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
         //mascaras
-        int [][]mascaraS1 = {{-1,-2,-1},
-                             {0,0,0},
-                             {1,2,1}};
-        int [][]mascaraS2 = {{-1,0,1},
-                             {-2,0,2},
-                             {-1,0,1}};
+        int[][] mascaraS1 = {{-1, -2, -1},
+        {0, 0, 0},
+        {1, 2, 1}};
+        int[][] mascaraS2 = {{-1, 0, 1},
+        {-2, 0, 2},
+        {-1, 0, 1}};
 
         int r = 0, g = 0, b = 0;
         //tamanho da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
-        
+
         //percorre imagem
         for (int i = 1; i + 1 < linha; i++) {
             for (int j = 1; j + 1 < coluna; j++) {
@@ -944,9 +952,9 @@ public class PSE extends JFrame {
                         //rgb
                         int rgb = imagem.getRGB(j + k, i + l);
                         //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
-                        r += (mascaraS1[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
-                        g += (mascaraS1[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
-                        b += (mascaraS1[1 + l][1 + k] * (int)((rgb&0x000000FF)));
+                        r += (mascaraS1[1 + l][1 + k] * (int) ((rgb & 0x00FF0000) >>> 16));
+                        g += (mascaraS1[1 + l][1 + k] * (int) ((rgb & 0x0000FF00) >>> 8));
+                        b += (mascaraS1[1 + l][1 + k] * (int) ((rgb & 0x000000FF)));
                     }
 
                 }
@@ -965,9 +973,9 @@ public class PSE extends JFrame {
                         //RGB
                         int rgb = imagem.getRGB(j + k, i + l);
                         //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
-                        r += (mascaraS2[1 + l][1 + k] * (int)((rgb&0x00FF0000)>>>16));
-                        g += (mascaraS2[1 + l][1 + k] * (int)((rgb&0x0000FF00)>>>8));
-                        b += (mascaraS2[1 + l][1 + k] * (int)((rgb&0x000000FF)));
+                        r += (mascaraS2[1 + l][1 + k] * (int) ((rgb & 0x00FF0000) >>> 16));
+                        g += (mascaraS2[1 + l][1 + k] * (int) ((rgb & 0x0000FF00) >>> 8));
+                        b += (mascaraS2[1 + l][1 + k] * (int) ((rgb & 0x000000FF)));
                     }
 
                 }
@@ -977,24 +985,24 @@ public class PSE extends JFrame {
                 r = g = b = 0;
             }
         }
-        ResultImage.getSubimage(1, 1, coluna-1, linha-1);
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
         return ResultImage;
     }
-    
-    public static BufferedImage Convolucao (BufferedImage imagem,int linhas, int colunas, java.util.List <Integer> pesos) {
+
+    public static BufferedImage Convolucao(BufferedImage imagem, int linhas, int colunas, java.util.List<Integer> pesos) {
         //imagem resultante
-        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
         if (linhas != colunas) {
             System.out.println("ERRO: A matriz deve ser quadrada e ímpar");
             return null;
-        }else if (linhas % 2 == 0) {
+        } else if (linhas % 2 == 0) {
             System.out.println("ERRO: A matriz deve ser quadrada e ímpar");
             return null;
-        }else {
+        } else {
             //mascara de média
-            int [][]mascaraConvolucao = new int [linhas][colunas];
+            int[][] mascaraConvolucao = new int[linhas][colunas];
             int ponteiro = 0;
-            for (int i = 0; i < linhas; i++){
+            for (int i = 0; i < linhas; i++) {
                 for (int j = 0; j < colunas; j++) {
                     mascaraConvolucao[i][j] = pesos.get(ponteiro);
                     ponteiro++;
@@ -1004,8 +1012,8 @@ public class PSE extends JFrame {
             int valorMascara = 0;
             for (int i = 0; i < mascaraConvolucao.length; i++) {
                 for (int j = 0; j < mascaraConvolucao[i].length; j++) {
-                    valorMascara += mascaraConvolucao[i][j];   
-                } 
+                    valorMascara += mascaraConvolucao[i][j];
+                }
             }
 
             //cores primarias
@@ -1014,7 +1022,7 @@ public class PSE extends JFrame {
             //pegar coluna e linha da imagem
             int coluna = imagem.getWidth();
             int linha = imagem.getHeight();
-            int inicial = (int)Math.floor(linhas/2);
+            int inicial = (int) Math.floor(linhas / 2);
 
             //percorre a imagem
             for (int i = inicial; i + inicial < linha; i++) {
@@ -1025,9 +1033,9 @@ public class PSE extends JFrame {
                             //rgb = rgb do pixel
                             int rgb = imagem.getRGB(j + k, i + l);
                             //pegando os valores das cores primarias de cada pixel após a convolucao com a máscara
-                            r += (mascaraConvolucao[inicial + l][inicial + k] * (int)((rgb&0x00FF0000)>>>16));
-                            g += (mascaraConvolucao[inicial + l][inicial + k] * (int)((rgb&0x0000FF00)>>>8));
-                            b += (mascaraConvolucao[inicial + l][inicial + k] * (int)((rgb&0x000000FF)));
+                            r += (mascaraConvolucao[inicial + l][inicial + k] * (int) ((rgb & 0x00FF0000) >>> 16));
+                            g += (mascaraConvolucao[inicial + l][inicial + k] * (int) ((rgb & 0x0000FF00) >>> 8));
+                            b += (mascaraConvolucao[inicial + l][inicial + k] * (int) ((rgb & 0x000000FF)));
                         }
                     }
                     //dividia as cores pelo valor da máscara
@@ -1042,45 +1050,45 @@ public class PSE extends JFrame {
                     r = g = b = 0;
                 }
             }
-            ResultImage.getSubimage(inicial, inicial, coluna-inicial, linha-inicial);
+            ResultImage.getSubimage(inicial, inicial, coluna - inicial, linha - inicial);
         }
         return ResultImage;
     }
-    
-    public static BufferedImage Brilho (BufferedImage imagem, int x) {
+
+    public static BufferedImage Brilho(BufferedImage imagem, int x) {
         //imagem resultante
         float f;
         if (x < 0) {
-            int tempx = 1 - (x/100);
+            int tempx = 1 - (x / 100);
             String temp = 0 + "." + tempx;
             f = Float.parseFloat(temp);
-        }else if (x > 0 && x < 100){
-            String temp = 1 + "."+(x/10)+"f";
-            f = Float.parseFloat(temp); 
+        } else if (x > 0 && x < 100) {
+            String temp = 1 + "." + (x / 10) + "f";
+            f = Float.parseFloat(temp);
         } else if (x == 100) {
             f = 2;
-        }else {
-            String temp = x+"f";
+        } else {
+            String temp = x + "f";
             f = Float.parseFloat(temp);
         }
-        
-        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
 
         RescaleOp rescaleOp = new RescaleOp(f, 0, null);
-        rescaleOp.filter(imagem, ResultImage); 
-        
+        rescaleOp.filter(imagem, ResultImage);
+
         return ResultImage;
     }
-    
-    public static BufferedImage Contraste (BufferedImage imagem, int x) {
-        String temp = x+"f";
+
+    public static BufferedImage Contraste(BufferedImage imagem, int x) {
+        String temp = x + "f";
         float f = Float.parseFloat(temp);
         //imagem resultante
-        BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
 
         RescaleOp rescaleOp = new RescaleOp(1.0f, x, null);
-        rescaleOp.filter(imagem, ResultImage); 
-        
+        rescaleOp.filter(imagem, ResultImage);
+
         return ResultImage;
     }
 }
