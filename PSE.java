@@ -10,6 +10,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -548,16 +549,29 @@ public class PSE extends JFrame {
     }
 
     private void saveImage() {
-        
+        if (mainImage == null) {
+            return;
+        }
+        JFileChooser imageChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "Imagens PNG", "png");
+        imageChooser.setFileFilter(filter);
+        int returnVal = imageChooser.showSaveDialog(null);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            String filePath = imageChooser.getSelectedFile().toString();
+            if (!filePath.endsWith(".png")) filePath += ".png";
+            File file = new File(filePath);
+            try {
+                ImageIO.write(mainImage, "png", file);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
     private void addTimeline(String func) {
       JButton Button = new JButton(func);
-//      Button.addActionListener((ActionEvent event) -> {
-//          setTitle("PSE - " + func + " X");
-//          timelinePanel.remove(Button);
-//          timelinePanel.validate();
-//      });
       mustProcess = true;
       Button.setToolTipText("<html><p width=\"300\">" +timelinetip+"</p></html>");
       Button.addActionListener((ActionEvent event) -> {
@@ -589,6 +603,8 @@ public class PSE extends JFrame {
                     setTitle("PSE - " + func + " X");
                     timelinePanel.remove(Button);
                     timelinePanel.validate();
+                    if (timelinePanel.getComponentCount() < 1) 
+                        resetTimeline();
                 }
             }
         });
