@@ -70,6 +70,26 @@ public class PSE extends JFrame {
     private final String f11 = "-";
     private final String f12 = "-";
     private final String f99 = "Resetar";
+    // Descrições para os botões
+    private final String opentip = "Clique para abrir uma imagem.";
+    private final String processtip = "Clique para processar a imagem seguindo a ordem definida no timeline (à direita)";
+    private final String originaltip = "Clique para mudar a visualização para a imagem original";
+    private final String resulttip = "Clique para mudar a visualização para a imagem resultada do processamento no timeline (à esquerda)";
+    private final String savetip = "Clique para salvar a imagem atualmente sendo visualizada.";
+    private final String quittip = "Clique para fechar o programa. (Não salva a imagem!)";
+    private final String resettip = "Clique para resetar a imagem de volta à original e resetar o timeline.";
+    private final String f1tip = "Escala de Cinza:<br><br>Transforma a imágem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
+    private final String f2tip = "Filtro Negativo:<br><br>Inverte todos os tons da imágem.<br><br>Geralmente usado para transformar uma imagem obtida em sua forma negativa para a sua positiva (imagem normal)";
+    private final String f3tip = "Filtro de Média:<br><br>Percorre a imagem substituindo cada pixel pela média de seus vizinhos.<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
+    private final String f4tip = "Filtro Gaussiano:<br><br>Percorre a imagem aplicando um efeito \"borrado\".<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes." ;
+    private final String f5tip = "Operador de Laplace:<br><br>Percorre a imagem calculando a divergěncia de gradientes, identificando áreas de mudança rápida (bordas).<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem.";
+    private final String f6tip = "Operador de Sobel:<br><br>Percorre a imagem calculando as normais dos gradientes, identificando potenciais bordas.<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem. ";
+    private final String f7tip = "Filtro de Convolução:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem substituindo cada pixel pela média ponderada de seus vizinhos a partir de uma matriz de convolução.<br><br>Filtro de propósito geral usado quando se quer um maior controle no processamento da imagem.";
+    private final String f8tip = "Filtro de Brilho:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o brilho de cada pixel.<br><br>Geralmente usado para corrigir uma imagem que está muito clara ou escura, dificultando o seu processamento.";
+    private final String f9tip = "Filtro de Contraste:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
+    private final String f10tip = "";
+    private final String f11tip = "";
+    private final String f12tip = "";
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
     private int convolucaoColunas = 3;
@@ -177,6 +197,7 @@ public class PSE extends JFrame {
         add(timelineButtonPanel1);
         // Open Image
         JButton openButton = new JButton("Abrir");
+        openButton.setToolTipText("<html><p width=\"300\">" +opentip+"</p></html>");
         openButton.addActionListener((ActionEvent event) -> {
             setTitle("PSE - Abrir");
             openImage();
@@ -185,6 +206,7 @@ public class PSE extends JFrame {
         timelineButtonPanel1.add(openButton);
         // Process
         JButton processButton = new JButton("Processar");
+        processButton.setToolTipText("<html><p width=\"300\">" +processtip+"</p></html>");
         processButton.addActionListener((ActionEvent event) -> {
             if (mainImage != null) new ProcessFunctionsWorker().execute();
         });
@@ -192,6 +214,7 @@ public class PSE extends JFrame {
         timelineButtonPanel1.add(processButton);
         // View original image
         JButton originalButton = new JButton("Original");
+        originalButton.setToolTipText("<html><p width=\"300\">" +originaltip+"</p></html>");
         originalButton.addActionListener((ActionEvent event) -> {
             if (originalImage != null) {
                 setTitle("PSE - Visualizando: Imagem original");
@@ -218,6 +241,7 @@ public class PSE extends JFrame {
         add(timelineButtonPanel2);
         // View result image
         JButton resultButton = new JButton("Resultado");
+        resultButton.setToolTipText("<html><p width=\"300\">" +resulttip+"</p></html>");
         resultButton.addActionListener((ActionEvent event) -> {
             if (mainImage != null) {
                 if (mustProcess) {
@@ -236,6 +260,7 @@ public class PSE extends JFrame {
         timelineButtonPanel2.add(resultButton);
         // Save Image
         JButton saveButton = new JButton("Salvar");
+        saveButton.setToolTipText("<html><p width=\"300\">" +savetip+"</p></html>");
         saveButton.addActionListener((ActionEvent event) -> {
             setTitle("PSE - Guardar");
             saveImage();
@@ -244,6 +269,7 @@ public class PSE extends JFrame {
         timelineButtonPanel2.add(saveButton);
         // Exit Image
         JButton exitButton = new JButton("Fechar");
+        exitButton.setToolTipText("<html><p width=\"300\">" +quittip+"</p></html>");
         exitButton.addActionListener((ActionEvent event) -> {
             setTitle("PSE - Fechar");
             System.exit(0);
@@ -260,6 +286,7 @@ public class PSE extends JFrame {
         add(buttonPanel);
         // Func1
         JButton f1Button = new JButton(f1);
+        f1Button.setToolTipText("<html><p width=\"300\">" +f1tip+"</p></html>");
         f1Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f1);
             addTimeline(f1);
@@ -267,6 +294,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f1Button);
         // Func2
         JButton f2Button = new JButton(f2);
+        f2Button.setToolTipText("<html><p width=\"300\">" +f2tip+"</p></html>");
         f2Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f2);
             addTimeline(f2);
@@ -274,6 +302,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f2Button);
         // Func3
         JButton f3Button = new JButton(f3);
+        f3Button.setToolTipText("<html><p width=\"300\">" +f3tip+"</p></html>");
         f3Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f3);
             addTimeline(f3);
@@ -281,6 +310,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f3Button);
         // Func4
         JButton f4Button = new JButton(f4);
+        f4Button.setToolTipText("<html><p width=\"300\">" +f4tip+"</p></html>");
         f4Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f4);
             addTimeline(f4);
@@ -288,6 +318,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f4Button);
         // Func5
         JButton f5Button = new JButton(f5);
+        f5Button.setToolTipText("<html><p width=\"300\">" +f5tip+"</p></html>");
         f5Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f5);
             addTimeline(f5);
@@ -295,6 +326,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f5Button);
         // Func6
         JButton f6Button = new JButton(f6);
+        f6Button.setToolTipText("<html><p width=\"300\">" +f6tip+"</p></html>");
         f6Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f6);
             addTimeline(f6);
@@ -302,6 +334,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f6Button);
         // Func7 (Convolução)
         JButton f7Button = new JButton(f7);
+        f7Button.setToolTipText("<html><p width=\"300\">" +f7tip+"</p></html>");
         f7Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f7);
             addTimeline(f7);
@@ -354,6 +387,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f7Button);
         // Func8 (Brilho)
         JButton f8Button = new JButton(f8);
+        f8Button.setToolTipText("<html><p width=\"300\">" +f8tip+"</p></html>");
         f8Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f8);
             addTimeline(f8);
@@ -385,6 +419,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f8Button);
         // Func9 (Contraste)
         JButton f9Button = new JButton(f9);
+        f9Button.setToolTipText("<html><p width=\"300\">" +f9tip+"</p></html>");
         f9Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f9);
             addTimeline(f9);
@@ -416,6 +451,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f9Button);
         // Func10
         JButton f10Button = new JButton(f10);
+        f10Button.setToolTipText("<html><p width=\"300\">" +f10tip+"</p></html>");
         f10Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f10);
             addTimeline(f10);
@@ -423,6 +459,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f10Button);
         // Func11
         JButton f11Button = new JButton(f11);
+        f11Button.setToolTipText("<html><p width=\"300\">" +f11tip+"</p></html>");
         f11Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f11);
             addTimeline(f11);
@@ -430,6 +467,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f11Button);
         // Func12
         JButton f12Button = new JButton(f12);
+        f12Button.setToolTipText("<html><p width=\"300\">" +f12tip+"</p></html>");
         f12Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE - " + f12);
             addTimeline(f12);
@@ -437,6 +475,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f12Button);
         // Func99
         JButton f99Button = new JButton(f99);
+        f99Button.setToolTipText("<html><p width=\"300\">" +resettip+"</p></html>");
         f99Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE");
             resetTimeline();
@@ -594,7 +633,7 @@ public class PSE extends JFrame {
                     showImage();
                 }
                 try {
-                    TimeUnit.MILLISECONDS.sleep(500);
+                    TimeUnit.MILLISECONDS.sleep(300);
                 } catch (Exception e) {}
                 button.setText(defaultText);
                 button.setBackground(defaultColor);
