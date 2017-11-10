@@ -75,15 +75,15 @@ public class PSE extends JFrame {
     private final String f99 = "Resetar";
     // Descrições para os botões
     private final String opentip = "Clique para abrir uma imagem.";
-    private final String processtip = "Clique para processar a imagem seguindo a ordem definida no timeline (à direita)";
-    private final String originaltip = "Clique para mudar a visualização para a imagem original";
-    private final String resulttip = "Clique para mudar a visualização para a imagem resultada do processamento no timeline (à esquerda)";
+    private final String processtip = "Clique para processar a imagem seguindo a ordem definida no timeline (à direita).";
+    private final String originaltip = "Clique para mudar a visualização para a imagem original.";
+    private final String resulttip = "Clique para mudar a visualização para a imagem resultada do processamento no timeline (à esquerda).";
     private final String savetip = "Clique para salvar a imagem atualmente sendo visualizada.";
-    private final String quittip = "Clique para fechar o programa. (Não salva a imagem!)";
+    private final String quittip = "Clique para fechar o programa. (Não salva a imagem!).";
     private final String resettip = "Clique para resetar a imagem de volta à original e resetar o timeline.";
-    private final String timelinetip = "Clique esquerdo para visualizar esta etapa<br>Clique direito para remover esta etapa";
+    private final String timelinetip = "Clique esquerdo para visualizar esta etapa.<br>Clique direito para remover esta etapa.";
     private final String f1tip = "Escala de Cinza:<br><br>Transforma a imágem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
-    private final String f2tip = "Filtro Negativo:<br><br>Inverte todos os tons da imágem.<br><br>Geralmente usado para transformar uma imagem obtida em sua forma negativa para a sua positiva (imagem normal)";
+    private final String f2tip = "Filtro Negativo:<br><br>Inverte todos os tons da imágem.<br><br>Geralmente usado para transformar uma imagem obtida em sua forma negativa para a sua positiva (imagem normal).";
     private final String f3tip = "Filtro de Média:<br><br>Percorre a imagem substituindo cada pixel pela média de seus vizinhos.<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
     private final String f4tip = "Filtro Gaussiano:<br><br>Percorre a imagem aplicando um efeito \"borrado\".<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
     private final String f5tip = "Operador de Laplace:<br><br>Percorre a imagem calculando a divergěncia de gradientes, identificando áreas de mudança rápida (bordas).<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem.";
@@ -195,7 +195,7 @@ public class PSE extends JFrame {
         timelineButtonPanel1 = new JPanel();
         timelineButtonPanel1.setPreferredSize(new Dimension(timelineButton1X, timelineButton1Y));
         timelineButtonPanel1.setLayout(new GridLayout(1, 2));
-        timelineButtonPanel1.setBackground(Color.DARK_GRAY);
+        timelineButtonPanel1.setBackground(Color.GRAY);
         add(timelineButtonPanel1);
         // Open Image
         JButton openButton = new JButton("Abrir");
@@ -241,7 +241,7 @@ public class PSE extends JFrame {
         timelineButtonPanel2 = new JPanel();
         timelineButtonPanel2.setPreferredSize(new Dimension(timelineButton2X, timelineButton2Y));
         timelineButtonPanel2.setLayout(new GridLayout(1, 2));
-        timelineButtonPanel2.setBackground(Color.DARK_GRAY);
+        timelineButtonPanel2.setBackground(Color.GRAY);
         add(timelineButtonPanel2);
         // View result image
         JButton resultButton = new JButton("Resultado");
