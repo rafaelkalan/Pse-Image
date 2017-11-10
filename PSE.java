@@ -27,6 +27,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 
@@ -78,6 +79,7 @@ public class PSE extends JFrame {
     private final String savetip = "Clique para salvar a imagem atualmente sendo visualizada.";
     private final String quittip = "Clique para fechar o programa. (Não salva a imagem!)";
     private final String resettip = "Clique para resetar a imagem de volta à original e resetar o timeline.";
+    private final String timelinetip = "Clique esquerdo para visualizar esta etapa<br>Clique direito para remover esta etapa";
     private final String f1tip = "Escala de Cinza:<br><br>Transforma a imágem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
     private final String f2tip = "Filtro Negativo:<br><br>Inverte todos os tons da imágem.<br><br>Geralmente usado para transformar uma imagem obtida em sua forma negativa para a sua positiva (imagem normal)";
     private final String f3tip = "Filtro de Média:<br><br>Percorre a imagem substituindo cada pixel pela média de seus vizinhos.<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
@@ -489,6 +491,9 @@ public class PSE extends JFrame {
         drawPanel.setPreferredSize(new Dimension(gridX, gridY));
         drawPanel.setBackground(Color.WHITE);
         add(drawPanel);
+        
+        // Tooltip configuration
+        ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     }
     
     private void openImage() {
@@ -554,8 +559,12 @@ public class PSE extends JFrame {
 //          timelinePanel.validate();
 //      });
       mustProcess = true;
+      Button.setToolTipText("<html><p width=\"300\">" +timelinetip+"</p></html>");
       Button.addActionListener((ActionEvent event) -> {
           JButton button = (JButton)event.getSource();
+          if (mainImage == null) {
+              return;
+          }
           if (mustProcess) {
               new ProcessFunctionsWorker().execute();
               while (mustProcess != false) try {
