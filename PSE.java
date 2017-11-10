@@ -121,7 +121,7 @@ public class PSE extends JFrame {
     private void initUI() {
         // Main UI Window
         // -------------------------------------------------------------------------
-        setTitle("PSE");
+        setTitle("PSE Image");
         setLayout(new FlowLayout());
         setSize(windowX+borderX, windowY+borderY);
         getContentPane().setBackground(Color.DARK_GRAY);
@@ -202,7 +202,7 @@ public class PSE extends JFrame {
         JButton openButton = new JButton("Abrir");
         openButton.setToolTipText("<html><p width=\"300\">" +opentip+"</p></html>");
         openButton.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - Abrir");
+            setTitle("PSE Image - Abrir");
             openImage();
         });
         openButton.setBackground(Color.WHITE);
@@ -220,7 +220,7 @@ public class PSE extends JFrame {
         originalButton.setToolTipText("<html><p width=\"300\">" +originaltip+"</p></html>");
         originalButton.addActionListener((ActionEvent event) -> {
             if (originalImage != null) {
-                setTitle("PSE - Visualizando: Imagem original");
+                setTitle("PSE Image - Visualizando: Imagem original");
                 mainImage = originalImage;
                 showImage();
             }
@@ -255,7 +255,7 @@ public class PSE extends JFrame {
                         } catch (Exception e) {}
                     }
                 }
-                setTitle("PSE - Visualizando: Imagem resultado");
+                setTitle("PSE Image - Visualizando: Imagem resultado");
                 mainImage = imageHistory.get(imageHistory.size()-1);
                 showImage();
             }
@@ -265,7 +265,7 @@ public class PSE extends JFrame {
         JButton saveButton = new JButton("Salvar");
         saveButton.setToolTipText("<html><p width=\"300\">" +savetip+"</p></html>");
         saveButton.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - Guardar");
+            setTitle("PSE Image - Salvar");
             saveImage();
         });
         saveButton.setBackground(Color.WHITE);
@@ -274,7 +274,7 @@ public class PSE extends JFrame {
         JButton exitButton = new JButton("Fechar");
         exitButton.setToolTipText("<html><p width=\"300\">" +quittip+"</p></html>");
         exitButton.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - Fechar");
+            setTitle("PSE Image - Fechar");
             System.exit(0);
         });
         exitButton.setBackground(Color.WHITE);
@@ -291,7 +291,7 @@ public class PSE extends JFrame {
         JButton f1Button = new JButton(f1);
         f1Button.setToolTipText("<html><p width=\"300\">" +f1tip+"</p></html>");
         f1Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f1);
+            setTitle("PSE Image - " + f1);
             addTimeline(f1);
         });
         buttonPanel.add(f1Button);
@@ -299,7 +299,7 @@ public class PSE extends JFrame {
         JButton f2Button = new JButton(f2);
         f2Button.setToolTipText("<html><p width=\"300\">" +f2tip+"</p></html>");
         f2Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f2);
+            setTitle("PSE Image - " + f2);
             addTimeline(f2);
         });
         buttonPanel.add(f2Button);
@@ -307,7 +307,7 @@ public class PSE extends JFrame {
         JButton f3Button = new JButton(f3);
         f3Button.setToolTipText("<html><p width=\"300\">" +f3tip+"</p></html>");
         f3Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f3);
+            setTitle("PSE Image - " + f3);
             addTimeline(f3);
         });
         buttonPanel.add(f3Button);
@@ -315,7 +315,7 @@ public class PSE extends JFrame {
         JButton f4Button = new JButton(f4);
         f4Button.setToolTipText("<html><p width=\"300\">" +f4tip+"</p></html>");
         f4Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f4);
+            setTitle("PSE Image - " + f4);
             addTimeline(f4);
         });
         buttonPanel.add(f4Button);
@@ -323,7 +323,7 @@ public class PSE extends JFrame {
         JButton f5Button = new JButton(f5);
         f5Button.setToolTipText("<html><p width=\"300\">" +f5tip+"</p></html>");
         f5Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f5);
+            setTitle("PSE Image - " + f5);
             addTimeline(f5);
         });
         buttonPanel.add(f5Button);
@@ -331,7 +331,7 @@ public class PSE extends JFrame {
         JButton f6Button = new JButton(f6);
         f6Button.setToolTipText("<html><p width=\"300\">" +f6tip+"</p></html>");
         f6Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f6);
+            setTitle("PSE Image - " + f6);
             addTimeline(f6);
         });
         buttonPanel.add(f6Button);
@@ -339,7 +339,7 @@ public class PSE extends JFrame {
         JButton f7Button = new JButton(f7);
         f7Button.setToolTipText("<html><p width=\"300\">" +f7tip+"</p></html>");
         f7Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f7);
+            setTitle("PSE Image - " + f7);
             addTimeline(f7);
         });
         f7Button.addMouseListener(new MouseAdapter() {
@@ -392,7 +392,7 @@ public class PSE extends JFrame {
         JButton f8Button = new JButton(f8);
         f8Button.setToolTipText("<html><p width=\"300\">" +f8tip+"</p></html>");
         f8Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f8);
+            setTitle("PSE Image - " + f8);
             addTimeline(f8);
         });
         f8Button.addMouseListener(new MouseAdapter() {
@@ -424,7 +424,7 @@ public class PSE extends JFrame {
         JButton f9Button = new JButton(f9);
         f9Button.setToolTipText("<html><p width=\"300\">" +f9tip+"</p></html>");
         f9Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f9);
+            setTitle("PSE Image - " + f9);
             addTimeline(f9);
         });
         f9Button.addMouseListener(new MouseAdapter() {
@@ -456,7 +456,7 @@ public class PSE extends JFrame {
         JButton f10Button = new JButton(f10);
         f10Button.setToolTipText("<html><p width=\"300\">" +f10tip+"</p></html>");
         f10Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f10);
+            setTitle("PSE Image - " + f10);
             addTimeline(f10);
         });
         buttonPanel.add(f10Button);
@@ -464,7 +464,7 @@ public class PSE extends JFrame {
         JButton f11Button = new JButton(f11);
         f11Button.setToolTipText("<html><p width=\"300\">" +f11tip+"</p></html>");
         f11Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f11);
+            setTitle("PSE Image - " + f11);
             addTimeline(f11);
         });
         buttonPanel.add(f11Button);
@@ -472,7 +472,7 @@ public class PSE extends JFrame {
         JButton f12Button = new JButton(f12);
         f12Button.setToolTipText("<html><p width=\"300\">" +f12tip+"</p></html>");
         f12Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE - " + f12);
+            setTitle("PSE Image - " + f12);
             addTimeline(f12);
         });
         buttonPanel.add(f12Button);
@@ -480,7 +480,7 @@ public class PSE extends JFrame {
         JButton f99Button = new JButton(f99);
         f99Button.setToolTipText("<html><p width=\"300\">" +resettip+"</p></html>");
         f99Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE");
+            setTitle("PSE Image");
             resetTimeline();
         });
         f99Button.setBackground(Color.WHITE);
@@ -510,6 +510,7 @@ public class PSE extends JFrame {
                 mainImage = ImageIO.read(imageChooser.getSelectedFile());
                 originalImage = mainImage;
                 showImage();
+                setTitle("PSE Image - " + imageChooser.getName(imageChooser.getSelectedFile()));
             } catch (IOException e) {
             }
         }
@@ -563,6 +564,7 @@ public class PSE extends JFrame {
             File file = new File(filePath);
             try {
                 ImageIO.write(mainImage, "png", file);
+                setTitle("PSE Image - " + file.getName() + " salvo");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -585,7 +587,7 @@ public class PSE extends JFrame {
                     TimeUnit.MILLISECONDS.sleep(1000);
                 } catch (Exception e) {}
           }
-          setTitle("PSE - Visualizando: " + func);
+          setTitle("PSE Image - Visualizando: " + func);
           Color defaultColor = button.getBackground();
           Component component[] = timelinePanel.getComponents();
             for (int i = 0; i < timelinePanel.getComponentCount(); i++) {
@@ -600,7 +602,7 @@ public class PSE extends JFrame {
             public void mouseClicked(MouseEvent click) {
                 if (SwingUtilities.isRightMouseButton(click)) {
                     mustProcess = true;
-                    setTitle("PSE - " + func + " X");
+                    setTitle("PSE Image - " + func + " X");
                     timelinePanel.remove(Button);
                     timelinePanel.validate();
                     if (timelinePanel.getComponentCount() < 1) 
@@ -630,7 +632,7 @@ public class PSE extends JFrame {
     public class ProcessFunctionsWorker extends SwingWorker<Integer, String> {
         @Override
         protected Integer doInBackground() throws Exception {
-            setTitle("PSE - Processar");
+            setTitle("PSE Image - Processar");
             mainImage = originalImage;
             imageHistory = new ArrayList<BufferedImage>();
             showImage();
@@ -642,7 +644,7 @@ public class PSE extends JFrame {
                 int perc = 100 / timelinePanel.getComponentCount();
                 button.setBackground(Color.YELLOW);
                 for (int t = 1; t <= 10; t++) {
-                    setTitle("PSE - Processamento - " + (i * perc + t * perc / 10) + "% - " + defaultText);
+                    setTitle("PSE Image - Processamento - " + (i * perc + t * perc / 10) + "% - " + defaultText);
                     button.setText(defaultText + " " + t * 10 + "%");
                     button.validate();
                     try {
@@ -666,7 +668,7 @@ public class PSE extends JFrame {
                 timelinePanel.validate();
                 validate();
             }
-            setTitle("PSE - Processamento - 100% - Completo");
+            setTitle("PSE Image - Processamento - 100% - Completo");
             mustProcess = false;
             return 0;
         }
