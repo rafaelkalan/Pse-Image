@@ -534,6 +534,16 @@ public class PSE extends JFrame {
                 }
             }               
       });
+      Button.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent click) {
+                if (SwingUtilities.isRightMouseButton(click)) {
+                    mustProcess = true;
+                    setTitle("PSE - " + func + " X");
+                    timelinePanel.remove(Button);
+                    timelinePanel.validate();
+                }
+            }
+        });
       timelinePanel.add(Button);
       timelinePanel.validate();
     }
@@ -572,7 +582,7 @@ public class PSE extends JFrame {
                     button.setText(defaultText + " " + t * 10 + "%");
                     button.validate();
                     try {
-                        TimeUnit.MILLISECONDS.sleep(100);
+                        TimeUnit.MILLISECONDS.sleep(50);
                     } catch (Exception e) {}
                     button.validate();
                     timelinePanel.validate();
