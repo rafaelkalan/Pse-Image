@@ -1,0 +1,201 @@
+sobre o que que é, pra que que serve, como funciona:
+
+Filtros :
+
+O que são ?
+Filtros são processos que tendem a tornar notável determinados aspectos em imagens
+digitais ou reduzi ruidos
+
+
+* Filtro de média com máscara 
+
+O que é : O filtro de média é um filtro de linear de suavização que trabalha diretamente
+nos valores de média dos pixels, geralmente conhecidos como filtros passa-baixa.
+
+Para que serve : Usado para que ocorra a perda de nitidez da imagem em que esta sendo 
+aplicado
+
+
+Como funciona : Ao aplicar o filtro de média, o valor de cada pixel analisado,  
+tendo assim o valor de cada um deles substituido pela média dos pixels,que são
+vizinhos a estes.
+
+* Filtro Gaussiano
+O que é : O filtro gaussiano é um filtro passa-baixa usado para borrar ou desfocar
+imagens na qual ele é aplicado.Utilizasse a curva de Gauss que determina qualquer 
+probabilidade de uma Distribuição Normal presente na imagem.
+
+
+Para que serve :Seu objetivo é reduzir os ruidos presentes na imagem tendo
+como resultado a suavização da imagem fazendo parecer que a mesma esta 
+sendo vista através de uma lente fora de foco.Seu processo é largamente utilizado
+no estágio de pré-processamento de imagens para enaltecer a estrutura da imagem
+em diferentes escalas.
+
+Como funciona : A aplicação do filtro gaussiano, assim como um filtro passa baixa 
+ou como um filtro de média simples utiliza convolução da imagem com a seguinte função:
+(função).
+
+O filtro é obtido atraves da geração de uma matriz gaussiana que será utilizada como
+mascara na convolução da imagem.Esta matriz utilizará a função acima, atribuindo valores
+a x,y e s.
+
+foto de uma aplicação de filtro gaussiano.
+
+https://proceedings.sbmac.org.br/sbmac/article/viewFile/477/483
+
+
+* Filtro Laplaciano
+
+O que é : O filtro Laplaciano é um filtro passa alta de detecção de bordas,
+
+Para que serve : Serve para detectar e gerar uma imagem  de borda fina após a aplicação
+da mascara.
+
+Como funciona : O laplaciano de uma imagem é a derivada segunda do valor da função
+que descreve a intensidade dos seus pixels.Sua função é representada por (função) que 
+resulta em uma convolução(máscara ou kernel) como este
+
+(matrizes)
+
+
+http://www2.ic.uff.br/~aconci/gabor.pdf
+
+
+https://pt.slideshare.net/lucassabadini/processamento-de-imagens-filtro-laplaciano
+* Filtro Sobel
+
+O que é : O filtro Sobel é um filtro para detecção de bordas, realçando linhas horizontais
+e verticais mais escuras que o fundo, sem realçar pontos isolados.
+
+Para que serve :Serve para realçando linhas horizontais e verticais mais escuras 
+que o fundo, sem realçar pontos isolados.Destaca as bordas das imagens em que sua
+mascara é aplicada.
+
+Como funciona : Para se utilizar o filtro Sobel é necessário o uso de duas matrizes
+3x3 que são convolvidas com a imagem original,sendo 1 delas para as variações horizontais
+e outra para as verticais.Isso são mascaras.Fazendo a convolução dessas máscaras com a imagem
+gera-se os gradientes vertical e horizontal da imagem que depois são combinados 
+como mostrado.Além de calcular o gradiente, essas máscaras tem também o
+efeito de suavização. Na prática ainda é necessário realizar a suavização da
+imagem para eliminar ruídos.
+
+* Alterar imagem pra tons de cinza
+
+O que é : Conversão de uma imagem para tons
+
+Para que serve : Geralmente se aplica para calcular a intensidade da luz em cada
+pixel em cada faixa do espectromagnético de uma imagem.
+
+Como funciona : Para se converter uma imagem em tons de cinza devesse utilizar uma
+escala RGB, adicionando 30% do vermelho,59 % do verde e 11 % do azul independente da 
+escala.O resultado é o nivel desejado de cinza.
+
+* Pegar o negatico da imagem
+
+O que é ? É uma função linear inversa, em que o contraste em áreas escuras tornem-se 
+claras, e vice-versa.
+
+Para que serve ? Serve para preservar a imagem, além de poder recupera-la caso ocorra 
+a perda da mesma.
+
+Como funciona ? Aplicasse o contraste em áreas de baixos valores de cinzas se tornem
+altos valores de cinza e vice-versa. Sua função pode ser representada por
+
+Y = - (AX + B)
+onde
+Y = novo valor de nível de cinza
+X = valor original de nível de cinza
+A = inclinação da reta (tangente do ângulo)
+B = fator de incremento, definido pelos limites mínimo e máximo fornecidos pelo usuário.
+
+
+http://www.dpi.inpe.br/spring/teoria/realce/realce.htm
+
+* limiarização
+
+O que é ? É um processo de segmentação de imagens que se baseia na diferença 
+dos niveis de zinca que compõem diferentes objetos de uma imagem.
+
+Para que serve ?
+
+
+
+Como funciona ? Primeiro desejase saber o que quer isolar de uma imagem.Então a imagem
+pode ser segmentada em dois grupos.Um grupo de pixels com niveis de cinza abaixo do 
+limiar e um grupo com niveis de cinza acima do limiar.Atribuisse entao um valor fixo
+para todos os pixels de mesmo grupo com a seguinte função (função), sendo assim a imagem
+binária.
+
+
+https://sites.google.com/site/imgprocgpu/limiarizacao
+
+* Hitograma
+O que é ? São conhecidos como distribuição de intensidades e Função de Densidade 
+de Probabilidade.
+
+Como funciona ? A distribuição de intensidades é representada por colunas discretas, 
+que não podem ser divididas ou "quebradas", correspondentes a números inteiros 
+(em contraposição a números fracionários). 
+Esse conceito assume importância ao se tratar de realce de contraste em imagens. 
+O histograma normalizado é dado por: 
+
+(função) 
+
+onde 0  rk  1
+k = 0,1,......,L-1, onde L é o número de níveis de cinza da imagem;
+n = número total de pixels da imagem;
+nk = número de pixels cujo nível de cinza corresponde à k;
+Pr (rk) = Probabilidade do K-ésimo nível de cinza;
+para que serve ?
+Ele são usados para representar dados digitais de uma imagem.
+
+* Interpolação bilinear
+
+O que é ? A interpolação bilinear é uma extensão da interpolação linear,sendo esta,
+a interpolação de duas funções com duas variáveis.Basicamente é a interpolação linear
+aplicada duas vezes, contudo em direções diferentes.
+
+Para que serve ?É uma técnica  de revezamento,usada para se ter uma imagem um pouco
+mais realista.A interpolação bilineira pode ser usada onde a transformação de imagem perfeita 
+com a correspondência de pixels é impossível, de modo que se pode calcular e atribuir valores 
+de intensidade apropriados aos pixels.
+
+como funciona ? Basicamente ele irá mapear uma localização de pixel de tela para um ponto
+correspondente no mapa de textura.Uma média ponderada dos atributos como cor,transparencia
+,etc dos quatro texels adjascentes é calculada e aplicada ao pixel da tela.Este processo
+é repetido para cada pixel que forma o objeto sendo texturado.
+
+
+
+* Segmentação
+O que é ? É o processo de partição de uma imagem digital em varios segmentos(conjunto de pixels)
+
+Para que serve ??Seu objetivo é simplificar e/ou alterar a representação de uma imagem em algo
+que seja mais significativo e mais facil de analisar.
+
+
+Como funciona ?A segmentação localiza na imagem objetos e limites como linhas e curvas nas imagens
+Ela rotula cada pixel em uma imagem, de modo que os pixels com o mesmo rótulo compartilhem certas
+caracteristicas como cor,intensidade ou textura.O resultado disso é um conjunto de segmentos que coletivamente cobrem toda a imagem ou
+um conjunto de contornos extraidos da imagem.
+
+
+* Compactação
+
+O que é ? É um tipo de compressão de dados aplicada a imagens digitais.
+
+
+Para que serve ? Utilizada para reduzir o custo de armazenamento ou transmissão.
+
+
+Como funciona ? Possui dois tipos,sendo elas com perdas ou sem.A compactação com perdas costuma utilizar métodos
+como redução do espaço de cores na imagem, para que se tenha as cores mais comuns na imagem.Sub amostragem de Chroma
+que descarta algumas informações de crominancia da imagem.Codificação de transgormação em que se utiliza uma transformada de Fourier
+Já o sem perdas pode utilizar.....
+
+
+* Transformada de HOUGH
+* Transformada de Fourrier
+* Brilho
+* Contraste
