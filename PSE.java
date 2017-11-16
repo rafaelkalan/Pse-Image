@@ -70,8 +70,10 @@ public class PSE extends JFrame {
     private final String f8 = "Brilho";
     private final String f9 = "Contraste";
     private final String f10 = "-";
-    private final String f11 = "Erro Medio Quadratico";
+    private final String f11 = "-";
     private final String f12 = "-";
+    private final String f13 = "EMQ";
+    private final String f14 = "Histograma";
     private final String f99 = "Resetar";
     // Descrições para os botões
     private final String opentip = "Clique para abrir uma imagem.";
@@ -94,6 +96,8 @@ public class PSE extends JFrame {
     private final String f10tip = "";
     private final String f11tip = "";
     private final String f12tip = "";
+    private final String f13tip = "";
+    private final String f14tip = "";
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
     private int convolucaoColunas = 3;
@@ -286,7 +290,7 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-        buttonPanel.setLayout(new GridLayout(13, 1));
+        buttonPanel.setLayout(new GridLayout(15, 1));
         buttonPanel.setBackground(Color.DARK_GRAY);
         add(buttonPanel);
         // Func1
@@ -467,6 +471,21 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f12);
             addTimeline(f12);
         });
+        // Func13 (EMQ)
+        JButton f13Button = new JButton(f13);
+        f13Button.setToolTipText("<html><p width=\"300\">" + f13tip + "</p></html>");
+        f13Button.addActionListener((ActionEvent event) -> {
+            if (mainImage != null) {
+                setTitle("PSE Image - " + f13);
+                JOptionPane.showMessageDialog(new JFrame(), calculoEMQ(mainImage));
+            }
+        });
+        // Func14 (Histograma)
+        JButton f14Button = new JButton(f14);
+        f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
+        f14Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f14);
+        });
         // Func99
         JButton f99Button = new JButton(f99);
         f99Button.setToolTipText("<html><p width=\"300\">" + resettip + "</p></html>");
@@ -489,6 +508,8 @@ public class PSE extends JFrame {
         buttonPanel.add(f10Button);// -
         buttonPanel.add(f11Button);// -
         buttonPanel.add(f12Button);// -
+        buttonPanel.add(f13Button);// - EMQ
+        buttonPanel.add(f14Button);// - Histograma
         buttonPanel.add(f99Button);// Resetar
 
         // Draw Panel
@@ -1098,7 +1119,7 @@ public class PSE extends JFrame {
         return Math.log(x) / Math.log(10);
     }
 
-    public static void calculoEMQ(BufferedImage imagem) {
+    public static String calculoEMQ(BufferedImage imagem) {
 
         BufferedImage ResultImage = EscalaDeCinza(imagem);
 
@@ -1134,8 +1155,10 @@ public class PSE extends JFrame {
         //calculo do Erro Medio Quadratico
         mse = mse + (int) Math.pow(ruido, 2) / (linha * coluna);
         peak += 10 * log10((256 * 256) / mse);
-        System.out.println("MSE:" + mse);
-        System.out.println("PSNR(max=" + 256 + "): " + peak);
+//        System.out.println("MSE:" + mse);
+//        System.out.println("PSNR(max=" + 256 + "): " + peak);
+        String result = "MSE:" + mse + "\nPSNR(max=" + 256 + "): " + peak;
+        return result;
     }
 
     //-------------------------------Limiar Global Padrão----------------------------
