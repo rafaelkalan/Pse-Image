@@ -209,6 +209,12 @@ public class PSE extends JFrame {
         histogramFrame.setLocationRelativeTo(null);
         histogramFrame.setAlwaysOnTop(true);
         histogramFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice defaultScreen = ge.getDefaultScreenDevice();
+        Rectangle rect = defaultScreen.getDefaultConfiguration().getBounds();
+        int x = (int) rect.getMaxX() - histogramFrame.getWidth();
+        int y = (int) rect.getMaxY() - histogramFrame.getHeight();
+        histogramFrame.setLocation(x, y);
         histogramPanel = new JPanel();
         histogramPanel.setPreferredSize(new Dimension(300,300));
         histogramFrame.add(histogramPanel);
@@ -566,6 +572,7 @@ public class PSE extends JFrame {
                 originalImage = mainImage;
                 showImage();
                 setTitle("PSE Image - " + imageChooser.getName(imageChooser.getSelectedFile()));
+                resetTimeline();
             } catch (IOException e) {
             }
         }
