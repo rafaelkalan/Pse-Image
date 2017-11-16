@@ -75,11 +75,12 @@ public class PSE extends JFrame {
     private final String f7 = "Convolução";
     private final String f8 = "Brilho";
     private final String f9 = "Contraste";
-    private final String f10 = "-";
+    private final String f10 = "Limiar";
     private final String f11 = "-";
     private final String f12 = "-";
-    private final String f13 = "EMQ";
-    private final String f14 = "Histograma";
+    private final String f13 = "-";
+    private final String f14 = "EMQ";
+    private final String f15 = "Histograma";
     private final String f99 = "Resetar";
     // Descrições para os botões
     private final String opentip = "Clique para abrir uma imagem.";
@@ -99,11 +100,12 @@ public class PSE extends JFrame {
     private final String f7tip = "Filtro de Convolução:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem substituindo cada pixel pela média ponderada de seus vizinhos a partir de uma matriz de convolução.<br><br>Filtro de propósito geral usado quando se quer um maior controle no processamento da imagem.";
     private final String f8tip = "Filtro de Brilho:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o brilho de cada pixel.<br><br>Geralmente usado para corrigir uma imagem que está muito clara ou escura, dificultando o seu processamento.";
     private final String f9tip = "Filtro de Contraste:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
-    private final String f10tip = "";
+    private final String f10tip = "Limiar Global Padrão:<br><br>";
     private final String f11tip = "";
     private final String f12tip = "";
+    private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
+    private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
     private final String f13tip = "";
-    private final String f14tip = "";
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
     private int convolucaoColunas = 3;
@@ -202,7 +204,7 @@ public class PSE extends JFrame {
         );
 
         // Histogram Frame & Panel
-        histogramFrame = new JFrame(f14);
+        histogramFrame = new JFrame(f15);
         histogramFrame.setLayout(new FlowLayout());
         histogramFrame.setSize(new Dimension(310, 325));
         histogramFrame.getContentPane().setBackground(Color.DARK_GRAY);
@@ -216,9 +218,9 @@ public class PSE extends JFrame {
         int y = (int) rect.getMaxY() - histogramFrame.getHeight();
         histogramFrame.setLocation(x, y);
         histogramPanel = new JPanel();
-        histogramPanel.setPreferredSize(new Dimension(300,300));
+        histogramPanel.setPreferredSize(new Dimension(300, 300));
         histogramFrame.add(histogramPanel);
-        
+
         // TimeLine Button Panel 1
         // -------------------------------------------------------------------------
         timelineButtonPanel1 = new JPanel();
@@ -315,7 +317,7 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-        buttonPanel.setLayout(new GridLayout(15, 1));
+        buttonPanel.setLayout(new GridLayout(16, 1));
         buttonPanel.setBackground(Color.DARK_GRAY);
         add(buttonPanel);
         // Func1
@@ -497,22 +499,22 @@ public class PSE extends JFrame {
             addTimeline(f12);
         });
         // Func13 (EMQ)
-        JButton f13Button = new JButton(f13);
-        f13Button.setToolTipText("<html><p width=\"300\">" + f13tip + "</p></html>");
-        f13Button.addActionListener((ActionEvent event) -> {
+        JButton f14Button = new JButton(f14);
+        f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
+        f14Button.addActionListener((ActionEvent event) -> {
             if (mainImage != null) {
-                setTitle("PSE Image - " + f13);
+                setTitle("PSE Image - " + f14);
                 JOptionPane.showMessageDialog(new JFrame(), calculoEMQ(mainImage));
             }
         });
 //        // Func14 (Histograma)
-        JToggleButton f14Button = new JToggleButton(f14);
-        f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
-        f14Button.addItemListener((ItemEvent event) -> {
+        JToggleButton f15Button = new JToggleButton(f15);
+        f15Button.setToolTipText("<html><p width=\"300\">" + f15tip + "</p></html>");
+        f15Button.addItemListener((ItemEvent event) -> {
             int state = event.getStateChange();
             if (state == ItemEvent.SELECTED) {
                 histogramOn = true;
-                setTitle("PSE Image - " + f14);
+                setTitle("PSE Image - " + f15);
                 histogramFrame.setVisible(true);
                 showImage();
             } else {
@@ -520,6 +522,13 @@ public class PSE extends JFrame {
                 setTitle("PSE Image");
                 histogramFrame.setVisible(false);
             }
+        });
+        // Func15
+        JButton f13Button = new JButton(f13);
+        f13Button.setToolTipText("<html><p width=\"300\">" + f13tip + "</p></html>");
+        f13Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f13);
+            addTimeline(f13);
         });
         // Func99
         JButton f99Button = new JButton(f99);
@@ -540,11 +549,12 @@ public class PSE extends JFrame {
         buttonPanel.add(f5Button); // Laplaciano
         buttonPanel.add(f6Button); // Sobel
         buttonPanel.add(f7Button); // Convolução
-        buttonPanel.add(f10Button);// -
+        buttonPanel.add(f10Button);// Limiar
         buttonPanel.add(f11Button);// -
         buttonPanel.add(f12Button);// -
-        buttonPanel.add(f13Button);// - EMQ
-        buttonPanel.add(f14Button);// - Histograma
+        buttonPanel.add(f13Button);// -
+        buttonPanel.add(f14Button);// EMQ
+        buttonPanel.add(f15Button);// Histograma
         buttonPanel.add(f99Button);// Resetar
 
         // Draw Panel
@@ -561,7 +571,7 @@ public class PSE extends JFrame {
     private void openImage() {
         JFileChooser imageChooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "Imagens PNG ou JPG", "png", "jpg");
+                "Arquivos de imagem", "png", "jpg", "jpeg");
         imageChooser.setFileFilter(filter);
         int returnVal = imageChooser.showOpenDialog(drawPanel);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -626,8 +636,11 @@ public class PSE extends JFrame {
                     imgWidth = drawWidth;
                     imgHeight = drawHeight;
                 }
-                tempImage = mainHistogram.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
-                if (histogramLabel != null) histogramPanel.remove(histogramLabel);
+//                tempImage = mainHistogram.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
+                tempImage = mainHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
+                if (histogramLabel != null) {
+                    histogramPanel.remove(histogramLabel);
+                }
                 histogramLabel = new JLabel(new ImageIcon(tempImage));
                 histogramPanel.add(histogramLabel, BorderLayout.CENTER);
                 histogramPanel.repaint();
@@ -795,19 +808,13 @@ public class PSE extends JFrame {
                 mainImage = Brilho(mainImage, brilhoFloat);
             } else if (name.equals(f9)) {
                 mainImage = Contraste(mainImage, contrasteFloat);
+            } else if (name.equals(f10)) {
+                mainImage = LGP(mainImage);
             }
             return true;
         }
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
 // ------------------------------------- INSERIR ALGORITMOS ABAIXO --------------------------------------------
 // ------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------
@@ -1303,7 +1310,7 @@ public class PSE extends JFrame {
     public static BufferedImage Histograma(BufferedImage imagem) {
 
         //Cria a imagem resultante
-        BufferedImage ResultImage = new BufferedImage(imagem.getWidth(), imagem.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage ResultImage = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
         //Instancia variaveis para auxiliar as configurações do grafico de histograma
         int width = imagem.getWidth();      // lagura
         int height = imagem.getHeight();    // altura
@@ -1345,6 +1352,8 @@ public class PSE extends JFrame {
             }
         }
 
+        width = 300;
+        height = 300;
         Graphics2D g2 = ResultImage.createGraphics();   // Cria um gráfico dentro da Imagem Resultante
         g2.setColor(Color.WHITE);           // Torna o fundo da imagem branco
         g2.fillRect(0, 0, width, height);            //Para o tamanho da imagem
@@ -1435,6 +1444,53 @@ public class PSE extends JFrame {
             g2.fillOval(x, y, ovalW, ovalH);
         }
 
+        return ResultImage;
+    }
+
+    public static BufferedImage Segmentacao(BufferedImage imagem, int[] array) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+
+        //System.out.println("1");
+        int r = 0, g = 0, b = 0;
+        int coluna = imagem.getWidth();
+        int linha = imagem.getHeight();
+
+        int rgb;
+
+        Color branco = new Color(255, 255, 255);
+        Color preto = new Color(0, 0, 0);
+
+        ///*
+        int r_valormin = array[0], r_valormax = array[3];
+        int g_valormin = array[1], g_valormax = array[4];
+        int b_valormin = array[2], b_valormax = array[5];
+        //*/
+
+        //percorrer imagem
+        for (int i = 0; i < linha; i++) {
+            for (int j = 0; j < coluna; j++) {
+
+                rgb = imagem.getRGB(j, i);
+                r = (int) ((rgb & 0x00FF0000) >>> 16);
+                g = (int) ((rgb & 0x0000FF00) >>> 8);
+                b = (int) ((rgb & 0x000000FF));
+
+                if (r >= r_valormin && r <= r_valormax) {
+                    if (g >= g_valormin && g <= g_valormax) {
+                        if (b >= b_valormin && b <= b_valormax) {
+                            ResultImage.setRGB(j, i, branco.getRGB());
+                        } else {
+                            ResultImage.setRGB(j, i, preto.getRGB());
+                        }
+                    } else {
+                        ResultImage.setRGB(j, i, preto.getRGB());
+                    }
+                } else {
+                    ResultImage.setRGB(j, i, preto.getRGB());
+                }
+            }
+        }
         return ResultImage;
     }
 }
