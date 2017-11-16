@@ -7,6 +7,8 @@ import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -27,6 +29,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
@@ -104,6 +107,7 @@ public class PSE extends JFrame {
     private ArrayList<Integer> convolucaoPesos = new ArrayList<Integer>(Arrays.asList(1, 1, 1, 1, 1, 1, 1, 1, 1));
     private int brilhoFloat = 0;
     private int contrasteFloat = 0;
+    private Boolean histogramOn = false;
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -480,11 +484,25 @@ public class PSE extends JFrame {
                 JOptionPane.showMessageDialog(new JFrame(), calculoEMQ(mainImage));
             }
         });
-        // Func14 (Histograma)
-        JButton f14Button = new JButton(f14);
+//        // Func14 (Histograma)
+//        JButton f14Button = new JButton(f14);
+//        f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
+//        f14Button.addActionListener((ActionEvent event) -> {
+//            setTitle("PSE Image - " + f14);
+//        });
+        JToggleButton f14Button = new JToggleButton(f14);
         f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
-        f14Button.addActionListener((ActionEvent event) -> {
-            setTitle("PSE Image - " + f14);
+        f14Button.addItemListener((ItemEvent event) -> {
+            int state = event.getStateChange();
+                if (state == ItemEvent.SELECTED) {
+                    histogramOn = true;
+                    setTitle("PSE Image - " + f14);
+                    showImage();
+                } else {
+                    histogramOn = false;
+                    setTitle("PSE Image");
+                    showImage();
+                }
         });
         // Func99
         JButton f99Button = new JButton(f99);
