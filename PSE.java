@@ -76,7 +76,7 @@ public class PSE extends JFrame {
     private final String f8 = "Brilho";
     private final String f9 = "Contraste";
     private final String f10 = "Limiar";
-    private final String f11 = "-";
+    private final String f11 = "Cor";
     private final String f12 = "-";
     private final String f13 = "-";
     private final String f14 = "EMQ";
@@ -101,7 +101,7 @@ public class PSE extends JFrame {
     private final String f8tip = "Filtro de Brilho:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o brilho de cada pixel.<br><br>Geralmente usado para corrigir uma imagem que está muito clara ou escura, dificultando o seu processamento.";
     private final String f9tip = "Filtro de Contraste:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
     private final String f10tip = "Limiar Global Padrão:<br><br>";
-    private final String f11tip = "";
+    private final String f11tip = "Filtro de Cor:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem verificando cada pixel, gerando uma imagem binária a partir daqueles que estiverem dentro do escopo de cor permitido.<br><br>Geralmente usado quando é fácil retirar da imagem a parte desejada pela sua cor distinta.";
     private final String f12tip = "";
     private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
@@ -112,6 +112,7 @@ public class PSE extends JFrame {
     private ArrayList<Integer> convolucaoPesos = new ArrayList<Integer>(Arrays.asList(1, 1, 1, 1, 1, 1, 1, 1, 1));
     private int brilhoFloat = 0;
     private int contrasteFloat = 0;
+    private int[] filtroRGB = {0,0,0,255,255,255};
     private Boolean histogramOn = false;
 
     public static void main(String[] args) {
@@ -376,6 +377,9 @@ public class PSE extends JFrame {
                     JTextField xField = new JTextField(3);
                     JTextField yField = new JTextField(3);
                     JTextField weightField = new JTextField(9);
+                    xField.setText(""+convolucaoLinhas);
+                    yField.setText(""+convolucaoColunas);
+                    weightField.setText(convolucaoPesos.toString().substring(1, convolucaoPesos.toString().length()-1));
 
                     JPanel parameters = new JPanel();
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
@@ -395,13 +399,19 @@ public class PSE extends JFrame {
                         try {
                             int tempLinhas = Integer.parseInt(xField.getText());
                             int tempColunas = Integer.parseInt(yField.getText());
+                            if (tempLinhas < 2 || tempColunas < 2) {
+                                JOptionPane.showMessageDialog(new JFrame(), "Número de linhas e colunas deve ser maior que 2!");
+                                return;
+                            }
                             if (tempLinhas % 2 != 1 || tempColunas % 2 != 1) {
                                 JOptionPane.showMessageDialog(new JFrame(), "Número de linhas e colunas deve ser ímpar!");
+                                return;
                             }
                             ArrayList tempPesos = new ArrayList();
                             String stringPesos[] = weightField.getText().split(",");
                             if (stringPesos.length != tempLinhas * tempColunas) {
                                 JOptionPane.showMessageDialog(new JFrame(), "Número de pesos não esta de acordo com número de linhas e colunas!");
+                                return;
                             }
                             convolucaoLinhas = tempLinhas;
                             convolucaoColunas = tempColunas;
@@ -426,6 +436,7 @@ public class PSE extends JFrame {
             public void mouseClicked(MouseEvent click) {
                 if (SwingUtilities.isRightMouseButton(click)) {
                     JTextField xField = new JTextField(3);
+                    xField.setText(""+brilhoFloat);
 
                     JPanel parameters = new JPanel();
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
@@ -457,6 +468,7 @@ public class PSE extends JFrame {
             public void mouseClicked(MouseEvent click) {
                 if (SwingUtilities.isRightMouseButton(click)) {
                     JTextField xField = new JTextField(3);
+                    xField.setText(""+contrasteFloat);
 
                     JPanel parameters = new JPanel();
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
@@ -490,6 +502,70 @@ public class PSE extends JFrame {
         f11Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f11);
             addTimeline(f11);
+        });
+        f11Button.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent click) {
+                if (SwingUtilities.isRightMouseButton(click)) {
+                    JTextField rMinField = new JTextField(3);
+                    JTextField gMinField = new JTextField(3);
+                    JTextField bMinField = new JTextField(3);
+                    JTextField rMaxField = new JTextField(3);
+                    JTextField gMaxField = new JTextField(3);
+                    JTextField bMaxField = new JTextField(3);
+                    
+                    rMinField.setText(""+filtroRGB[0]);
+                    gMinField.setText(""+filtroRGB[1]);
+                    bMinField.setText(""+filtroRGB[2]);
+                    rMaxField.setText(""+filtroRGB[3]);
+                    gMaxField.setText(""+filtroRGB[4]);
+                    bMaxField.setText(""+filtroRGB[5]);
+
+                    JPanel parameters = new JPanel();
+                    parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
+                    parameters.add(new JLabel("Colocar valores de RGB (0-255 para cada):"));
+                    JPanel minRGB = new JPanel();
+                    parameters.add(minRGB);
+                    minRGB.setLayout(new FlowLayout());
+                    minRGB.add(new JLabel("Min:"));
+                    minRGB.add(rMinField);
+                    minRGB.add(gMinField);
+                    minRGB.add(bMinField);
+                    JPanel maxRGB = new JPanel();
+                    parameters.add(maxRGB);
+                    maxRGB.setLayout(new FlowLayout());
+                    maxRGB.add(new JLabel("Max:"));
+                    maxRGB.add(rMaxField);
+                    maxRGB.add(gMaxField);
+                    maxRGB.add(bMaxField);
+
+                    int result = JOptionPane.showConfirmDialog(null, parameters,
+                            "Parâmetros do filtro de cor", JOptionPane.OK_CANCEL_OPTION);
+                    if (result == JOptionPane.OK_OPTION) {
+                        try {
+                            filtroRGB = new int[6];
+                            filtroRGB[0] = Integer.parseInt(rMinField.getText());
+                            filtroRGB[1] = Integer.parseInt(gMinField.getText());
+                            filtroRGB[2] = Integer.parseInt(bMinField.getText());
+                            filtroRGB[3] = Integer.parseInt(rMaxField.getText());
+                            filtroRGB[4] = Integer.parseInt(gMaxField.getText());
+                            filtroRGB[5] = Integer.parseInt(bMaxField.getText());
+                            for (int i=0; i<filtroRGB.length; i++) {
+                                if (filtroRGB[i] < 0 || filtroRGB[i] > 255) {
+                                    JOptionPane.showMessageDialog(new JFrame(), "Parâmetros devem estar entre 0 e 255");
+                                    filtroRGB[0] = 0;
+                                    filtroRGB[1] = 0;
+                                    filtroRGB[2] = 0;
+                                    filtroRGB[3] = 255;
+                                    filtroRGB[4] = 255;
+                                    filtroRGB[5] = 255;
+                                }
+                            }
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
+                        }
+                    }
+                }
+            }
         });
         // Func12
         JButton f12Button = new JButton(f12);
@@ -550,7 +626,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f6Button); // Sobel
         buttonPanel.add(f7Button); // Convolução
         buttonPanel.add(f10Button);// Limiar
-        buttonPanel.add(f11Button);// -
+        buttonPanel.add(f11Button);// Cor
         buttonPanel.add(f12Button);// -
         buttonPanel.add(f13Button);// -
         buttonPanel.add(f14Button);// EMQ
@@ -810,6 +886,8 @@ public class PSE extends JFrame {
                 mainImage = Contraste(mainImage, contrasteFloat);
             } else if (name.equals(f10)) {
                 mainImage = LGP(mainImage);
+            } else if (name.equals(f11)) {
+                mainImage = Segmentacao(mainImage, filtroRGB);
             }
             return true;
         }
