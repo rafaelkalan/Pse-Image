@@ -56,10 +56,13 @@ public class PSE extends JFrame {
     private JPanel timelineButtonPanel2;
     private JPanel buttonPanel;
     private JPanel drawPanel;
+    private JFrame histogramFrame;
+    private JPanel histogramPanel;
     private BufferedImage originalImage;
     private BufferedImage mainImage;
     private ArrayList<BufferedImage> imageHistory;
     private JLabel mainImageLabel;
+    private JLabel histogramLabel;
     private Boolean mustProcess = true;
     private int lastProcessed = 0;
     // Nomes das funções
@@ -198,6 +201,18 @@ public class PSE extends JFrame {
         }
         );
 
+        // Histogram Frame & Panel
+        histogramFrame = new JFrame(f14);
+        histogramFrame.setLayout(new FlowLayout());
+        histogramFrame.setSize(new Dimension(310, 325));
+        histogramFrame.getContentPane().setBackground(Color.DARK_GRAY);
+        histogramFrame.setLocationRelativeTo(null);
+        histogramFrame.setAlwaysOnTop(true);
+        histogramFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        histogramPanel = new JPanel();
+        histogramPanel.setPreferredSize(new Dimension(300,300));
+        histogramFrame.add(histogramPanel);
+        
         // TimeLine Button Panel 1
         // -------------------------------------------------------------------------
         timelineButtonPanel1 = new JPanel();
@@ -485,24 +500,20 @@ public class PSE extends JFrame {
             }
         });
 //        // Func14 (Histograma)
-//        JButton f14Button = new JButton(f14);
-//        f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
-//        f14Button.addActionListener((ActionEvent event) -> {
-//            setTitle("PSE Image - " + f14);
-//        });
         JToggleButton f14Button = new JToggleButton(f14);
         f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
         f14Button.addItemListener((ItemEvent event) -> {
             int state = event.getStateChange();
-                if (state == ItemEvent.SELECTED) {
-                    histogramOn = true;
-                    setTitle("PSE Image - " + f14);
-                    showImage();
-                } else {
-                    histogramOn = false;
-                    setTitle("PSE Image");
-                    showImage();
-                }
+            if (state == ItemEvent.SELECTED) {
+                histogramOn = true;
+                setTitle("PSE Image - " + f14);
+                histogramFrame.setVisible(true);
+                showImage();
+            } else {
+                histogramOn = false;
+                setTitle("PSE Image");
+                histogramFrame.setVisible(false);
+            }
         });
         // Func99
         JButton f99Button = new JButton(f99);
@@ -588,6 +599,33 @@ public class PSE extends JFrame {
             drawPanel.add(mainImageLabel, BorderLayout.CENTER);
             drawPanel.repaint();
             drawPanel.validate();
+            if (histogramOn) {
+                drawWidth = (float) histogramPanel.getSize().getWidth();
+                drawHeight = (float) histogramPanel.getSize().getHeight();
+                BufferedImage mainHistogram = Histograma(mainImage);
+                imgWidth = mainHistogram.getWidth();
+                imgHeight = mainHistogram.getHeight();
+                imgRatio = imgWidth / imgHeight;
+                drawRatio = drawWidth / drawHeight;
+                imgWidthNew = imgWidth;
+                imgHeightNew = imgHeight;
+                if (imgRatio > drawRatio) {
+                    imgWidthNew = drawWidth;
+                    imgHeightNew = imgHeight * (drawWidth / imgWidth);
+                } else if (imgRatio < drawRatio) {
+                    imgWidthNew = imgWidth * (drawHeight / imgHeight);
+                    imgHeightNew = drawHeight;
+                } else {
+                    imgWidth = drawWidth;
+                    imgHeight = drawHeight;
+                }
+                tempImage = mainHistogram.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
+                if (histogramLabel != null) histogramPanel.remove(histogramLabel);
+                histogramLabel = new JLabel(new ImageIcon(tempImage));
+                histogramPanel.add(histogramLabel, BorderLayout.CENTER);
+                histogramPanel.repaint();
+                histogramPanel.validate();
+            }
         }
     }
 
@@ -750,13 +788,19 @@ public class PSE extends JFrame {
                 mainImage = Brilho(mainImage, brilhoFloat);
             } else if (name.equals(f9)) {
                 mainImage = Contraste(mainImage, contrasteFloat);
-            } else if (name.equals(f11)) {
-                calculoEMQ(mainImage);
             }
             return true;
         }
     }
 
+    
+    
+    
+    
+    
+    
+    
+    
 // ------------------------------------- INSERIR ALGORITMOS ABAIXO --------------------------------------------
 // ------------------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------------------
