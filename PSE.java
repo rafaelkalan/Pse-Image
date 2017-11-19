@@ -43,7 +43,7 @@ public class PSE extends JFrame {
     private int timelineButton1X = 285;
     private int timelineButton2X = 285;
     private int timelineX = windowX - timelineButton1X - timelineButton2X;
-    private int timelineY = 40;
+    private int timelineY = 50;
     private int timelineButton1Y = timelineY;
     private int timelineButton2Y = timelineY;
     private int buttonX = 100;
