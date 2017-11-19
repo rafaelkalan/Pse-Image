@@ -8,7 +8,6 @@ import java.awt.EventQueue;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -44,7 +43,7 @@ public class PSE extends JFrame {
     private int timelineButton1X = 285;
     private int timelineButton2X = 285;
     private int timelineX = windowX - timelineButton1X - timelineButton2X;
-    private int timelineY = 40;
+    private int timelineY = 50;
     private int timelineButton1Y = timelineY;
     private int timelineButton2Y = timelineY;
     private int buttonX = 100;
@@ -77,10 +76,11 @@ public class PSE extends JFrame {
     private final String f9 = "Contraste";
     private final String f10 = "Limiar";
     private final String f11 = "Cor";
-    private final String f12 = "-";
+    private final String f12 = "Interpolar";
     private final String f13 = "-";
     private final String f14 = "EMQ";
     private final String f15 = "Histograma";
+    private final String f98 = "Tam. Original";
     private final String f99 = "Resetar";
     // Descrições para os botões
     private final String opentip = "Clique para abrir uma imagem.";
@@ -90,6 +90,7 @@ public class PSE extends JFrame {
     private final String savetip = "Clique para salvar a imagem atualmente sendo visualizada.";
     private final String quittip = "Clique para fechar o programa. (Não salva a imagem!).";
     private final String resettip = "Clique para resetar a imagem de volta à original e resetar o timeline.";
+    private final String sizetip = "Mostrar tamanho original:<br>(*Clique para ligar/desligar visualização da imagem em seu tamanho original*)";
     private final String timelinetip = "Clique esquerdo para visualizar esta etapa.<br>Clique direito para remover esta etapa.";
     private final String f1tip = "Escala de Cinza:<br><br>Transforma a imágem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
     private final String f2tip = "Filtro Negativo:<br><br>Inverte todos os tons da imágem.<br><br>Geralmente usado para transformar uma imagem obtida em sua forma negativa para a sua positiva (imagem normal).";
@@ -112,8 +113,9 @@ public class PSE extends JFrame {
     private ArrayList<Integer> convolucaoPesos = new ArrayList<Integer>(Arrays.asList(1, 1, 1, 1, 1, 1, 1, 1, 1));
     private int brilhoFloat = 0;
     private int contrasteFloat = 0;
-    private int[] filtroRGB = {0,0,0,255,255,255};
+    private int[] filtroRGB = {0, 0, 0, 255, 255, 255};
     private Boolean histogramOn = false;
+    private Boolean scaleOff = false;
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
@@ -318,7 +320,7 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-        buttonPanel.setLayout(new GridLayout(16, 1));
+        buttonPanel.setLayout(new GridLayout(17, 1));
         buttonPanel.setBackground(Color.DARK_GRAY);
         add(buttonPanel);
         // Func1
@@ -377,9 +379,9 @@ public class PSE extends JFrame {
                     JTextField xField = new JTextField(3);
                     JTextField yField = new JTextField(3);
                     JTextField weightField = new JTextField(9);
-                    xField.setText(""+convolucaoLinhas);
-                    yField.setText(""+convolucaoColunas);
-                    weightField.setText(convolucaoPesos.toString().substring(1, convolucaoPesos.toString().length()-1));
+                    xField.setText("" + convolucaoLinhas);
+                    yField.setText("" + convolucaoColunas);
+                    weightField.setText(convolucaoPesos.toString().substring(1, convolucaoPesos.toString().length() - 1));
 
                     JPanel parameters = new JPanel();
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
@@ -436,7 +438,7 @@ public class PSE extends JFrame {
             public void mouseClicked(MouseEvent click) {
                 if (SwingUtilities.isRightMouseButton(click)) {
                     JTextField xField = new JTextField(3);
-                    xField.setText(""+brilhoFloat);
+                    xField.setText("" + brilhoFloat);
 
                     JPanel parameters = new JPanel();
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
@@ -468,7 +470,7 @@ public class PSE extends JFrame {
             public void mouseClicked(MouseEvent click) {
                 if (SwingUtilities.isRightMouseButton(click)) {
                     JTextField xField = new JTextField(3);
-                    xField.setText(""+contrasteFloat);
+                    xField.setText("" + contrasteFloat);
 
                     JPanel parameters = new JPanel();
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
@@ -512,13 +514,13 @@ public class PSE extends JFrame {
                     JTextField rMaxField = new JTextField(3);
                     JTextField gMaxField = new JTextField(3);
                     JTextField bMaxField = new JTextField(3);
-                    
-                    rMinField.setText(""+filtroRGB[0]);
-                    gMinField.setText(""+filtroRGB[1]);
-                    bMinField.setText(""+filtroRGB[2]);
-                    rMaxField.setText(""+filtroRGB[3]);
-                    gMaxField.setText(""+filtroRGB[4]);
-                    bMaxField.setText(""+filtroRGB[5]);
+
+                    rMinField.setText("" + filtroRGB[0]);
+                    gMinField.setText("" + filtroRGB[1]);
+                    bMinField.setText("" + filtroRGB[2]);
+                    rMaxField.setText("" + filtroRGB[3]);
+                    gMaxField.setText("" + filtroRGB[4]);
+                    bMaxField.setText("" + filtroRGB[5]);
 
                     JPanel parameters = new JPanel();
                     parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
@@ -549,7 +551,7 @@ public class PSE extends JFrame {
                             filtroRGB[3] = Integer.parseInt(rMaxField.getText());
                             filtroRGB[4] = Integer.parseInt(gMaxField.getText());
                             filtroRGB[5] = Integer.parseInt(bMaxField.getText());
-                            for (int i=0; i<filtroRGB.length; i++) {
+                            for (int i = 0; i < filtroRGB.length; i++) {
                                 if (filtroRGB[i] < 0 || filtroRGB[i] > 255) {
                                     JOptionPane.showMessageDialog(new JFrame(), "Parâmetros devem estar entre 0 e 255");
                                     filtroRGB[0] = 0;
@@ -574,16 +576,16 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f12);
             addTimeline(f12);
         });
-        // Func13 (EMQ)
+        // Func14 (EMQ)
         JButton f14Button = new JButton(f14);
         f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
         f14Button.addActionListener((ActionEvent event) -> {
             if (mainImage != null) {
                 setTitle("PSE Image - " + f14);
-                JOptionPane.showMessageDialog(new JFrame(), calculoEMQ(mainImage));
+                JOptionPane.showMessageDialog(new JFrame(), calculoEMQ(originalImage, mainImage));
             }
         });
-//        // Func14 (Histograma)
+//        // Func15 (Histograma)
         JToggleButton f15Button = new JToggleButton(f15);
         f15Button.setToolTipText("<html><p width=\"300\">" + f15tip + "</p></html>");
         f15Button.addItemListener((ItemEvent event) -> {
@@ -599,12 +601,27 @@ public class PSE extends JFrame {
                 histogramFrame.setVisible(false);
             }
         });
-        // Func15
+        // Func13
         JButton f13Button = new JButton(f13);
         f13Button.setToolTipText("<html><p width=\"300\">" + f13tip + "</p></html>");
         f13Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f13);
             addTimeline(f13);
+        });
+        // Func98 (Tamanho Original)
+        JToggleButton f98Button = new JToggleButton(f98);
+        f98Button.setToolTipText("<html><p width=\"300\">" + sizetip + "</p></html>");
+        f98Button.addItemListener((ItemEvent event) -> {
+            int state = event.getStateChange();
+            if (state == ItemEvent.SELECTED) {
+                scaleOff = true;
+                setTitle("PSE Image - " + f98);
+                showImage();
+            } else {
+                scaleOff = false;
+                setTitle("PSE Image");
+                showImage();
+            }
         });
         // Func99
         JButton f99Button = new JButton(f99);
@@ -616,27 +633,29 @@ public class PSE extends JFrame {
         f99Button.setBackground(Color.WHITE);
 
         // Add function buttons in desired order
-        buttonPanel.add(f8Button); // Brilho
-        buttonPanel.add(f9Button); // Contraste
-        buttonPanel.add(f2Button); // Negativo
         buttonPanel.add(f1Button); // Cinza
+        buttonPanel.add(f2Button); // Negativo
+        buttonPanel.add(f9Button); // Contraste
+        buttonPanel.add(f8Button); // Brilho
         buttonPanel.add(f3Button); // Media
+        buttonPanel.add(f7Button); // Convolução
         buttonPanel.add(f4Button); // Gaussiano
         buttonPanel.add(f5Button); // Laplaciano
         buttonPanel.add(f6Button); // Sobel
-        buttonPanel.add(f7Button); // Convolução
-        buttonPanel.add(f10Button);// Limiar
         buttonPanel.add(f11Button);// Cor
-        buttonPanel.add(f12Button);// -
-        buttonPanel.add(f13Button);// -
+        buttonPanel.add(f10Button);// Limiar
+        buttonPanel.add(f12Button);// Interpolação
         buttonPanel.add(f14Button);// EMQ
+        buttonPanel.add(f13Button);// -
         buttonPanel.add(f15Button);// Histograma
+        buttonPanel.add(f98Button);// Tamanho original
         buttonPanel.add(f99Button);// Resetar
 
         // Draw Panel
         // -------------------------------------------------------------------------
         drawPanel = new JPanel();
         drawPanel.setPreferredSize(new Dimension(gridX, gridY));
+        drawPanel.setLayout(new BorderLayout());
         drawPanel.setBackground(Color.GRAY);
         add(drawPanel);
 
@@ -687,7 +706,8 @@ public class PSE extends JFrame {
                 imgHeight = drawHeight;
             }
             Image tempImage = mainImage.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
-            mainImageLabel = new JLabel(new ImageIcon(tempImage));
+            if (!scaleOff) mainImageLabel = new JLabel(new ImageIcon(tempImage));
+            else mainImageLabel = new JLabel(new ImageIcon(mainImage));
             drawPanel.add(mainImageLabel, BorderLayout.CENTER);
             drawPanel.repaint();
             drawPanel.validate();
@@ -887,6 +907,8 @@ public class PSE extends JFrame {
                 mainImage = LGP(mainImage);
             } else if (name.equals(f11)) {
                 mainImage = Segmentacao(mainImage, filtroRGB);
+            } else if (name.equals(f11)) {
+                mainImage = Interpolação(mainImage);
             }
             return true;
         }
@@ -1244,7 +1266,7 @@ public class PSE extends JFrame {
             f = 2;
         } else if (x == 0) {
             f = 1;
-        }else {
+        } else {
             String temp = x + "f";
             f = Float.parseFloat(temp);
         }
@@ -1274,37 +1296,48 @@ public class PSE extends JFrame {
         return Math.log(x) / Math.log(10);
     }
 
-    public static String calculoEMQ(BufferedImage imagem) {
+    public static String calculoEMQ(BufferedImage imagem, BufferedImage imagem2) {
 
-        BufferedImage ResultImage = EscalaDeCinza(imagem);
-
+        BufferedImage ResultImage = imagem2;
         imagem = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
-        ResultImage = new BufferedImage(ResultImage.getColorModel(), ResultImage.copyData(null), ResultImage.getColorModel().isAlphaPremultiplied(), null);
+        //ResultImage = new BufferedImage(ResultImage.getColorModel(), ResultImage.copyData(null), ResultImage.getColorModel().isAlphaPremultiplied(), null);
 
         //pegar linha e coluna da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
 
         int sinal = 0, ruido = 0, mse = 0;
+        int sR = 0;
+        int sG = 0;
+        int sB = 0;
+        int rR = 0;
+        int rG = 0;
+        int rB = 0;
         double peak = 0, snr = 0;
 
         for (int i = 0; i < coluna; i++) {
             for (int j = 0; j < linha; j++) {
                 // pegar os valores de cada pixel da imagem original e da imagem resultante, respectivamente
+
                 int rgb = imagem.getRGB(i, j);
                 int r = (int) ((rgb & 0x00FF0000) >>> 16); //R
                 int g = (int) ((rgb & 0x0000FF00) >>> 8);  //G
                 int b = (int) (rgb & 0x000000FF);       //B
-
                 int rgbResult = ResultImage.getRGB(i, j);
-                //Caclulo do sinal e do ruido 
-                sinal = sinal + rgb * rgbResult;
-                ruido = ruido + (rgb - rgbResult) * (rgb - rgbResult);
-                //Calculo do pico da imagem 
+                //Caclulo do sinal e do ruido
+                sR = sR + r * rgbResult;
+                sG = sG + g * rgbResult;
+                sB = sB + b * rgbResult;
+                sinal = (sR + sG + sB) / 3;
+
+                rR = rR + (r - rgbResult) * (r - rgbResult);
+                rG = rG + (g - rgbResult) * (g - rgbResult);
+                rB = rB + (b - rgbResult) * (b - rgbResult);
+                ruido = (rR + rG + rB) / 3;
+                //Calculo do pico da imagem
                 if (peak < rgb) {
                     peak = rgb;
                 }
-
             }
         }
         //calculo do Erro Medio Quadratico
@@ -1571,5 +1604,62 @@ public class PSE extends JFrame {
             }
         }
         return ResultImage;
+    }
+
+    public static BufferedImage Interpolação(BufferedImage imagem) {
+        //imagem resultante
+        //BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+
+        //pegar linha e coluna da imagem
+        int coluna = imagem.getWidth();
+        int linha = imagem.getHeight();
+
+        //matriz criada para obter os valores q11,q12,q21,q22
+        double[][] matriz;
+        matriz = new double[coluna][linha];
+
+        for (int i = 0; i < coluna; i += 2) {
+            for (int j = 0; j < linha; j += 2) {
+                // pegar os valores de cada pixel da imagem original e da imagem resultante, respectivamente
+                int rgb = imagem.getRGB(i, j);
+                int r = (int) ((rgb & 0x00FF0000) >>> 16); //R
+                int g = (int) ((rgb & 0x0000FF00) >>> 8);  //G
+                int b = (int) (rgb & 0x000000FF);       //B
+
+                //definir valor dos pontos x1,x2,y1,y2 a serem utilizados no calculo da interpolação
+                double x1 = (double) imagem.getRGB(i, j);
+                double x2 = (double) imagem.getRGB(i + 1, j);
+                double y1 = (double) imagem.getRGB(i, j + 1);
+                double y2 = (double) imagem.getRGB(i + 1, j + 1);
+                double x_factor = (x2 + x1) / 2, y_factor = (y2 + y1) / 2;
+                // definir o valor dos valores nos pontos q11, q12, q21, q22
+                double q11 = matriz[i][j];
+                double q12 = matriz[i][j + 1];
+                double q21 = matriz[i + 1][j];
+                double q22 = matriz[i + 1][j + 1];
+                // Calculo da interpolação dos pixels
+                double x_value_1 = ((x2 - x_factor) / (x2 - x1)) * q11 + ((x_factor - x1) / (x2 - x1)) * q21;
+                double x_value_2 = ((x2 - x_factor) / (x2 - x1)) * q12 + ((x_factor - x1) / (x2 - x1)) * q22;
+                double y_value = ((y2 - y_factor) / (y2 - y1)) * x_value_1 + ((y_factor - y1) / (y2 - y1)) * x_value_2;
+                //coloca o valores dos pixels intermediarios no array
+                //int[] pixels = y_value;
+            }
+        }
+        // gera a imagem nova com 2 vezes o tamanho da original
+        Image ResultImage = imagem.getScaledInstance(2000, 3000, Image.SCALE_SMOOTH);
+        BufferedImage InterImage = (BufferedImage) ResultImage;
+
+        /*
+        x - the X coordinate of the upper-left corner of the area of pixels to be set
+        y - the Y coordinate of the upper-left corner of the area of pixels to be set
+        w - the width of the area of pixels
+        h - the height of the area of pixels
+        model - the specified ColorModel
+        pixels - the array of pixels
+        off - the offset into the pixels array
+        scansize - the distance from one row of pixels to the next in the pixels array
+         */
+        //ImageFilter NovaImagem = nova_imagem.setPixels(0,0,ResultImage.getWidth(),ResultImage.getHeight(),ResultImage.getColorModel(),pixels[],     ,   )      
+        return InterImage;
     }
 }
