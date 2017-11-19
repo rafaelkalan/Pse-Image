@@ -1242,7 +1242,9 @@ public class PSE extends JFrame {
             f = Float.parseFloat(temp);
         } else if (x == 100) {
             f = 2;
-        } else {
+        } else if (x == 0) {
+            f = 1;
+        }else {
             String temp = x + "f";
             f = Float.parseFloat(temp);
         }
@@ -1256,12 +1258,12 @@ public class PSE extends JFrame {
     }
 
     public static BufferedImage Contraste(BufferedImage imagem, int x) {
-        String temp = x + "f";
+        String temp = -x + "f";
         float f = Float.parseFloat(temp);
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
 
-        RescaleOp rescaleOp = new RescaleOp(1.0f, x, null);
+        RescaleOp rescaleOp = new RescaleOp(1.0f, -x, null);
         rescaleOp.filter(imagem, ResultImage);
 
         return ResultImage;
