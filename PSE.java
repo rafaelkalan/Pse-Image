@@ -665,8 +665,7 @@ public class PSE extends JFrame {
 
     private void openImage() {
         JFileChooser imageChooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "Arquivos de imagem", "png", "jpg", "jpeg");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Arquivos de imagem", "png", "jpg", "jpeg");
         imageChooser.setFileFilter(filter);
         int returnVal = imageChooser.showOpenDialog(drawPanel);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
