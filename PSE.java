@@ -8,7 +8,6 @@ import java.awt.EventQueue;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -574,16 +573,16 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f12);
             addTimeline(f12);
         });
-        // Func13 (EMQ)
+        // Func14 (EMQ)
         JButton f14Button = new JButton(f14);
         f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
         f14Button.addActionListener((ActionEvent event) -> {
             if (mainImage != null) {
                 setTitle("PSE Image - " + f14);
-                JOptionPane.showMessageDialog(new JFrame(), calculoEMQ(mainImage));
+                JOptionPane.showMessageDialog(new JFrame(), calculoEMQ(originalImage, mainImage));
             }
         });
-//        // Func14 (Histograma)
+//        // Func15 (Histograma)
         JToggleButton f15Button = new JToggleButton(f15);
         f15Button.setToolTipText("<html><p width=\"300\">" + f15tip + "</p></html>");
         f15Button.addItemListener((ItemEvent event) -> {
@@ -599,7 +598,7 @@ public class PSE extends JFrame {
                 histogramFrame.setVisible(false);
             }
         });
-        // Func15
+        // Func13
         JButton f13Button = new JButton(f13);
         f13Button.setToolTipText("<html><p width=\"300\">" + f13tip + "</p></html>");
         f13Button.addActionListener((ActionEvent event) -> {
@@ -1275,37 +1274,48 @@ public class PSE extends JFrame {
         return Math.log(x) / Math.log(10);
     }
 
-    public static String calculoEMQ(BufferedImage imagem) {
-
-        BufferedImage ResultImage = EscalaDeCinza(imagem);
-
+    public static String calculoEMQ(BufferedImage imagem,BufferedImage imagem2) {
+ 
+        BufferedImage ResultImage = imagem2;
         imagem = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
-        ResultImage = new BufferedImage(ResultImage.getColorModel(), ResultImage.copyData(null), ResultImage.getColorModel().isAlphaPremultiplied(), null);
-
+        //ResultImage = new BufferedImage(ResultImage.getColorModel(), ResultImage.copyData(null), ResultImage.getColorModel().isAlphaPremultiplied(), null);
+ 
         //pegar linha e coluna da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
-
+ 
         int sinal = 0, ruido = 0, mse = 0;
+        int sR = 0;
+        int sG = 0;
+        int sB = 0;
+        int rR = 0;
+        int rG = 0;
+        int rB = 0;
         double peak = 0, snr = 0;
-
+ 
         for (int i = 0; i < coluna; i++) {
             for (int j = 0; j < linha; j++) {
                 // pegar os valores de cada pixel da imagem original e da imagem resultante, respectivamente
+               
                 int rgb = imagem.getRGB(i, j);
                 int r = (int) ((rgb & 0x00FF0000) >>> 16); //R
                 int g = (int) ((rgb & 0x0000FF00) >>> 8);  //G
                 int b = (int) (rgb & 0x000000FF);       //B
-
                 int rgbResult = ResultImage.getRGB(i, j);
-                //Caclulo do sinal e do ruido 
-                sinal = sinal + rgb * rgbResult;
-                ruido = ruido + (rgb - rgbResult) * (rgb - rgbResult);
-                //Calculo do pico da imagem 
+                //Caclulo do sinal e do ruido
+                sR = sR + r * rgbResult;
+                sG = sG + g * rgbResult;
+                sB = sB + b * rgbResult;
+                sinal = (sR + sG + sB)/3;
+               
+                rR = rR + (r - rgbResult) * (r - rgbResult);
+                rG = rG + (g - rgbResult) * (g - rgbResult);
+                rB = rB + (b - rgbResult) * (b - rgbResult);
+                ruido = (rR + rG + rB)/3;
+                //Calculo do pico da imagem
                 if (peak < rgb) {
                     peak = rgb;
                 }
-
             }
         }
         //calculo do Erro Medio Quadratico
