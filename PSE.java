@@ -323,7 +323,7 @@ public class PSE extends JFrame {
         helpButton.setToolTipText("<html><p width=\"300\">" + quittip + "</p></html>");
         helpButton.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - Ajuda");
-            openWebpage("https://github.com/rafaelkalan/Pse-Image/blob/master/Documenta%C3%A7%C3%A3o.pdf");
+            openWebpage("https://drive.google.com/open?id=1WObgkYW1PCCC9w8CLiN9V-BuS6IXDcSw");
         });
         helpButton.setBackground(Color.WHITE);
         timelineButtonPanel2.add(helpButton);
