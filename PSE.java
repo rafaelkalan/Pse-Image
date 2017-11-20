@@ -14,8 +14,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,7 +78,8 @@ public class PSE extends JFrame {
     private final String f10 = "Limiar";
     private final String f11 = "Cor";
     private final String f12 = "Interpolar";
-    private final String f13 = "Hough";
+    private final String f13 = "Linhas";
+    private final String f16 = "Círculo";
     private final String f14 = "EMQ";
     private final String f15 = "Histograma";
     private final String f98 = "Tam. Original";
@@ -106,10 +105,11 @@ public class PSE extends JFrame {
     private final String f9tip = "Filtro de Contraste:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
     private final String f10tip = "Limiar Global Padrão:<br><br>";
     private final String f11tip = "Filtro de Cor:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem verificando cada pixel, gerando uma imagem binária a partir daqueles que estiverem dentro do escopo de cor permitido.<br><br>Geralmente usado quando é fácil retirar da imagem a parte desejada pela sua cor distinta.";
-    private final String f12tip = "";
+    private final String f12tip = "Interpolação:<br><br>";
+    private final String f13tip = "Hough Linha:<br><br>";
     private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
-    private final String f13tip = "";
+    private final String f16tip = "Hough Círculo:<br><br>";
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
     private int convolucaoColunas = 3;
@@ -332,7 +332,7 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-        buttonPanel.setLayout(new GridLayout(17, 1));
+        buttonPanel.setLayout(new GridLayout(18, 1));
         buttonPanel.setBackground(Color.DARK_GRAY);
         add(buttonPanel);
         // Func1
@@ -635,6 +635,13 @@ public class PSE extends JFrame {
                 showImage();
             }
         });
+        // Func16
+        JButton f16Button = new JButton(f16);
+        f16Button.setToolTipText("<html><p width=\"300\">" + f16tip + "</p></html>");
+        f16Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f16);
+            addTimeline(f16);
+        });
         // Func99
         JButton f99Button = new JButton(f99);
         f99Button.setToolTipText("<html><p width=\"300\">" + resettip + "</p></html>");
@@ -655,12 +662,13 @@ public class PSE extends JFrame {
         buttonPanel.add(f4Button); // Gaussiano
         buttonPanel.add(f5Button); // Laplaciano
         buttonPanel.add(f6Button); // Sobel
-        buttonPanel.add(f13Button);// Hough
+        buttonPanel.add(f13Button);// Hough Linha
+        buttonPanel.add(f16Button);// Hough Círculo
         buttonPanel.add(f10Button);// Limiar
         buttonPanel.add(f11Button);// Cor
         buttonPanel.add(f14Button);// EMQ
-        buttonPanel.add(f15Button);// Histograma
         buttonPanel.add(f98Button);// Tamanho original
+        buttonPanel.add(f15Button);// Histograma
         buttonPanel.add(f99Button);// Resetar
 
         // Draw Panel
