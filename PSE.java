@@ -1374,10 +1374,10 @@ public class PSE extends JFrame {
         }
         //calculo do Erro Medio Quadratico
         mse = mse + (int) Math.pow(ruido, 2) / (linha * coluna);
-        peak += 10 * log10((256 * 256) / mse);
+        peak += 10 * log10((255 * 255) / mse);
 //        System.out.println("MSE:" + mse);
-//        System.out.println("PSNR(max=" + 256 + "): " + peak);
-        String result = "MSE:" + mse + "\nPSNR(max=" + 256 + "): " + peak;
+//        System.out.println("PSNR(max=" + 255 + "): " + peak);
+        String result = "MSE:" + mse + "\nPSNR(max=" + 255 + "): " + peak;
         return result;
     }
 
