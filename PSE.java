@@ -14,6 +14,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.JFrame;
@@ -43,7 +46,7 @@ public class PSE extends JFrame {
     private int timelineButton1X = 285;
     private int timelineButton2X = 285;
     private int timelineX = windowX - timelineButton1X - timelineButton2X;
-    private int timelineY = 50;
+    private int timelineY = 40;
     private int timelineButton1Y = timelineY;
     private int timelineButton2Y = timelineY;
     private int buttonX = 100;
@@ -77,7 +80,7 @@ public class PSE extends JFrame {
     private final String f10 = "Limiar";
     private final String f11 = "Cor";
     private final String f12 = "Interpolar";
-    private final String f13 = "-";
+    private final String f13 = "Hough";
     private final String f14 = "EMQ";
     private final String f15 = "Histograma";
     private final String f98 = "Tam. Original";
@@ -314,7 +317,16 @@ public class PSE extends JFrame {
             System.exit(0);
         });
         exitButton.setBackground(Color.WHITE);
-        timelineButtonPanel2.add(exitButton);
+//        timelineButtonPanel2.add(exitButton);
+        // Help Image
+        JButton helpButton = new JButton("Ajuda");
+        helpButton.setToolTipText("<html><p width=\"300\">" + quittip + "</p></html>");
+        helpButton.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - Ajuda");
+            openWebpage("https://github.com/rafaelkalan/Pse-Image/blob/master/Documenta%C3%A7%C3%A3o.pdf");
+        });
+        helpButton.setBackground(Color.WHITE);
+        timelineButtonPanel2.add(helpButton);
 
         // Button Panel
         // -------------------------------------------------------------------------
@@ -638,15 +650,15 @@ public class PSE extends JFrame {
         buttonPanel.add(f9Button); // Contraste
         buttonPanel.add(f8Button); // Brilho
         buttonPanel.add(f3Button); // Media
+        buttonPanel.add(f12Button);// Interpolação
         buttonPanel.add(f7Button); // Convolução
         buttonPanel.add(f4Button); // Gaussiano
         buttonPanel.add(f5Button); // Laplaciano
         buttonPanel.add(f6Button); // Sobel
-        buttonPanel.add(f11Button);// Cor
+        buttonPanel.add(f13Button);// Hough
         buttonPanel.add(f10Button);// Limiar
-        buttonPanel.add(f12Button);// Interpolação
+        buttonPanel.add(f11Button);// Cor
         buttonPanel.add(f14Button);// EMQ
-        buttonPanel.add(f13Button);// -
         buttonPanel.add(f15Button);// Histograma
         buttonPanel.add(f98Button);// Tamanho original
         buttonPanel.add(f99Button);// Resetar
@@ -663,9 +675,18 @@ public class PSE extends JFrame {
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     }
 
+    public static void openWebpage(String urlString) {
+        try {
+            Desktop.getDesktop().browse(new URL(urlString).toURI());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void openImage() {
         JFileChooser imageChooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Arquivos de imagem", "png", "jpg", "jpeg");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "Arquivos de imagem", "png", "jpg", "jpeg");
         imageChooser.setFileFilter(filter);
         int returnVal = imageChooser.showOpenDialog(drawPanel);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -706,8 +727,11 @@ public class PSE extends JFrame {
                 imgHeight = drawHeight;
             }
             Image tempImage = mainImage.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
-            if (!scaleOff) mainImageLabel = new JLabel(new ImageIcon(tempImage));
-            else mainImageLabel = new JLabel(new ImageIcon(mainImage));
+            if (!scaleOff) {
+                mainImageLabel = new JLabel(new ImageIcon(tempImage));
+            } else {
+                mainImageLabel = new JLabel(new ImageIcon(mainImage));
+            }
             drawPanel.add(mainImageLabel, BorderLayout.CENTER);
             drawPanel.repaint();
             drawPanel.validate();
