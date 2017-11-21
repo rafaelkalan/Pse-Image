@@ -103,9 +103,9 @@ public class PSE extends JFrame {
     private final String f7tip = "Filtro de Convolução:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem substituindo cada pixel pela média ponderada de seus vizinhos a partir de uma matriz de convolução.<br><br>Filtro de propósito geral usado quando se quer um maior controle no processamento da imagem.";
     private final String f8tip = "Filtro de Brilho:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o brilho de cada pixel.<br><br>Geralmente usado para corrigir uma imagem que está muito clara ou escura, dificultando o seu processamento.";
     private final String f9tip = "Filtro de Contraste:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
-    private final String f10tip = "Limiar Global Padrão:<br><br>";
+    private final String f10tip = "Limiar Global Padrão:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem para verificar a média do valor de intensidade dos pixels, e usa essa média para gerar uma nova imagem binária repartindo o pixels por esse valor. O limiar pode ser configurado para usar um valor fornecido, ao inves do valor da média.";
     private final String f11tip = "Filtro de Cor:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem verificando cada pixel, gerando uma imagem binária a partir daqueles que estiverem dentro do escopo de cor permitido.<br><br>Geralmente usado quando é fácil retirar da imagem a parte desejada pela sua cor distinta.";
-    private final String f12tip = "Interpolação:<br><br>";
+    private final String f12tip = "Interpolação:<br><br>Percorre a imagem e interpola os pixels para gerar uma nova imagem 3 vezes maior que a original.";
     private final String f13tip = "Hough Linha:<br><br>";
     private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
@@ -117,6 +117,7 @@ public class PSE extends JFrame {
     private int brilhoFloat = 0;
     private int contrasteFloat = 0;
     private int[] filtroRGB = {0, 0, 0, 255, 255, 255};
+    private double limiarDouble = -1;
     private Boolean histogramOn = false;
     private Boolean scaleOff = false;
 
@@ -509,6 +510,35 @@ public class PSE extends JFrame {
         f10Button.addActionListener((ActionEvent event) -> {
             setTitle("PSE Image - " + f10);
             addTimeline(f10);
+        });
+        f10Button.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent click) {
+                if (SwingUtilities.isRightMouseButton(click)) {
+                    JTextField xField = new JTextField(3);
+                    xField.setText("" + limiarDouble);
+
+                    JPanel parameters = new JPanel();
+                    parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
+                    parameters.add(new JLabel("Valor de intensidade para o limiar:"));
+                    parameters.add(xField);
+
+                    int result = JOptionPane.showConfirmDialog(null, parameters,
+                            "Parâmetros do limiar global", JOptionPane.OK_CANCEL_OPTION);
+                    if (result == JOptionPane.OK_OPTION) {
+                        try {
+                            Double tempDouble = Double.parseDouble(xField.getText());
+                            if (tempDouble < 0 || tempDouble > 255) {
+                                JOptionPane.showMessageDialog(new JFrame(), "Parâmetros devem estar entre 0 e 255");
+                                return;
+                            }
+                            limiarDouble = tempDouble;
+                            System.out.println(limiarDouble);
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
+                        }
+                    }
+                }
+            }
         });
         // Func11
         JButton f11Button = new JButton(f11);
@@ -936,7 +966,8 @@ public class PSE extends JFrame {
             } else if (name.equals(f9)) {
                 mainImage = Contraste(mainImage, contrasteFloat);
             } else if (name.equals(f10)) {
-                mainImage = LGP(mainImage);
+                if (limiarDouble != -1) mainImage = Limiar(mainImage, limiarDouble);
+                else mainImage = LGP(mainImage);
             } else if (name.equals(f11)) {
                 mainImage = Segmentacao(mainImage, filtroRGB);
             } else if (name.equals(f11)) {
@@ -1438,6 +1469,58 @@ public class PSE extends JFrame {
         return ResultImage;
     }
 
+    // Limiar com parâmtero
+    public static BufferedImage Limiar (BufferedImage imagem, double t) { //Limiar Recebendo Parametro
+       
+    //imagem resultante
+    BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
+    int r = 0, g = 0, b = 0, mediar, mediag, mediab, totalpixel;
+    for (int i = 1; i + 1 < imagem.getHeight(); i++) {
+            for (int j = 1; j + 1 < imagem.getWidth(); j++) {
+        //rgb
+                int rgb = imagem.getRGB(j, i);
+ 
+        //percorrer imagem
+                r += (int)((rgb&0x00FF0000)>>>16);
+                g += (int)((rgb&0x0000FF00)>>>8);
+                b += (int)((rgb&0x000000FF));
+ 
+        }
+    }
+    for (int i = 1; i + 1 < imagem.getHeight(); i++) {
+            for (int j = 1; j + 1 < imagem.getWidth(); j++) {
+                //rgb
+                int rgb = imagem.getRGB(j, i);
+ 
+                //percorrer imagem
+                r = (int)((rgb&0x00FF0000)>>>16);
+                if(r < t){
+                    r = 0;  
+                }else if(r >= t){
+                    r = 255;
+                }
+                g = (int)((rgb&0x0000FF00)>>>8);
+                if(g < t){
+                    g = 0;
+                }else if(g >= t){
+                    g = 255;
+                }
+                b = (int)((rgb&0x000000FF));
+                if(b < t){
+                    b = 0;
+                }else if(b >= t){
+                    b = 255;
+                }
+                //nova cor do pixel
+                Color tempColor = new Color(r, g, b);
+                //setar o respectivel pixel na nova imagem
+                ResultImage.setRGB(j, i, tempColor.getRGB());
+ 
+            }
+        }
+        return ResultImage;
+    }
+    
     //----------------------------------------------------------------------
     //----------------------- Maior Valor ---------------------------------------
     public static int maxVal(int[] a) { // Pega o maior valor dado um Array de inteiros
