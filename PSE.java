@@ -1,10 +1,11 @@
-import java.awt.*; 
+
+import java.awt.*;
 import java.awt.BasicStroke;
-import java.util.Vector; 
-import java.io.File; 
+import java.util.Vector;
+import java.io.File;
 import java.awt.geom.Line2D;
-import java.util.Collections; 
-import java.util.Vector; 
+import java.util.Collections;
+import java.util.Vector;
 import java.awt.Color;
 import javax.imageio.ImageIO;
 import java.awt.image.*;
@@ -57,6 +58,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.io.File;
@@ -152,7 +154,7 @@ public class PSE extends JFrame {
     private final String f9tip = "Filtro de Contraste:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
     private final String f10tip = "Limiar Global Padrão:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem para verificar a média do valor de intensidade dos pixels, e usa essa média para gerar uma nova imagem binária repartindo o pixels por esse valor. O limiar pode ser configurado para usar um valor fornecido, ao inves do valor da média.";
     private final String f11tip = "Filtro de Cor:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem verificando cada pixel, gerando uma imagem binária a partir daqueles que estiverem dentro do escopo de cor permitido.<br><br>Geralmente usado quando é fácil retirar da imagem a parte desejada pela sua cor distinta.";
-    private final String f12tip = "Interpolação:<br><br>Percorre a imagem e interpola os pixels para gerar uma nova imagem 3 vezes maior que a original.";
+    private final String f12tip = "Interpolação:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem e interpola os pixels para gerar uma nova imagem gerada a partir do fator de escala definido na configuração. <br><br> Geralmente usado para escalar uma imagem quando necessário.";
     private final String f13tip = "Hough Linha:<br><br>";
     private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
@@ -165,6 +167,7 @@ public class PSE extends JFrame {
     private int contrasteFloat = 0;
     private int[] filtroRGB = {0, 0, 0, 255, 255, 255};
     private double limiarDouble = -1;
+    private double interpolacaoFator = 1.0;
     private Boolean histogramOn = false;
     private Boolean scaleOff = false;
 
@@ -665,6 +668,35 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f12);
             addTimeline(f12);
         });
+        f12Button.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent click) {
+                if (SwingUtilities.isRightMouseButton(click)) {
+                    JTextField xField = new JTextField(3);
+                    xField.setText("" + interpolacaoFator);
+
+                    JPanel parameters = new JPanel();
+                    parameters.setLayout(new BoxLayout(parameters, BoxLayout.Y_AXIS));
+                    parameters.add(new JLabel("Fator de escala para a interpolação:"));
+                    parameters.add(xField);
+
+                    int result = JOptionPane.showConfirmDialog(null, parameters,
+                            "Parâmetros da interpolação", JOptionPane.OK_CANCEL_OPTION);
+                    if (result == JOptionPane.OK_OPTION) {
+                        try {
+                            Double tempDouble = Double.parseDouble(xField.getText());
+                            if (tempDouble <= 0) {
+                                JOptionPane.showMessageDialog(new JFrame(), "Fator deve ser maior que 0");
+                                return;
+                            }
+                            interpolacaoFator = tempDouble;
+                            System.out.println(interpolacaoFator);
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
+                        }
+                    }
+                }
+            }
+        });
         // Func14 (EMQ)
         JButton f14Button = new JButton(f14);
         f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
@@ -734,7 +766,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f9Button); // Contraste
         buttonPanel.add(f8Button); // Brilho
         buttonPanel.add(f3Button); // Media
-        //buttonPanel.add(f12Button);// Interpolação Botão comentando pois o metodo não está funcionando
+        buttonPanel.add(f12Button);// Interpolação
         buttonPanel.add(f7Button); // Convolução
         buttonPanel.add(f4Button); // Gaussiano
         buttonPanel.add(f5Button); // Laplaciano
@@ -1014,12 +1046,15 @@ public class PSE extends JFrame {
             } else if (name.equals(f9)) {
                 mainImage = Contraste(mainImage, contrasteFloat);
             } else if (name.equals(f10)) {
-                if (limiarDouble != -1) mainImage = Limiar(mainImage, limiarDouble);
-                else mainImage = LGP(mainImage);
+                if (limiarDouble != -1) {
+                    mainImage = Limiar(mainImage, limiarDouble);
+                } else {
+                    mainImage = LGP(mainImage);
+                }
             } else if (name.equals(f11)) {
                 mainImage = Segmentacao(mainImage, filtroRGB);
-            } else if (name.equals(f11)) {
-                mainImage = Interpolacao(mainImage);
+            } else if (name.equals(f12)) {
+                mainImage = Interpolacao(mainImage, interpolacaoFator);
             } else if (name.equals(f16)) {
                 mainImage = HoughTransformLine(mainImage);
             }
@@ -1520,57 +1555,57 @@ public class PSE extends JFrame {
     }
 
     // Limiar com parâmtero
-public static BufferedImage Limiar (BufferedImage imagem, double t) { //Limiar Recebendo Parametro
-       
-    //imagem resultante
-    BufferedImage ResultImage = new BufferedImage (imagem.getColorModel(),imagem.copyData(null),imagem.getColorModel().isAlphaPremultiplied(),null);
-    int r = 0, g = 0, b = 0, mediar, mediag, mediab, totalpixel;
-    for (int i = 1; i + 1 < imagem.getHeight(); i++) {
-            for (int j = 1; j + 1 < imagem.getWidth(); j++) {
-        //rgb
-                int rgb = imagem.getRGB(j, i);
- 
-        //percorrer imagem
-                r += (int)((rgb&0x00FF0000)>>>16);
-                g += (int)((rgb&0x0000FF00)>>>8);
-                b += (int)((rgb&0x000000FF));
- 
-        }
-    }
-    for (int i = 1; i + 1 < imagem.getHeight(); i++) {
+    public static BufferedImage Limiar(BufferedImage imagem, double t) { //Limiar Recebendo Parametro
+
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+        int r = 0, g = 0, b = 0, mediar, mediag, mediab, totalpixel;
+        for (int i = 1; i + 1 < imagem.getHeight(); i++) {
             for (int j = 1; j + 1 < imagem.getWidth(); j++) {
                 //rgb
                 int rgb = imagem.getRGB(j, i);
- 
+
                 //percorrer imagem
-                r = (int)((rgb&0x00FF0000)>>>16);
-                if(r < t){
-                    r = 0;  
-                }else if(r >= t){
+                r += (int) ((rgb & 0x00FF0000) >>> 16);
+                g += (int) ((rgb & 0x0000FF00) >>> 8);
+                b += (int) ((rgb & 0x000000FF));
+
+            }
+        }
+        for (int i = 1; i + 1 < imagem.getHeight(); i++) {
+            for (int j = 1; j + 1 < imagem.getWidth(); j++) {
+                //rgb
+                int rgb = imagem.getRGB(j, i);
+
+                //percorrer imagem
+                r = (int) ((rgb & 0x00FF0000) >>> 16);
+                if (r < t) {
+                    r = 0;
+                } else if (r >= t) {
                     r = 255;
                 }
-                g = (int)((rgb&0x0000FF00)>>>8);
-                if(g < t){
+                g = (int) ((rgb & 0x0000FF00) >>> 8);
+                if (g < t) {
                     g = 0;
-                }else if(g >= t){
+                } else if (g >= t) {
                     g = 255;
                 }
-                b = (int)((rgb&0x000000FF));
-                if(b < t){
+                b = (int) ((rgb & 0x000000FF));
+                if (b < t) {
                     b = 0;
-                }else if(b >= t){
+                } else if (b >= t) {
                     b = 255;
                 }
                 //nova cor do pixel
                 Color tempColor = new Color(r, g, b);
                 //setar o respectivel pixel na nova imagem
                 ResultImage.setRGB(j, i, tempColor.getRGB());
- 
+
             }
         }
         return ResultImage;
     }
-    
+
     //----------------------------------------------------------------------
     //----------------------- Maior Valor ---------------------------------------
     public static int maxVal(int[] a) { // Pega o maior valor dado um Array de inteiros
@@ -1771,113 +1806,28 @@ public static BufferedImage Limiar (BufferedImage imagem, double t) { //Limiar R
         return ResultImage;
     }
 
-    public static BufferedImage Interpolacao(BufferedImage imagem){
-        //imagem resultante
-        //BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
- 
-        //pegar linha e coluna da imagem
-        int coluna = imagem.getWidth();
-        int linha = imagem.getHeight();
-        int coluna_nova = 0;
-        int linha_nova = 0;
- 
-        int fator_esc_coluna = 3 ;
-        int fator_esc_linha = 3 ;
-        //matriz criada para obter os valores q11,q12,q21,q22
-        double[][] matriz;
-        matriz = new double [coluna][linha];        
- 
-        //calculo do fator de escala
-        coluna_nova = coluna*fator_esc_coluna;
-        linha_nova = linha*fator_esc_linha;
-       
-        //matriz que se tornará a nova imagem interpolada
-        double [][] nova_imagem;
-        nova_imagem = new double[coluna_nova][linha_nova];
-        for(int i=0;i<coluna_nova;i++){
-            for(int j=0;j<linha_nova;j++){
-                nova_imagem[i][j] = 0;
-            }
-        }
- 
-        for (int i = 0; i < coluna; i++) {
-            for (int j = 0; j < linha; j++) {
-                // pegar os valores de cada pixel da imagem original e da imagem resultante, respectivamente
-                int rgb = imagem.getRGB(i, j);
-                int r = (int) ((rgb & 0x00FF0000) >>> 16); //R
-                int g = (int) ((rgb & 0x0000FF00) >>> 8);  //G
-                int b = (int) (rgb & 0x000000FF);       //B
-               
-                //definir valor dos pontos x1,x2,y1,y2 a serem utilizados no calculo da interpolação
-                double x1 = (double)imagem.getRGB(i,j);
-                double x2 = (double)imagem.getRGB(i+1,j);
-                double y1 = (double)imagem.getRGB(i,j+1);
-                double y2 = (double)imagem.getRGB(i+1,j+1);
- 
- 
-                //posições da nova imagem que vão receber o valor dos pixels da imagem original
-                nova_imagem [i][j] = x1;
-                nova_imagem [i*fator_esc_coluna][j] = x2;
-                nova_imagem [i][j*fator_esc_linha] = y1;
-                nova_imagem [i*fator_esc_coluna][j*fator_esc_linha] = y2;
- 
-                double x_factor = (nova_imagem[i][j*fator_esc_linha] - nova_imagem[i][j])/fator_esc_coluna, y_factor = (nova_imagem[i*fator_esc_coluna][j] - nova_imagem[i][j])/fator_esc_linha;        
-                // definir o valor dos valores nos pontos q11, q12, q21, q22
-                double q11 = matriz[i][j];
-                double q12 = matriz[i][j+1];
-                double q21 = matriz[i+1][j];
-                double q22 = matriz[i+1][j+1];
-                // Calculo da interpolação dos pixels
-                double x_value_1 = ((x2 - x_factor)/(x2-x1))*q11 + ((x_factor - x1)/(x2 - x1))*q21;
- 
-                double x_value_2 = ((x2 - x_factor)/(x2-x1))*q12 + ((x_factor - x1)/(x2-x1))*q22;
- 
-                double y_value = ((y2 - y_factor)/(y2 - y1))*x_value_1 + ((y_factor - y1)/(y2 - y1))*x_value_2;
-                nova_imagem [i+1][j] = y_value;
-                //coloca o valores dos pixels intermediarios no array
-            }
-        }
-        BufferedImage newImage = new BufferedImage(fator_esc_coluna,fator_esc_linha,BufferedImage.TYPE_INT_RGB);
-       
-        WritableRaster raster = newImage.getRaster();
-        for (int h = 0; h< fator_esc_coluna; h++){
-            for (int w =0;w<fator_esc_linha;w++){
-                raster.setSample(h,w,0,nova_imagem[h][w]);    
-            }
-        }        
- 
-        // gera a imagem nova com 2 vezes o tamanho da original
-        //Image ResultImage = imagem.getScaledInstance(2000,3000,Image.SCALE_SMOOTH);
-        //BufferedImage InterImage = (BufferedImage) ResultImage;
- 
-        /*
-        x - the X coordinate of the upper-left corner of the area of pixels to be set
-        y - the Y coordinate of the upper-left corner of the area of pixels to be set
-        w - the width of the area of pixels
-        h - the height of the area of pixels
-        model - the specified ColorModel
-        pixels - the array of pixels
-        off - the offset into the pixels array
-        scansize - the distance from one row of pixels to the next in the pixels array
-        */
-        //ImageFilter NovaImagem = nova_imagem.setPixels(0,0,ResultImage.getWidth(),ResultImage.getHeight(),ResultImage.getColorModel(),pixels[],     ,   )      
- 
- 
- 
-        return newImage;      
+    public static BufferedImage Interpolacao(BufferedImage imagem, double scaleFactor) {
+        int newWidth = (int)Math.round(imagem.getWidth() * scaleFactor);
+        int newHeight = (int)Math.round(imagem.getHeight() * scaleFactor);
+        BufferedImage result = new BufferedImage(newWidth, newHeight, imagem.getType());
+        Graphics2D g = result.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.drawImage(imagem, 0, 0, newWidth, newHeight, 0, 0, imagem.getWidth(),
+                imagem.getHeight(), null);
+        g.dispose();
+        return result;
     }
 
-
-
-    public static BufferedImage HoughTransformLine(BufferedImage imagem){
+    public static BufferedImage HoughTransformLine(BufferedImage imagem) {
         try {
 
             HoughTransformLine HTL = new HoughTransformLine(imagem);
             Vector<HoughLine> lines = HTL.getLines(4);
             HTL.drawHoughLines(lines);
             imagem = (BufferedImage) HTL.getImage();
-      
-        }catch (Exception e) {
+
+        } catch (Exception e) {
             System.out.println("Erro! " + e.getMessage());
             e.printStackTrace();
         }
@@ -1885,259 +1835,270 @@ public static BufferedImage Limiar (BufferedImage imagem, double t) { //Limiar R
     }
 }
 
-class HoughTransformLine extends Thread { 
+class HoughTransformLine extends Thread {
+
     // The size of the neighbourhood in which to search for other local maxima 
-    final int neighbourhoodSize = 4; 
-  
+    final int neighbourhoodSize = 4;
+
     // How many discrete values of theta shall we check? 
-    final int maxTheta = 180; 
-  
+    final int maxTheta = 180;
+
     // Using maxTheta, work out the step 
-    final double thetaStep = Math.PI / maxTheta; 
-  
+    final double thetaStep = Math.PI / maxTheta;
+
     // the width and height of the image 
-    protected int width, height; 
-  
+    protected int width, height;
+
     // the hough array 
-    protected int[][] houghArray; 
-  
+    protected int[][] houghArray;
+
     // the coordinates of the centre of the image 
-    protected float centerX, centerY; 
-  
+    protected float centerX, centerY;
+
     // the height of the hough array 
-    protected int houghHeight; 
-  
+    protected int houghHeight;
+
     // double the hough height (allows for negative numbers) 
-    protected int doubleHeight; 
-  
+    protected int doubleHeight;
+
     // the number of points that have been added 
     protected int numPoints;
-    protected BufferedImage BFimage; 
-  
+    protected BufferedImage BFimage;
+
     // cache of values of sin and cos for different theta values. Has a significant performance improvement. 
-    private double[] sinCache; 
-    private double[] cosCache; 
-  
+    private double[] sinCache;
+    private double[] cosCache;
+
     public HoughTransformLine(BufferedImage image) {
-      initialise(image.getWidth(), image.getHeight()); 
-      image = addPoints(image);
-      setImage(image);      
+        initialise(image.getWidth(), image.getHeight());
+        image = addPoints(image);
+        setImage(image);
     }
 
     public void setImage(BufferedImage BFimage) {
         BFimage = this.BFimage;
     }
-    
+
     public BufferedImage getImage() {
-      return BFimage;
-    }
-    /** 
-     * Initialises the hough transform. The dimensions of the input image are needed 
-     * in order to initialise the hough array. 
-     * 
-     * @param width  The width of the input image 
-     * @param height The height of the input image 
-     */
-    public HoughTransformLine(int width, int height) { 
-      initialise(width, height);
-    } 
-  
-    /** 
-     * Initialises the hough array. Called by the constructor so you don't need to call it 
-     * yourself, however you can use it to reset the transform if you want to plug in another 
-     * image (although that image must have the same width and height) 
-     */
-    public void initialise(int width, int height) { 
-      this.width = width; 
-      this.height = height; 
-  
-      // Calculate the maximum height the hough array needs to have 
-      houghHeight = (int) (Math.sqrt(2) * Math.max(height, width)) / 2; 
-  
-      // Double the height of the hough array to cope with negative r values 
-      doubleHeight = 2 * houghHeight; 
-  
-      // Create the hough array 
-      houghArray = new int[maxTheta][doubleHeight]; 
-  
-      // Find edge points and vote in array 
-      centerX = width / 2; 
-      centerY = height / 2; 
-  
-      // Count how many points there are 
-      numPoints = 0; 
-  
-      // cache the values of sin and cos for faster processing 
-      sinCache = new double[maxTheta]; 
-      cosCache = sinCache.clone(); 
-      for (int t = 0; t < maxTheta; t++) { 
-        double realTheta = t * thetaStep; 
-        sinCache[t] = Math.sin(realTheta); 
-        cosCache[t] = Math.cos(realTheta);
-      }
-    } 
-  
-    /** 
-     * Adds points from an image. The image is assumed to be greyscale black and white, so all pixels that are 
-     * not black are counted as edges. The image should have the same dimensions as the one passed to the constructor. 
-     */
-    public BufferedImage addPoints(BufferedImage image) { 
-  
-      // Now find edge points and update the hough array 
-      for (int x = 0; x < image.getWidth(); x++) { 
-        for (int y = 0; y < image.getHeight(); y++) { 
-          // Find non-black pixels 
-          if ((image.getRGB(x, y) & 0x000000ff) != 0) { 
-            addPoint(x, y);
-          }
-        }
-      }
-      return image;
-    } 
-  
-    /** 
-     * Adds a single point to the hough transform. You can use this method directly 
-     * if your data isn't represented as a buffered image. 
-     */
-    public void addPoint(int x, int y) { 
-  
-      // Go through each value of theta 
-      for (int t = 0; t < maxTheta; t++) { 
-  
-        //Work out the r values for each theta step 
-        int r = (int) (((x - centerX) * cosCache[t]) + ((y - centerY) * sinCache[t])); 
-  
-        // this copes with negative values of r 
-        r += houghHeight; 
-  
-        if (r < 0 || r >= doubleHeight) continue; 
-  
-        // Increment the hough array 
-        houghArray[t][r]++;
-      } 
-  
-      numPoints++;
-    } 
-    
-    public Vector<HoughLine> getLines(int n) {
-      return(getLines(n, 0));
+        return BFimage;
     }
 
-    public Vector<HoughLine> getLines(int n, int threshold) { 
-  
-      // Initialise the vector of lines that we'll return 
-      Vector<HoughLine> lines = new Vector<HoughLine>(20); 
-  
-      // Only proceed if the hough array is not empty 
-      if (numPoints == 0) return lines; 
-  
-      // Search for local peaks above threshold to draw 
-      for (int t = 0; t < maxTheta; t++) { 
-        loop: 
-        for (int r = neighbourhoodSize; r < doubleHeight - neighbourhoodSize; r++) { 
-  
-          // Only consider points above threshold 
-          if (houghArray[t][r] > threshold) { 
-  
-            int peak = houghArray[t][r]; 
-  
-            // Check that this peak is indeed the local maxima 
-            for (int dx = -neighbourhoodSize; dx <= neighbourhoodSize; dx++) { 
-              for (int dy = -neighbourhoodSize; dy <= neighbourhoodSize; dy++) { 
-                int dt = t + dx; 
-                int dr = r + dy; 
-                if (dt < 0) dt = dt + maxTheta; 
-                else if (dt >= maxTheta) dt = dt - maxTheta; 
-                if (houghArray[dt][dr] > peak) { 
-                  // found a bigger point nearby, skip 
-                  continue loop;
-                }
-              }
-            } 
-  
-            // calculate the true value of theta 
-            double theta = t * thetaStep; 
-  
-            // add the line to the vector 
-            lines.add(new HoughLine(theta, r, width, height, houghArray[t][r]));
-          }
+    /**
+     * Initialises the hough transform. The dimensions of the input image are
+     * needed in order to initialise the hough array.
+     *
+     * @param width The width of the input image
+     * @param height The height of the input image
+     */
+    public HoughTransformLine(int width, int height) {
+        initialise(width, height);
+    }
+
+    /**
+     * Initialises the hough array. Called by the constructor so you don't need
+     * to call it yourself, however you can use it to reset the transform if you
+     * want to plug in another image (although that image must have the same
+     * width and height)
+     */
+    public void initialise(int width, int height) {
+        this.width = width;
+        this.height = height;
+
+        // Calculate the maximum height the hough array needs to have 
+        houghHeight = (int) (Math.sqrt(2) * Math.max(height, width)) / 2;
+
+        // Double the height of the hough array to cope with negative r values 
+        doubleHeight = 2 * houghHeight;
+
+        // Create the hough array 
+        houghArray = new int[maxTheta][doubleHeight];
+
+        // Find edge points and vote in array 
+        centerX = width / 2;
+        centerY = height / 2;
+
+        // Count how many points there are 
+        numPoints = 0;
+
+        // cache the values of sin and cos for faster processing 
+        sinCache = new double[maxTheta];
+        cosCache = sinCache.clone();
+        for (int t = 0; t < maxTheta; t++) {
+            double realTheta = t * thetaStep;
+            sinCache[t] = Math.sin(realTheta);
+            cosCache[t] = Math.cos(realTheta);
         }
-      }
-      Collections.sort(lines, Collections.reverseOrder());
-      lines.setSize(n);
-  
-      return lines;
-    } 
-  
+    }
+
+    /**
+     * Adds points from an image. The image is assumed to be greyscale black and
+     * white, so all pixels that are not black are counted as edges. The image
+     * should have the same dimensions as the one passed to the constructor.
+     */
+    public BufferedImage addPoints(BufferedImage image) {
+
+        // Now find edge points and update the hough array 
+        for (int x = 0; x < image.getWidth(); x++) {
+            for (int y = 0; y < image.getHeight(); y++) {
+                // Find non-black pixels 
+                if ((image.getRGB(x, y) & 0x000000ff) != 0) {
+                    addPoint(x, y);
+                }
+            }
+        }
+        return image;
+    }
+
+    /**
+     * Adds a single point to the hough transform. You can use this method
+     * directly if your data isn't represented as a buffered image.
+     */
+    public void addPoint(int x, int y) {
+
+        // Go through each value of theta 
+        for (int t = 0; t < maxTheta; t++) {
+
+            //Work out the r values for each theta step 
+            int r = (int) (((x - centerX) * cosCache[t]) + ((y - centerY) * sinCache[t]));
+
+            // this copes with negative values of r 
+            r += houghHeight;
+
+            if (r < 0 || r >= doubleHeight) {
+                continue;
+            }
+
+            // Increment the hough array 
+            houghArray[t][r]++;
+        }
+
+        numPoints++;
+    }
+
+    public Vector<HoughLine> getLines(int n) {
+        return (getLines(n, 0));
+    }
+
+    public Vector<HoughLine> getLines(int n, int threshold) {
+
+        // Initialise the vector of lines that we'll return 
+        Vector<HoughLine> lines = new Vector<HoughLine>(20);
+
+        // Only proceed if the hough array is not empty 
+        if (numPoints == 0) {
+            return lines;
+        }
+
+        // Search for local peaks above threshold to draw 
+        for (int t = 0; t < maxTheta; t++) {
+            loop:
+            for (int r = neighbourhoodSize; r < doubleHeight - neighbourhoodSize; r++) {
+
+                // Only consider points above threshold 
+                if (houghArray[t][r] > threshold) {
+
+                    int peak = houghArray[t][r];
+
+                    // Check that this peak is indeed the local maxima 
+                    for (int dx = -neighbourhoodSize; dx <= neighbourhoodSize; dx++) {
+                        for (int dy = -neighbourhoodSize; dy <= neighbourhoodSize; dy++) {
+                            int dt = t + dx;
+                            int dr = r + dy;
+                            if (dt < 0) {
+                                dt = dt + maxTheta;
+                            } else if (dt >= maxTheta) {
+                                dt = dt - maxTheta;
+                            }
+                            if (houghArray[dt][dr] > peak) {
+                                // found a bigger point nearby, skip 
+                                continue loop;
+                            }
+                        }
+                    }
+
+                    // calculate the true value of theta 
+                    double theta = t * thetaStep;
+
+                    // add the line to the vector 
+                    lines.add(new HoughLine(theta, r, width, height, houghArray[t][r]));
+                }
+            }
+        }
+        Collections.sort(lines, Collections.reverseOrder());
+        lines.setSize(n);
+
+        return lines;
+    }
+
     public void fitLine(HoughLine l) {
     }
-  
+
     public void drawHoughLines(Vector<HoughLine> lines) {
-      if (lines!=null) {
-        //stroke(255, 0, 0);
-    
-        for (int j = 0; j < lines.size(); j++) { 
-          HoughLine l = lines.elementAt(j);
-          //line(l.x1, l.y1, l.x2, l.y2);
-         //System.out.println(j+ " " + l.score);
+        if (lines != null) {
+            //stroke(255, 0, 0);
+
+            for (int j = 0; j < lines.size(); j++) {
+                HoughLine l = lines.elementAt(j);
+                //line(l.x1, l.y1, l.x2, l.y2);
+                //System.out.println(j+ " " + l.score);
+            }
         }
-      }
     }
+
     public int getWidth() {
         return this.width;
     }
+
     public int getHeight() {
         return this.height;
     }
-  }
+}
 
-class HoughLine extends Line2D.Float implements Comparable<HoughLine> { 
-    protected double theta; 
+class HoughLine extends Line2D.Float implements Comparable<HoughLine> {
+
+    protected double theta;
     protected double r;
     protected int score;
 
-    /** 
-     * Initialises the hough line 
+    /**
+     * Initialises the hough line
      */
-    public HoughLine(double theta, double r, int width, int height, int score) { 
-        this.theta = theta; 
+    public HoughLine(double theta, double r, int width, int height, int score) {
+        this.theta = theta;
         this.r = r;
-        this.score=score;
+        this.score = score;
 
         // During processing h_h is doubled so that -ve r values 
-        int houghHeight = (int) (Math.sqrt(2) * Math.max(height, width)) / 2; 
+        int houghHeight = (int) (Math.sqrt(2) * Math.max(height, width)) / 2;
 
         // Find edge points and vote in array 
-        float centerX = width / 2; 
-        float centerY = height / 2; 
+        float centerX = width / 2;
+        float centerY = height / 2;
 
         // Draw edges in output array 
-        double tsin = Math.sin(theta); 
-        double tcos = Math.cos(theta); 
+        double tsin = Math.sin(theta);
+        double tcos = Math.cos(theta);
 
-        if (theta < Math.PI * 0.25 || theta > Math.PI * 0.75) { 
-            int x1=0, y1=0;
-            int x2=0, y2=height-1;
+        if (theta < Math.PI * 0.25 || theta > Math.PI * 0.75) {
+            int x1 = 0, y1 = 0;
+            int x2 = 0, y2 = height - 1;
 
-            x1=(int) ((((r - houghHeight) - ((y1 - centerY) * tsin)) / tcos) + centerX);
-            x2=(int) ((((r - houghHeight) - ((y2 - centerY) * tsin)) / tcos) + centerX);
+            x1 = (int) ((((r - houghHeight) - ((y1 - centerY) * tsin)) / tcos) + centerX);
+            x2 = (int) ((((r - houghHeight) - ((y2 - centerY) * tsin)) / tcos) + centerX);
 
             setLine(x1, y1, x2, y2);
-        } 
-        else {
-            int x1=0, y1=0;
-            int x2=width-1, y2=0;
+        } else {
+            int x1 = 0, y1 = 0;
+            int x2 = width - 1, y2 = 0;
 
-            y1=(int) ((((r - houghHeight) - ((x1 - centerX) * tcos)) / tsin) + centerY); 
-            y2=(int) ((((r - houghHeight) - ((x2 - centerX) * tcos)) / tsin) + centerY); 
+            y1 = (int) ((((r - houghHeight) - ((x1 - centerX) * tcos)) / tsin) + centerY);
+            y2 = (int) ((((r - houghHeight) - ((x2 - centerX) * tcos)) / tsin) + centerY);
 
             setLine(x1, y1, x2, y2);
         }
     }
 
     public int compareTo(HoughLine o) {
-        return(this.score-o.score);
+        return (this.score - o.score);
     }
 }
-
-
