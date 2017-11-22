@@ -128,7 +128,7 @@ public class PSE extends JFrame {
     private final String f13 = "Linhas";
     private final String f14 = "EMQ";
     private final String f15 = "Histograma";
-    private final String f16 = "HoughTransformLine";
+    private final String f16 = "Linha";
     private final String f98 = "Tam. Original";
     private final String f99 = "Resetar";
     // Descrições para os botões
@@ -156,7 +156,7 @@ public class PSE extends JFrame {
     private final String f13tip = "Hough Linha:<br><br>";
     private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
-    private final String f16tip = "Hough Line:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)<br>";
+    private final String f16tip = "Hough Linha:<br>(*Clique para calcular gerar a detecção de linhas pela transformada de Hough*)<br>";
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
     private int convolucaoColunas = 3;
@@ -734,7 +734,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f9Button); // Contraste
         buttonPanel.add(f8Button); // Brilho
         buttonPanel.add(f3Button); // Media
-        buttonPanel.add(f12Button);// Interpolação
+        //buttonPanel.add(f12Button);// Interpolação Botão comentando pois o metodo não está funcionando
         buttonPanel.add(f7Button); // Convolução
         buttonPanel.add(f4Button); // Gaussiano
         buttonPanel.add(f5Button); // Laplaciano
@@ -1771,49 +1771,85 @@ public static BufferedImage Limiar (BufferedImage imagem, double t) { //Limiar R
         return ResultImage;
     }
 
-    public static BufferedImage Interpolacao(BufferedImage imagem) {
+    public static BufferedImage Interpolacao(BufferedImage imagem){
         //imagem resultante
         //BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
-
+ 
         //pegar linha e coluna da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
-
+        int coluna_nova = 0;
+        int linha_nova = 0;
+ 
+        int fator_esc_coluna = 3 ;
+        int fator_esc_linha = 3 ;
         //matriz criada para obter os valores q11,q12,q21,q22
         double[][] matriz;
-        matriz = new double[coluna][linha];
-
-        for (int i = 0; i < coluna; i += 2) {
-            for (int j = 0; j < linha; j += 2) {
+        matriz = new double [coluna][linha];        
+ 
+        //calculo do fator de escala
+        coluna_nova = coluna*fator_esc_coluna;
+        linha_nova = linha*fator_esc_linha;
+       
+        //matriz que se tornará a nova imagem interpolada
+        double [][] nova_imagem;
+        nova_imagem = new double[coluna_nova][linha_nova];
+        for(int i=0;i<coluna_nova;i++){
+            for(int j=0;j<linha_nova;j++){
+                nova_imagem[i][j] = 0;
+            }
+        }
+ 
+        for (int i = 0; i < coluna; i++) {
+            for (int j = 0; j < linha; j++) {
                 // pegar os valores de cada pixel da imagem original e da imagem resultante, respectivamente
                 int rgb = imagem.getRGB(i, j);
                 int r = (int) ((rgb & 0x00FF0000) >>> 16); //R
                 int g = (int) ((rgb & 0x0000FF00) >>> 8);  //G
                 int b = (int) (rgb & 0x000000FF);       //B
-
+               
                 //definir valor dos pontos x1,x2,y1,y2 a serem utilizados no calculo da interpolação
-                double x1 = (double) imagem.getRGB(i, j);
-                double x2 = (double) imagem.getRGB(i + 1, j);
-                double y1 = (double) imagem.getRGB(i, j + 1);
-                double y2 = (double) imagem.getRGB(i + 1, j + 1);
-                double x_factor = (x2 + x1) / 2, y_factor = (y2 + y1) / 2;
+                double x1 = (double)imagem.getRGB(i,j);
+                double x2 = (double)imagem.getRGB(i+1,j);
+                double y1 = (double)imagem.getRGB(i,j+1);
+                double y2 = (double)imagem.getRGB(i+1,j+1);
+ 
+ 
+                //posições da nova imagem que vão receber o valor dos pixels da imagem original
+                nova_imagem [i][j] = x1;
+                nova_imagem [i*fator_esc_coluna][j] = x2;
+                nova_imagem [i][j*fator_esc_linha] = y1;
+                nova_imagem [i*fator_esc_coluna][j*fator_esc_linha] = y2;
+ 
+                double x_factor = (nova_imagem[i][j*fator_esc_linha] - nova_imagem[i][j])/fator_esc_coluna, y_factor = (nova_imagem[i*fator_esc_coluna][j] - nova_imagem[i][j])/fator_esc_linha;        
                 // definir o valor dos valores nos pontos q11, q12, q21, q22
                 double q11 = matriz[i][j];
-                double q12 = matriz[i][j + 1];
-                double q21 = matriz[i + 1][j];
-                double q22 = matriz[i + 1][j + 1];
+                double q12 = matriz[i][j+1];
+                double q21 = matriz[i+1][j];
+                double q22 = matriz[i+1][j+1];
                 // Calculo da interpolação dos pixels
-                double x_value_1 = ((x2 - x_factor) / (x2 - x1)) * q11 + ((x_factor - x1) / (x2 - x1)) * q21;
-                double x_value_2 = ((x2 - x_factor) / (x2 - x1)) * q12 + ((x_factor - x1) / (x2 - x1)) * q22;
-                double y_value = ((y2 - y_factor) / (y2 - y1)) * x_value_1 + ((y_factor - y1) / (y2 - y1)) * x_value_2;
+                double x_value_1 = ((x2 - x_factor)/(x2-x1))*q11 + ((x_factor - x1)/(x2 - x1))*q21;
+ 
+                double x_value_2 = ((x2 - x_factor)/(x2-x1))*q12 + ((x_factor - x1)/(x2-x1))*q22;
+ 
+                double y_value = ((y2 - y_factor)/(y2 - y1))*x_value_1 + ((y_factor - y1)/(y2 - y1))*x_value_2;
+                nova_imagem [i+1][j] = y_value;
                 //coloca o valores dos pixels intermediarios no array
-                //int[] pixels = y_value;
             }
         }
+        BufferedImage newImage = new BufferedImage(fator_esc_coluna,fator_esc_linha,BufferedImage.TYPE_INT_RGB);
+       
+        WritableRaster raster = newImage.getRaster();
+        for (int h = 0; h< fator_esc_coluna; h++){
+            for (int w =0;w<fator_esc_linha;w++){
+                raster.setSample(h,w,0,nova_imagem[h][w]);    
+            }
+        }        
+ 
         // gera a imagem nova com 2 vezes o tamanho da original
-        Image ResultImage = imagem.getScaledInstance(2000, 3000, Image.SCALE_SMOOTH);
-        BufferedImage InterImage = (BufferedImage) ResultImage;
-
+        //Image ResultImage = imagem.getScaledInstance(2000,3000,Image.SCALE_SMOOTH);
+        //BufferedImage InterImage = (BufferedImage) ResultImage;
+ 
         /*
         x - the X coordinate of the upper-left corner of the area of pixels to be set
         y - the Y coordinate of the upper-left corner of the area of pixels to be set
@@ -1823,10 +1859,15 @@ public static BufferedImage Limiar (BufferedImage imagem, double t) { //Limiar R
         pixels - the array of pixels
         off - the offset into the pixels array
         scansize - the distance from one row of pixels to the next in the pixels array
-         */
+        */
         //ImageFilter NovaImagem = nova_imagem.setPixels(0,0,ResultImage.getWidth(),ResultImage.getHeight(),ResultImage.getColorModel(),pixels[],     ,   )      
-        return InterImage;
+ 
+ 
+ 
+        return newImage;      
     }
+
+
 
     public static BufferedImage HoughTransformLine(BufferedImage imagem){
         try {
