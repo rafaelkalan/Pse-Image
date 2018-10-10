@@ -45,7 +45,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class PSE extends JFrame {
-
     private final int borderX = 35;
     private final int borderY = 55;
     private int windowX = 1000;
@@ -1132,8 +1131,8 @@ public class PSE extends JFrame {
 
         //mascara de média
         int[][] mascaraMedia = {{1, 1, 1},
-        {1, 1, 1},
-        {1, 1, 1}};
+                                {1, 1, 1},
+                                {1, 1, 1}};
         //soma dos valores da máscara
         int valorMascara = 9;
 
