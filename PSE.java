@@ -1,4 +1,3 @@
-
 import java.awt.*;
 import java.awt.BasicStroke;
 import java.awt.geom.Line2D;
@@ -75,6 +74,7 @@ public class PSE extends JFrame {
     private JLabel histogramLabel;
     private Boolean mustProcess = true;
     private int lastProcessed = 0;
+
     // Nomes das funções
     private final String f1 = "Cinza";
     private final String f2 = "Negativo";
@@ -92,8 +92,10 @@ public class PSE extends JFrame {
     private final String f14 = "EMQ";
     private final String f15 = "Histograma";
     private final String f16 = "Linha";
+    private final String f17 = "Teste";
     private final String f98 = "Tam. Original";
     private final String f99 = "Resetar";
+
     // Descrições para os botões
     private final String opentip = "Clique para abrir uma imagem.";
     private final String processtip = "Clique para processar a imagem seguindo a ordem definida no timeline (à direita).";
@@ -120,6 +122,8 @@ public class PSE extends JFrame {
     private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
     private final String f16tip = "Hough Linha:<br>(*Clique para calcular gerar a detecção de linhas pela transformada de Hough*)<br>";
+    private final String f17tip = "Teste tip<br>";
+
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
     private int convolucaoColunas = 3;
@@ -157,6 +161,7 @@ public class PSE extends JFrame {
         getContentPane().setBackground(Color.DARK_GRAY);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
         // Resizing
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
@@ -174,6 +179,7 @@ public class PSE extends JFrame {
                 buttonY = windowY - timelineY;
                 gridX = windowX - buttonX;
                 gridY = windowY - timelineY;
+                
                 if (timelinePanel != null) {
                     timelinePanel.setPreferredSize(new Dimension(timelineX, timelineY));
                     timelinePanel.setSize(new Dimension(timelineX, timelineY));
@@ -182,6 +188,7 @@ public class PSE extends JFrame {
                     timelinePanel.repaint();
                     timelinePanel.validate();
                 }
+                
                 if (timelineButtonPanel1 != null) {
                     timelineButtonPanel1.setPreferredSize(new Dimension(timelineButton1X, timelineButton1Y));
                     timelineButtonPanel1.setSize(new Dimension(timelineButton1X, timelineButton1Y));
@@ -190,6 +197,7 @@ public class PSE extends JFrame {
                     timelineButtonPanel1.repaint();
                     timelineButtonPanel1.validate();
                 }
+                
                 if (timelineButtonPanel2 != null) {
                     timelineButtonPanel2.setPreferredSize(new Dimension(timelineButton2X, timelineButton2Y));
                     timelineButtonPanel2.setSize(new Dimension(timelineButton2X, timelineButton2Y));
@@ -198,6 +206,7 @@ public class PSE extends JFrame {
                     timelineButtonPanel2.repaint();
                     timelineButtonPanel2.validate();
                 }
+                
                 if (buttonPanel != null) {
                     buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
                     buttonPanel.setSize(new Dimension(buttonX, buttonY));
@@ -206,6 +215,7 @@ public class PSE extends JFrame {
                     buttonPanel.repaint();
                     buttonPanel.validate();
                 }
+                
                 if (drawPanel != null) {
                     drawPanel.setPreferredSize(new Dimension(gridX, gridY));
                     drawPanel.setSize(new Dimension(gridX, gridY));
@@ -214,6 +224,7 @@ public class PSE extends JFrame {
                     drawPanel.repaint();
                     drawPanel.validate();
                 }
+                
                 component.repaint();
                 component.validate();
                 showImage();
@@ -246,6 +257,7 @@ public class PSE extends JFrame {
         timelineButtonPanel1.setLayout(new GridLayout(1, 2));
         timelineButtonPanel1.setBackground(Color.GRAY);
         add(timelineButtonPanel1);
+
         // Open Image
         JButton openButton = new JButton("Abrir");
         openButton.setToolTipText("<html><p width=\"300\">" + opentip + "</p></html>");
@@ -255,6 +267,7 @@ public class PSE extends JFrame {
         });
         openButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(openButton);
+        
         // Process
         JButton processButton = new JButton("Processar");
         processButton.setToolTipText("<html><p width=\"300\">" + processtip + "</p></html>");
@@ -265,6 +278,7 @@ public class PSE extends JFrame {
         });
         processButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(processButton);
+        
         // View original image
         JButton originalButton = new JButton("Original");
         originalButton.setToolTipText("<html><p width=\"300\">" + originaltip + "</p></html>");
@@ -292,6 +306,7 @@ public class PSE extends JFrame {
         timelineButtonPanel2.setLayout(new GridLayout(1, 2));
         timelineButtonPanel2.setBackground(Color.GRAY);
         add(timelineButtonPanel2);
+        
         // View result image
         JButton resultButton = new JButton("Resultado");
         resultButton.setToolTipText("<html><p width=\"300\">" + resulttip + "</p></html>");
@@ -312,6 +327,7 @@ public class PSE extends JFrame {
             }
         });
         timelineButtonPanel2.add(resultButton);
+        
         // Save Image
         JButton saveButton = new JButton("Salvar");
         saveButton.setToolTipText("<html><p width=\"300\">" + savetip + "</p></html>");
@@ -321,6 +337,7 @@ public class PSE extends JFrame {
         });
         saveButton.setBackground(Color.WHITE);
         timelineButtonPanel2.add(saveButton);
+        
         // Exit Image
         JButton exitButton = new JButton("Fechar");
         exitButton.setToolTipText("<html><p width=\"300\">" + quittip + "</p></html>");
@@ -329,7 +346,8 @@ public class PSE extends JFrame {
             System.exit(0);
         });
         exitButton.setBackground(Color.WHITE);
-//        timelineButtonPanel2.add(exitButton);
+        //timelineButtonPanel2.add(exitButton);
+        
         // Help Image
         JButton helpButton = new JButton("Ajuda");
         helpButton.setToolTipText("<html><p width=\"300\">" + quittip + "</p></html>");
@@ -344,9 +362,10 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-        buttonPanel.setLayout(new GridLayout(18, 1));
+        buttonPanel.setLayout(new GridLayout(19, 1));
         buttonPanel.setBackground(Color.DARK_GRAY);
         add(buttonPanel);
+        
         // Func1
         JButton f1Button = new JButton(f1);
         f1Button.setToolTipText("<html><p width=\"300\">" + f1tip + "</p></html>");
@@ -354,6 +373,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f1);
             addTimeline(f1);
         });
+        
         // Func2
         JButton f2Button = new JButton(f2);
         f2Button.setToolTipText("<html><p width=\"300\">" + f2tip + "</p></html>");
@@ -362,6 +382,7 @@ public class PSE extends JFrame {
             addTimeline(f2);
         });
         buttonPanel.add(f2Button);
+        
         // Func3
         JButton f3Button = new JButton(f3);
         f3Button.setToolTipText("<html><p width=\"300\">" + f3tip + "</p></html>");
@@ -369,6 +390,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f3);
             addTimeline(f3);
         });
+        
         // Func4
         JButton f4Button = new JButton(f4);
         f4Button.setToolTipText("<html><p width=\"300\">" + f4tip + "</p></html>");
@@ -376,6 +398,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f4);
             addTimeline(f4);
         });
+        
         // Func5
         JButton f5Button = new JButton(f5);
         f5Button.setToolTipText("<html><p width=\"300\">" + f5tip + "</p></html>");
@@ -383,6 +406,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f5);
             addTimeline(f5);
         });
+        
         // Func6
         JButton f6Button = new JButton(f6);
         f6Button.setToolTipText("<html><p width=\"300\">" + f6tip + "</p></html>");
@@ -390,6 +414,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f6);
             addTimeline(f6);
         });
+        
         // Func7 (Convolução)
         JButton f7Button = new JButton(f7);
         f7Button.setToolTipText("<html><p width=\"300\">" + f7tip + "</p></html>");
@@ -451,6 +476,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func8 (Brilho)
         JButton f8Button = new JButton(f8);
         f8Button.setToolTipText("<html><p width=\"300\">" + f8tip + "</p></html>");
@@ -483,6 +509,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func9 (Contraste)
         JButton f9Button = new JButton(f9);
         f9Button.setToolTipText("<html><p width=\"300\">" + f9tip + "</p></html>");
@@ -515,6 +542,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func10
         JButton f10Button = new JButton(f10);
         f10Button.setToolTipText("<html><p width=\"300\">" + f10tip + "</p></html>");
@@ -551,6 +579,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func11
         JButton f11Button = new JButton(f11);
         f11Button.setToolTipText("<html><p width=\"300\">" + f11tip + "</p></html>");
@@ -622,6 +651,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func12
         JButton f12Button = new JButton(f12);
         f12Button.setToolTipText("<html><p width=\"300\">" + f12tip + "</p></html>");
@@ -658,6 +688,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func14 (EMQ)
         JButton f14Button = new JButton(f14);
         f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
@@ -667,7 +698,8 @@ public class PSE extends JFrame {
                 JOptionPane.showMessageDialog(new JFrame(), calculoEMQ(originalImage, mainImage));
             }
         });
-//        // Func15 (Histograma)
+        
+        // Func15 (Histograma)
         JToggleButton f15Button = new JToggleButton(f15);
         f15Button.setToolTipText("<html><p width=\"300\">" + f15tip + "</p></html>");
         f15Button.addItemListener((ItemEvent event) -> {
@@ -683,6 +715,7 @@ public class PSE extends JFrame {
                 histogramFrame.setVisible(false);
             }
         });
+        
         // Func13
         JButton f13Button = new JButton(f13);
         f13Button.setToolTipText("<html><p width=\"300\">" + f13tip + "</p></html>");
@@ -690,6 +723,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f13);
             addTimeline(f13);
         });
+        
         // Func98 (Tamanho Original)
         JToggleButton f98Button = new JToggleButton(f98);
         f98Button.setToolTipText("<html><p width=\"300\">" + sizetip + "</p></html>");
@@ -705,6 +739,7 @@ public class PSE extends JFrame {
                 showImage();
             }
         });
+        
         // Func16
         JButton f16Button = new JButton(f16);
         f16Button.setToolTipText("<html><p width=\"300\">" + f16tip + "</p></html>");
@@ -712,6 +747,15 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f16);
             addTimeline(f16);
         });
+
+        // Func17
+        JButton f17Button = new JButton(f17);
+        f17Button.setToolTipText("<html><p width=\"300\">" + f17tip + "</p></html>");
+        f17Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f17);
+            addTimeline(f17);
+        });
+        
         // Func99
         JButton f99Button = new JButton(f99);
         f99Button.setToolTipText("<html><p width=\"300\">" + resettip + "</p></html>");
@@ -740,6 +784,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f98Button);// Tamanho original
         buttonPanel.add(f15Button);// Histograma
         buttonPanel.add(f16Button);// HoughLine
+        buttonPanel.add(f17Button);// Teste
         buttonPanel.add(f99Button);// Resetar
 
         // Draw Panel
