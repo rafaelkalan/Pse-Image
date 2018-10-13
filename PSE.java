@@ -92,6 +92,7 @@ public class PSE extends JFrame {
     private final String f15 = "Histograma";
     private final String f16 = "Linha";
     private final String f17 = "Mediana";
+    private final String f18 = "Moda";
     private final String f98 = "Tam. Original";
     private final String f99 = "Resetar";
 
@@ -122,6 +123,7 @@ public class PSE extends JFrame {
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
     private final String f16tip = "Hough Linha:<br>(*Clique para calcular gerar a detecção de linhas pela transformada de Hough*)<br>";
     private final String f17tip = "Filtro de mediana<br>";
+    private final String f18tip = "Filtro de moda<br>";
 
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
@@ -361,7 +363,7 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-        buttonPanel.setLayout(new GridLayout(19, 1));
+        buttonPanel.setLayout(new GridLayout(20, 1));
         buttonPanel.setBackground(Color.DARK_GRAY);
         add(buttonPanel);
         
@@ -754,6 +756,14 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f17);
             addTimeline(f17);
         });
+
+        // Func18 (Moda)
+        JButton f18Button = new JButton(f18);
+        f18Button.setToolTipText("<html><p width=\"300\">" + f18tip + "</p></html>");
+        f18Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f18);
+            addTimeline(f18);
+        });
         
         // Func99
         JButton f99Button = new JButton(f99);
@@ -784,6 +794,7 @@ public class PSE extends JFrame {
         buttonPanel.add(f15Button);// Histograma
         buttonPanel.add(f16Button);// HoughLine
         buttonPanel.add(f17Button);// Mediana
+        buttonPanel.add(f18Button);// Moda
         buttonPanel.add(f99Button);// Resetar
 
         // Draw Panel
@@ -1203,7 +1214,77 @@ public class PSE extends JFrame {
                 // depois de pegar os pixels na mascara, ordena as intensidades
                 Collections.sort(colors);
 
-                // define qual intensidade escolher e decompoe em RGB
+                //define a intensidade que mais repete
+                int count[] = 0;
+                int posicao = 0;
+                int maior = 0;
+
+                for (int i = 0; i < colors.size(); i++) {
+                    posicao = colors[i];
+                    for(int j = 0; j < colors.size(); j++) {
+                        if(posicao == colors[j]) {
+                            count[i] += 1;
+                        }
+                    }
+                }
+
+                for (int i = 1; i < count.size(); i++) {
+                    maior = count[0];
+                    if(maior < count[i]) {
+                        maior = count[i];
+                    }
+                }
+
+                int cor = colors.get(maior);
+                r = ((cor & 0x00FF0000) >>> 16);
+                g = ((cor & 0x0000FF00) >>> 8);
+                b = (cor & 0x000000FF);
+
+                // nova cor do pixel
+                Color tempColor = new Color(r, g, b);
+                
+                // setar o respectivel pixel na nova imagem
+                ResultImage.setRGB(j, i, tempColor.getRGB());
+                
+                // zerar valor das cores primarias e limpar lista de intensidades
+                r = g = b = 0;
+                colors.clear();
+            }
+        }
+
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
+        return ResultImage;
+    }
+
+    public static BufferedImage Moda(BufferedImage imagem) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+        ArrayList<Integer> colors = new ArrayList();
+
+        //cores primarias
+        int r = 0, g = 0, b = 0;
+        int rgb = 0;
+
+        //pegar coluna e linha da imagem
+        int coluna = imagem.getWidth();
+        int linha = imagem.getHeight();
+
+        // percorre todos os pixels da imagem
+        for (int i = 1; i + 1 < linha; i++) {
+            for (int j = 1; j + 1 < coluna; j++) {
+                //percorre a máscara
+                for (int l = -1; l <= 1; l++) {
+                    for (int k = -1; k <= 1; k++) {
+                        //rgb = rgb do pixel
+                        rgb = imagem.getRGB(j + k, i + l);
+                        colors.add(rgb);
+                    }
+                }
+
+                // depois de pegar os pixels na mascara, ordena as intensidades
+                Collections.sort(colors);
+
+                // define qual intensidade escolher e decompoe em RGB//
                 int posicao = (int)(colors.size()/2);
                 int cor = colors.get(posicao);
                 r = ((cor & 0x00FF0000) >>> 16);
