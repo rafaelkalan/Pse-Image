@@ -93,6 +93,8 @@ public class PSE extends JFrame {
     private final String f16 = "Linha";
     private final String f17 = "Mediana";
     private final String f18 = "Moda";
+    private final String f19 = "Mínimo";
+    private final String f20 = "Máximo";
     private final String f98 = "Tam. Original";
     private final String f99 = "Resetar";
 
@@ -124,6 +126,8 @@ public class PSE extends JFrame {
     private final String f16tip = "Hough Linha:<br>(*Clique para calcular gerar a detecção de linhas pela transformada de Hough*)<br>";
     private final String f17tip = "Filtro de mediana<br>";
     private final String f18tip = "Filtro de moda<br>";
+    private final String f19tip = "Filtro de mínimo<br>";
+    private final String f20tip = "Filtro de máximo<br>";
 
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
@@ -363,7 +367,7 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-        buttonPanel.setLayout(new GridLayout(20, 1));
+        buttonPanel.setLayout(new GridLayout(22, 1));
         buttonPanel.setBackground(Color.DARK_GRAY);
         add(buttonPanel);
         
@@ -764,7 +768,25 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f18);
             addTimeline(f18);
         });
+
+        // Func19 (Mínimo)
+        JButton f19Button = new JButton(f19);
+        f19Button.setToolTipText("<html><p width=\"300\">" + f19tip + "</p></html>");
+        f19Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f19);
+            addTimeline(f19);
+        });
         
+
+        // Func20 (Máximo)
+        JButton f20Button = new JButton(f20);
+        f20Button.setToolTipText("<html><p width=\"300\">" + f20tip + "</p></html>");
+        f20Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f20);
+            addTimeline(f20);
+        });
+
+
         // Func99
         JButton f99Button = new JButton(f99);
         f99Button.setToolTipText("<html><p width=\"300\">" + resettip + "</p></html>");
@@ -795,6 +817,8 @@ public class PSE extends JFrame {
         buttonPanel.add(f16Button);// HoughLine
         buttonPanel.add(f17Button);// Mediana
         buttonPanel.add(f18Button);// Moda
+        buttonPanel.add(f19Button);// Mínimo
+        buttonPanel.add(f20Button);// Máximo
         buttonPanel.add(f99Button);// Resetar
 
         // Draw Panel
@@ -1077,7 +1101,11 @@ public class PSE extends JFrame {
                 mainImage = Mediana(mainImage);
             } else if (name.equals(f18)) {
                 mainImage = Moda(mainImage);
-            }
+            } else if (name.equals(f19)) {
+                mainImage = Minimo(mainImage);
+            } else if (name.equals(f20)) {
+                mainImage = Maximo(mainImage);
+            } 
             return true;
         }
     }
@@ -1311,6 +1339,110 @@ public class PSE extends JFrame {
         ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
         return ResultImage;
     }
+
+    public static BufferedImage Minimo(BufferedImage imagem) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+        ArrayList<Integer> colors = new ArrayList();
+
+        //cores primarias
+        int r = 0, g = 0, b = 0;
+        int rgb = 0;
+
+        //pegar coluna e linha da imagem
+        int coluna = imagem.getWidth();
+        int linha = imagem.getHeight();
+
+        // percorre todos os pixels da imagem
+        for (int i = 1; i + 1 < linha; i++) {
+            for (int j = 1; j + 1 < coluna; j++) {
+                //percorre a máscara
+                for (int l = -1; l <= 1; l++) {
+                    for (int k = -1; k <= 1; k++) {
+                        //rgb = rgb do pixel
+                        rgb = imagem.getRGB(j + k, i + l);
+                        colors.add(rgb);
+                    }
+                }
+
+                // depois de pegar os pixels na mascara, ordena as intensidades
+                Collections.sort(colors);
+
+                // define qual intensidade escolher e decompoe em RGB
+                int cor = colors.get(0);
+                r = ((cor & 0x00FF0000) >>> 16);
+                g = ((cor & 0x0000FF00) >>> 8);
+                b = (cor & 0x000000FF);
+
+                // nova cor do pixel
+                Color tempColor = new Color(r, g, b);
+                
+                // setar o respectivel pixel na nova imagem
+                ResultImage.setRGB(j, i, tempColor.getRGB());
+                
+                // zerar valor das cores primarias e limpar lista de intensidades
+                r = g = b = 0;
+                colors.clear();
+            }
+        }
+
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
+        return ResultImage;
+    }
+
+
+
+    public static BufferedImage Maximo(BufferedImage imagem) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+        ArrayList<Integer> colors = new ArrayList();
+
+        //cores primarias
+        int r = 0, g = 0, b = 0;
+        int rgb = 0;
+
+        //pegar coluna e linha da imagem
+        int coluna = imagem.getWidth();
+        int linha = imagem.getHeight();
+
+        // percorre todos os pixels da imagem
+        for (int i = 1; i + 1 < linha; i++) {
+            for (int j = 1; j + 1 < coluna; j++) {
+                //percorre a máscara
+                for (int l = -1; l <= 1; l++) {
+                    for (int k = -1; k <= 1; k++) {
+                        //rgb = rgb do pixel
+                        rgb = imagem.getRGB(j + k, i + l);
+                        colors.add(rgb);
+                    }
+                }
+
+                // depois de pegar os pixels na mascara, ordena as intensidades
+                Collections.sort(colors);
+
+                // define qual intensidade escolher e decompoe em RGB
+                int posicao = colors.size() - 1;
+                int cor = colors.get(posicao);
+                r = ((cor & 0x00FF0000) >>> 16);
+                g = ((cor & 0x0000FF00) >>> 8);
+                b = (cor & 0x000000FF);
+
+                // nova cor do pixel
+                Color tempColor = new Color(r, g, b);
+                
+                // setar o respectivel pixel na nova imagem
+                ResultImage.setRGB(j, i, tempColor.getRGB());
+                
+                // zerar valor das cores primarias e limpar lista de intensidades
+                r = g = b = 0;
+                colors.clear();
+            }
+        }
+
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
+        return ResultImage;
+    }
+
 
     public static BufferedImage Gaussiano(BufferedImage imagem) {
         //imagem resultante
