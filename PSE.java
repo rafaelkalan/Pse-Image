@@ -1075,6 +1075,8 @@ public class PSE extends JFrame {
                 mainImage = HoughTransformLine(mainImage);
             } else if (name.equals(f17)) {
                 mainImage = Mediana(mainImage);
+            } else if (name.equals(f18)) {
+                mainImage = Moda(mainImage);
             }
             return true;
         }
@@ -1186,13 +1188,13 @@ public class PSE extends JFrame {
         return ResultImage;
     }
 
-    public static BufferedImage Mediana(BufferedImage imagem) {
+    public static BufferedImage Moda(BufferedImage imagem) {
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
         ArrayList<Integer> colors = new ArrayList();
 
         //cores primarias
-        int r = 0, g = 0, b = 0;
+        int r = 0, g = 0, b = 0, p = 0;
         int rgb = 0;
 
         //pegar coluna e linha da imagem
@@ -1215,27 +1217,30 @@ public class PSE extends JFrame {
                 Collections.sort(colors);
 
                 //define a intensidade que mais repete
-                int count[] = 0;
-                int posicao = 0;
+                int[] count = new int[colors.get(colors.size()-1)];
                 int maior = 0;
+                
+                // contar as intensidades
+                for (int c = 0; c < colors.size(); c++) {
+                    count[colors.get(c)]++;
+                }
 
-                for (int i = 0; i < colors.size(); i++) {
-                    posicao = colors[i];
-                    for(int j = 0; j < colors.size(); j++) {
-                        if(posicao == colors[j]) {
-                            count[i] += 1;
-                        }
+                // achar o maior numero de ocorrencias
+                maior = count[0];
+                for (int c = 1; c < count.length; c++) {
+                    if (maior < count[c]) {
+                        maior = count[c];
                     }
                 }
 
-                for (int i = 1; i < count.size(); i++) {
-                    maior = count[0];
-                    if(maior < count[i]) {
-                        maior = count[i];
+                // achar a intensidade de maior numero de ocorrencias
+                for (p = 0; p < count.length; p++) {
+                    if (count[p] == maior) {
+                        break;
                     }
                 }
 
-                int cor = colors.get(maior);
+                int cor = colors.get(p);
                 r = ((cor & 0x00FF0000) >>> 16);
                 g = ((cor & 0x0000FF00) >>> 8);
                 b = (cor & 0x000000FF);
@@ -1247,7 +1252,7 @@ public class PSE extends JFrame {
                 ResultImage.setRGB(j, i, tempColor.getRGB());
                 
                 // zerar valor das cores primarias e limpar lista de intensidades
-                r = g = b = 0;
+                r = g = b = p = 0;
                 colors.clear();
             }
         }
@@ -1256,7 +1261,7 @@ public class PSE extends JFrame {
         return ResultImage;
     }
 
-    public static BufferedImage Moda(BufferedImage imagem) {
+    public static BufferedImage Mediana(BufferedImage imagem) {
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
         ArrayList<Integer> colors = new ArrayList();
