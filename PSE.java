@@ -108,18 +108,18 @@ public class PSE extends JFrame {
     private final String resettip = "Clique para resetar a imagem de volta à original e resetar o timeline.";
     private final String sizetip = "Mostrar tamanho original:<br>(*Clique para ligar/desligar visualização da imagem em seu tamanho original*)";
     private final String timelinetip = "Clique esquerdo para visualizar esta etapa.<br>Clique direito para remover esta etapa.";
-    private final String f1tip = "Escala de Cinza:<br><br>Transforma a imágem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
+    private final String f1tip = "Escala de Cinza:<br><br>Transforma a imagem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
     private final String f2tip = "Filtro Negativo:<br><br>Inverte todos os tons da imágem.<br><br>Geralmente usado para transformar uma imagem obtida em sua forma negativa para a sua positiva (imagem normal).";
     private final String f3tip = "Filtro de Média:<br><br>Percorre a imagem substituindo cada pixel pela média de seus vizinhos.<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
     private final String f4tip = "Filtro Gaussiano:<br><br>Percorre a imagem aplicando um efeito \"borrado\".<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
     private final String f5tip = "Operador de Laplace:<br><br>Percorre a imagem calculando a divergěncia de gradientes, identificando áreas de mudança rápida (bordas).<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem.";
     private final String f6tip = "Operador de Sobel:<br><br>Percorre a imagem calculando as normais dos gradientes, identificando potenciais bordas.<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem. ";
-    private final String f7tip = "Filtro de Convolução:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem substituindo cada pixel pela média ponderada de seus vizinhos a partir de uma matriz de convolução.<br><br>Filtro de propósito geral usado quando se quer um maior controle no processamento da imagem.";
-    private final String f8tip = "Filtro de Brilho:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o brilho de cada pixel.<br><br>Geralmente usado para corrigir uma imagem que está muito clara ou escura, dificultando o seu processamento.";
-    private final String f9tip = "Filtro de Contraste:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
-    private final String f10tip = "Limiar Global Padrão:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem para verificar a média do valor de intensidade dos pixels, e usa essa média para gerar uma nova imagem binária repartindo o pixels por esse valor. O limiar pode ser configurado para usar um valor fornecido, ao inves do valor da média.";
-    private final String f11tip = "Filtro de Cor:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem verificando cada pixel, gerando uma imagem binária a partir daqueles que estiverem dentro do escopo de cor permitido.<br><br>Geralmente usado quando é fácil retirar da imagem a parte desejada pela sua cor distinta.";
-    private final String f12tip = "Interpolação:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem e interpola os pixels para gerar uma nova imagem gerada a partir do fator de escala definido na configuração. <br><br> Geralmente usado para escalar uma imagem quando necessário.";
+    private final String f7tip = "Filtro de Convolução:<br><br>Percorre a imagem substituindo cada pixel pela média ponderada de seus vizinhos a partir de uma matriz de convolução.<br><br>Filtro de propósito geral usado quando se quer um maior controle no processamento da imagem.";
+    private final String f8tip = "Filtro de Brilho:<br><br>Percorre a imagem aumentando ou reduzindo o brilho de cada pixel.<br><br>Geralmente usado para corrigir uma imagem que está muito clara ou escura, dificultando o seu processamento.";
+    private final String f9tip = "Filtro de Contraste:<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
+    private final String f10tip = "Limiar Global Padrão:<br><br>Percorre a imagem para verificar a média do valor de intensidade dos pixels, e usa essa média para gerar uma nova imagem binária repartindo o pixels por esse valor. O limiar pode ser configurado para usar um valor fornecido, ao inves do valor da média.";
+    private final String f11tip = "Filtro de Cor:<br><br>Percorre a imagem verificando cada pixel, gerando uma imagem binária a partir daqueles que estiverem dentro do escopo de cor permitido.<br><br>Geralmente usado quando é fácil retirar da imagem a parte desejada pela sua cor distinta.";
+    private final String f12tip = "Interpolação:<br><br>Percorre a imagem e interpola os pixels para gerar uma nova imagem gerada a partir do fator de escala definido na configuração. <br><br> Geralmente usado para escalar uma imagem quando necessário.";
     private final String f13tip = "Hough Linha:<br><br>";
     private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
@@ -429,7 +429,7 @@ public class PSE extends JFrame {
         });
         f7Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     JTextField yField = new JTextField(3);
                     JTextField weightField = new JTextField(9);
@@ -472,7 +472,7 @@ public class PSE extends JFrame {
                             convolucaoLinhas = tempLinhas;
                             convolucaoColunas = tempColunas;
                             for (int i = 0; i < stringPesos.length; i++) {
-                                convolucaoPesos.add(Integer.parseInt(stringPesos[i]));
+                                convolucaoPesos.add(Integer.parseInt(stringPesos[i].trim()));
                             }
                         } catch (Exception e) {
                             JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
@@ -491,7 +491,7 @@ public class PSE extends JFrame {
         });
         f8Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + brilhoFloat);
 
@@ -524,7 +524,7 @@ public class PSE extends JFrame {
         });
         f9Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + contrasteFloat);
 
@@ -557,7 +557,7 @@ public class PSE extends JFrame {
         });
         f10Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + limiarDouble);
 
@@ -594,7 +594,7 @@ public class PSE extends JFrame {
         });
         f11Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField rMinField = new JTextField(3);
                     JTextField gMinField = new JTextField(3);
                     JTextField bMinField = new JTextField(3);
@@ -666,7 +666,7 @@ public class PSE extends JFrame {
         });
         f12Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + interpolacaoFator);
 
