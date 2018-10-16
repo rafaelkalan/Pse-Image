@@ -67,6 +67,7 @@ public class PSE extends JFrame {
     private JFrame histogramFrame;
     private JPanel histogramPanel;
     private BufferedImage originalImage;
+    private BufferedImage originalSecondImage;
     private BufferedImage mainImage;
     private BufferedImage secondImage;
     private ArrayList<BufferedImage> imageHistory;
@@ -291,7 +292,7 @@ public class PSE extends JFrame {
         JButton processButton = new JButton("Processar");
         processButton.setToolTipText("<html><p width=\"300\">" + processtip + "</p></html>");
         processButton.addActionListener((ActionEvent event) -> {
-            if (mainImage != null) {
+            if (mainImage != null || secondImage != null) {
                 new ProcessFunctionsWorker().execute();
             }
         });
@@ -302,10 +303,14 @@ public class PSE extends JFrame {
         JButton originalButton = new JButton("Original");
         originalButton.setToolTipText("<html><p width=\"300\">" + originaltip + "</p></html>");
         originalButton.addActionListener((ActionEvent event) -> {
-            if (originalImage != null) {
+            if (originalImage != null ) {
                 setTitle("PSE Image - Visualizando: Imagem original");
                 mainImage = originalImage;
                 showImage();
+            }
+            if(originalSecondImage != null) {
+            	secondImage = originalSecondImage;
+            	showSecondImage();
             }
         });
         timelineButtonPanel1.add(originalButton);
@@ -875,7 +880,7 @@ public class PSE extends JFrame {
         }
     }
 
-        private void openSecondImage() {
+    private void openSecondImage() {
         JFileChooser imageChooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
                 "Arquivos de imagem", "png", "jpg", "jpeg");
@@ -886,7 +891,7 @@ public class PSE extends JFrame {
                 //    + imageChooser.getSelectedFile().getName());
             try {
                 secondImage = ImageIO.read(imageChooser.getSelectedFile());
-                // originalImage = mainImage;
+                originalSecondImage = secondImage;
                 showSecondImage();
                 setTitle("PSE Image - " + imageChooser.getName(imageChooser.getSelectedFile()));
                 resetTimeline();
@@ -960,7 +965,7 @@ public class PSE extends JFrame {
         }
     }
 
- private void showSecondImage() {
+    private void showSecondImage() {
         if (secondImage != null) {
             if (secondImageLabel != null) {
                 drawPanel.remove(secondImageLabel);
@@ -993,13 +998,13 @@ public class PSE extends JFrame {
             drawPanel.repaint();
             drawPanel.validate();
 
-            //parte do histograma
+            //parte do histograma -- FALTA ARRUMAR ---
             if (histogramOn) {
                 drawWidth = (float) histogramPanel.getSize().getWidth();
                 drawHeight = (float) histogramPanel.getSize().getHeight();
-                BufferedImage mainHistogram = Histograma(mainImage);
-                imgWidth = mainHistogram.getWidth();
-                imgHeight = mainHistogram.getHeight();
+                BufferedImage secondHistogram = Histograma(secondImage);
+                imgWidth = secondHistogram.getWidth();
+                imgHeight = secondHistogram.getHeight();
                 imgRatio = imgWidth / imgHeight;
                 drawRatio = drawWidth / drawHeight;
                 imgWidthNew = imgWidth;
@@ -1015,7 +1020,7 @@ public class PSE extends JFrame {
                     imgHeight = drawHeight;
                 }
             //    tempImage = mainHistogram.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
-                tempImage = mainHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
+                tempImage = secondHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
                 if (histogramLabel != null) {
                     histogramPanel.remove(histogramLabel);
                 }
@@ -1109,6 +1114,10 @@ public class PSE extends JFrame {
             mainImage = originalImage;
             showImage();
         }
+        if(secondImage != null) {
+        	secondImage = originalSecondImage;
+        	showSecondImage();
+        }
         Component component[] = timelinePanel.getComponents();
         for (int i = timelinePanel.getComponentCount() - 1; i >= 0; i--) {
             JButton button = (JButton) component[i];
@@ -1126,8 +1135,10 @@ public class PSE extends JFrame {
         protected Integer doInBackground() throws Exception {
             setTitle("PSE Image - Processar");
             mainImage = (lastProcessed == 0) ? originalImage : imageHistory.get(lastProcessed - 1);
+            secondImage = (lastProcessed == 0) ? originalSecondImage : imageHistory.get(lastProcessed - 1);
             imageHistory = (lastProcessed == 0) ? new ArrayList<BufferedImage>() : imageHistory;
             showImage();
+            showSecondImage();
             Component component[] = timelinePanel.getComponents();
             for (int i = lastProcessed; i < timelinePanel.getComponentCount(); i++) {
                 JButton button = (JButton) component[i];
@@ -1152,6 +1163,11 @@ public class PSE extends JFrame {
                     imageHistory.add(i, mainImage);
                     showImage();
                 }
+                if(secondImage != null) {
+                	functionChooser(defaultText);
+                	imageHistory.add(i, secondImage);
+                	showSecondImage();
+                }
                 try {
                     TimeUnit.MILLISECONDS.sleep(300);
                 } catch (Exception e) {
@@ -1171,42 +1187,60 @@ public class PSE extends JFrame {
         private boolean functionChooser(String name) {
             if (name.equals(f1)) {
                 mainImage = EscalaDeCinza(mainImage);
+                secondImage = EscalaDeCinza(secondImage);
             } else if (name.equals(f2)) {
                 mainImage = Negativo(mainImage);
+                secondImage = Negativo(secondImage);
             } else if (name.equals(f3)) {
                 mainImage = Media(mainImage);
+                secondImage = Media(secondImage);
             } else if (name.equals(f4)) {
                 mainImage = Gaussiano(mainImage);
+                secondImage = Gaussiano(secondImage);
             } else if (name.equals(f5)) {
                 mainImage = Laplaciano(mainImage);
+                secondImage = Laplaciano(secondImage);
             } else if (name.equals(f6)) {
                 mainImage = Sobel(mainImage);
+                secondImage = Sobel(secondImage);
             } else if (name.equals(f7)) {
                 mainImage = Convolucao(mainImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
+                secondImage = Convolucao(secondImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
             } else if (name.equals(f8)) {
                 mainImage = Brilho(mainImage, brilhoFloat);
+                secondImage = Brilho(secondImage, brilhoFloat);
             } else if (name.equals(f9)) {
                 mainImage = Contraste(mainImage, contrasteFloat);
+                secondImage = Contraste(secondImage, contrasteFloat);
             } else if (name.equals(f10)) {
                 if (limiarDouble != -1) {
                     mainImage = Limiar(mainImage, limiarDouble);
+                    secondImage = Limiar(secondImage, limiarDouble);
                 } else {
                     mainImage = LGP(mainImage);
+                    secondImage = LGP(secondImage);
                 }
             } else if (name.equals(f11)) {
                 mainImage = Segmentacao(mainImage, filtroRGB);
+                secondImage = Segmentacao(secondImage, filtroRGB);
             } else if (name.equals(f12)) {
                 mainImage = Interpolacao(mainImage, interpolacaoFator);
+                secondImage = Interpolacao(secondImage, interpolacaoFator);
             } else if (name.equals(f16)) {
                 mainImage = HoughTransformLine(mainImage);
+                secondImage = HoughTransformLine(secondImage);
             } else if (name.equals(f17)) {
                 mainImage = Mediana(mainImage);
+                secondImage = Mediana(secondImage);
             } else if (name.equals(f18)) {
                 mainImage = Moda(mainImage);
+                secondImage = Moda(secondImage);
             } else if (name.equals(f19)) {
                 mainImage = Minimo(mainImage);
+                secondImage = Minimo(secondImage);
             } else if (name.equals(f20)) {
                 mainImage = Maximo(mainImage);
+                secondImage = Maximo (secondImage);
             } 
             return true;
         }
