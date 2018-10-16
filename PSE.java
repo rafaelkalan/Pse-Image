@@ -68,8 +68,10 @@ public class PSE extends JFrame {
     private JPanel histogramPanel;
     private BufferedImage originalImage;
     private BufferedImage mainImage;
+    private BufferedImage secondImage;
     private ArrayList<BufferedImage> imageHistory;
     private JLabel mainImageLabel;
+    private JLabel secondImageLabel;
     private JLabel histogramLabel;
     private Boolean mustProcess = true;
     private int lastProcessed = 0;
@@ -100,6 +102,7 @@ public class PSE extends JFrame {
 
     // Descrições para os botões
     private final String opentip = "Clique para abrir uma imagem.";
+    private final String openSecondtip = "Clique para abrir uma segunda imagem.";
     private final String processtip = "Clique para processar a imagem seguindo a ordem definida no timeline (à direita).";
     private final String originaltip = "Clique para mudar a visualização para a imagem original.";
     private final String resulttip = "Clique para mudar a visualização para a imagem resultada do processamento no timeline (à esquerda).";
@@ -272,7 +275,18 @@ public class PSE extends JFrame {
         });
         openButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(openButton);
+
+         // Open Second Image
+         JButton openSecondButton = new JButton("2ª");
+         openSecondButton.setToolTipText("<html><p width=\"300\">" + openSecondtip + "</p></html>");
+         openSecondButton.addActionListener((ActionEvent event) -> {
+             setTitle("PSE Image - Abrir");
+             openSecondImage();
+         });
+         openSecondButton.setBackground(Color.WHITE);
+         timelineButtonPanel1.add(openSecondButton);
         
+//        
         // Process
         JButton processButton = new JButton("Processar");
         processButton.setToolTipText("<html><p width=\"300\">" + processtip + "</p></html>");
@@ -861,6 +875,26 @@ public class PSE extends JFrame {
         }
     }
 
+        private void openSecondImage() {
+        JFileChooser imageChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "Arquivos de imagem", "png", "jpg", "jpeg");
+        imageChooser.setFileFilter(filter);
+        int returnVal = imageChooser.showOpenDialog(drawPanel);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+        //    System.out.println("You chose to open this file: "
+                //    + imageChooser.getSelectedFile().getName());
+            try {
+                secondImage = ImageIO.read(imageChooser.getSelectedFile());
+                // originalImage = mainImage;
+                showSecondImage();
+                setTitle("PSE Image - " + imageChooser.getName(imageChooser.getSelectedFile()));
+                resetTimeline();
+            } catch (IOException e) {
+            }
+        }
+    }
+
     private void showImage() {
         if (mainImage != null) {
             if (mainImageLabel != null) {
@@ -919,12 +953,80 @@ public class PSE extends JFrame {
                     histogramPanel.remove(histogramLabel);
                 }
                 histogramLabel = new JLabel(new ImageIcon(tempImage));
+                histogramPanel.add(histogramLabel, BorderLayout.WEST);
+                histogramPanel.repaint();
+                histogramPanel.validate();
+            }
+        }
+    }
+
+ private void showSecondImage() {
+        if (secondImage != null) {
+            if (secondImageLabel != null) {
+                drawPanel.remove(secondImageLabel);
+            }
+            float drawWidth = (float) drawPanel.getSize().getWidth();
+            float drawHeight = (float) drawPanel.getSize().getHeight();
+            float imgWidth = secondImage.getWidth();
+            float imgHeight = secondImage.getHeight();
+            float imgRatio = imgWidth / imgHeight;
+            float drawRatio = drawWidth / drawHeight;
+            float imgWidthNew = imgWidth;
+            float imgHeightNew = imgHeight;
+            if (imgRatio > drawRatio) {
+                imgWidthNew = drawWidth;
+                imgHeightNew = imgHeight * (drawWidth / imgWidth);
+            } else if (imgRatio < drawRatio) {
+                imgWidthNew = imgWidth * (drawHeight / imgHeight);
+                imgHeightNew = drawHeight;
+            } else {
+                imgWidth = drawWidth;
+                imgHeight = drawHeight;
+            }
+            Image tempImage = secondImage.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
+            if (!scaleOff) {
+                secondImageLabel = new JLabel(new ImageIcon(tempImage));
+            } else {
+                secondImageLabel = new JLabel(new ImageIcon(mainImage));
+            }
+            drawPanel.add(secondImageLabel, BorderLayout.EAST);
+            drawPanel.repaint();
+            drawPanel.validate();
+
+            //parte do histograma
+            if (histogramOn) {
+                drawWidth = (float) histogramPanel.getSize().getWidth();
+                drawHeight = (float) histogramPanel.getSize().getHeight();
+                BufferedImage mainHistogram = Histograma(mainImage);
+                imgWidth = mainHistogram.getWidth();
+                imgHeight = mainHistogram.getHeight();
+                imgRatio = imgWidth / imgHeight;
+                drawRatio = drawWidth / drawHeight;
+                imgWidthNew = imgWidth;
+                imgHeightNew = imgHeight;
+                if (imgRatio > drawRatio) {
+                    imgWidthNew = drawWidth;
+                    imgHeightNew = imgHeight * (drawWidth / imgWidth);
+                } else if (imgRatio < drawRatio) {
+                    imgWidthNew = imgWidth * (drawHeight / imgHeight);
+                    imgHeightNew = drawHeight;
+                } else {
+                    imgWidth = drawWidth;
+                    imgHeight = drawHeight;
+                }
+            //    tempImage = mainHistogram.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
+                tempImage = mainHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
+                if (histogramLabel != null) {
+                    histogramPanel.remove(histogramLabel);
+                }
+                histogramLabel = new JLabel(new ImageIcon(tempImage));
                 histogramPanel.add(histogramLabel, BorderLayout.CENTER);
                 histogramPanel.repaint();
                 histogramPanel.validate();
             }
         }
     }
+
 
     private void saveImage() {
         if (mainImage == null) {
