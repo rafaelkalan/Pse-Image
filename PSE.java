@@ -67,9 +67,12 @@ public class PSE extends JFrame {
     private JFrame histogramFrame;
     private JPanel histogramPanel;
     private BufferedImage originalImage;
+    private BufferedImage originalSecondImage;
     private BufferedImage mainImage;
+    private BufferedImage secondImage;
     private ArrayList<BufferedImage> imageHistory;
     private JLabel mainImageLabel;
+    private JLabel secondImageLabel;
     private JLabel histogramLabel;
     private Boolean mustProcess = true;
     private int lastProcessed = 0;
@@ -100,6 +103,7 @@ public class PSE extends JFrame {
 
     // Descrições para os botões
     private final String opentip = "Clique para abrir uma imagem.";
+    private final String openSecondtip = "Clique para abrir uma segunda imagem.";
     private final String processtip = "Clique para processar a imagem seguindo a ordem definida no timeline (à direita).";
     private final String originaltip = "Clique para mudar a visualização para a imagem original.";
     private final String resulttip = "Clique para mudar a visualização para a imagem resultada do processamento no timeline (à esquerda).";
@@ -108,18 +112,18 @@ public class PSE extends JFrame {
     private final String resettip = "Clique para resetar a imagem de volta à original e resetar o timeline.";
     private final String sizetip = "Mostrar tamanho original:<br>(*Clique para ligar/desligar visualização da imagem em seu tamanho original*)";
     private final String timelinetip = "Clique esquerdo para visualizar esta etapa.<br>Clique direito para remover esta etapa.";
-    private final String f1tip = "Escala de Cinza:<br><br>Transforma a imágem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
+    private final String f1tip = "Escala de Cinza:<br><br>Transforma a imagem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
     private final String f2tip = "Filtro Negativo:<br><br>Inverte todos os tons da imágem.<br><br>Geralmente usado para transformar uma imagem obtida em sua forma negativa para a sua positiva (imagem normal).";
     private final String f3tip = "Filtro de Média:<br><br>Percorre a imagem substituindo cada pixel pela média de seus vizinhos.<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
     private final String f4tip = "Filtro Gaussiano:<br><br>Percorre a imagem aplicando um efeito \"borrado\".<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
     private final String f5tip = "Operador de Laplace:<br><br>Percorre a imagem calculando a divergěncia de gradientes, identificando áreas de mudança rápida (bordas).<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem.";
     private final String f6tip = "Operador de Sobel:<br><br>Percorre a imagem calculando as normais dos gradientes, identificando potenciais bordas.<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem. ";
-    private final String f7tip = "Filtro de Convolução:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem substituindo cada pixel pela média ponderada de seus vizinhos a partir de uma matriz de convolução.<br><br>Filtro de propósito geral usado quando se quer um maior controle no processamento da imagem.";
-    private final String f8tip = "Filtro de Brilho:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o brilho de cada pixel.<br><br>Geralmente usado para corrigir uma imagem que está muito clara ou escura, dificultando o seu processamento.";
-    private final String f9tip = "Filtro de Contraste:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
-    private final String f10tip = "Limiar Global Padrão:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem para verificar a média do valor de intensidade dos pixels, e usa essa média para gerar uma nova imagem binária repartindo o pixels por esse valor. O limiar pode ser configurado para usar um valor fornecido, ao inves do valor da média.";
-    private final String f11tip = "Filtro de Cor:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem verificando cada pixel, gerando uma imagem binária a partir daqueles que estiverem dentro do escopo de cor permitido.<br><br>Geralmente usado quando é fácil retirar da imagem a parte desejada pela sua cor distinta.";
-    private final String f12tip = "Interpolação:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem e interpola os pixels para gerar uma nova imagem gerada a partir do fator de escala definido na configuração. <br><br> Geralmente usado para escalar uma imagem quando necessário.";
+    private final String f7tip = "Filtro de Convolução:<br><br>Percorre a imagem substituindo cada pixel pela média ponderada de seus vizinhos a partir de uma matriz de convolução.<br><br>Filtro de propósito geral usado quando se quer um maior controle no processamento da imagem.";
+    private final String f8tip = "Filtro de Brilho:<br><br>Percorre a imagem aumentando ou reduzindo o brilho de cada pixel.<br><br>Geralmente usado para corrigir uma imagem que está muito clara ou escura, dificultando o seu processamento.";
+    private final String f9tip = "Filtro de Contraste:<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
+    private final String f10tip = "Limiar Global Padrão:<br><br>Percorre a imagem para verificar a média do valor de intensidade dos pixels, e usa essa média para gerar uma nova imagem binária repartindo o pixels por esse valor. O limiar pode ser configurado para usar um valor fornecido, ao inves do valor da média.";
+    private final String f11tip = "Filtro de Cor:<br><br>Percorre a imagem verificando cada pixel, gerando uma imagem binária a partir daqueles que estiverem dentro do escopo de cor permitido.<br><br>Geralmente usado quando é fácil retirar da imagem a parte desejada pela sua cor distinta.";
+    private final String f12tip = "Interpolação:<br><br>Percorre a imagem e interpola os pixels para gerar uma nova imagem gerada a partir do fator de escala definido na configuração. <br><br> Geralmente usado para escalar uma imagem quando necessário.";
     private final String f13tip = "Hough Linha:<br><br>";
     private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
@@ -272,12 +276,23 @@ public class PSE extends JFrame {
         });
         openButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(openButton);
+
+         // Open Second Image
+         JButton openSecondButton = new JButton("2ª");
+         openSecondButton.setToolTipText("<html><p width=\"300\">" + openSecondtip + "</p></html>");
+         openSecondButton.addActionListener((ActionEvent event) -> {
+             setTitle("PSE Image - Abrir");
+             openSecondImage();
+         });
+         openSecondButton.setBackground(Color.WHITE);
+         timelineButtonPanel1.add(openSecondButton);
         
+//        
         // Process
         JButton processButton = new JButton("Processar");
         processButton.setToolTipText("<html><p width=\"300\">" + processtip + "</p></html>");
         processButton.addActionListener((ActionEvent event) -> {
-            if (mainImage != null) {
+            if (mainImage != null || secondImage != null) {
                 new ProcessFunctionsWorker().execute();
             }
         });
@@ -288,10 +303,14 @@ public class PSE extends JFrame {
         JButton originalButton = new JButton("Original");
         originalButton.setToolTipText("<html><p width=\"300\">" + originaltip + "</p></html>");
         originalButton.addActionListener((ActionEvent event) -> {
-            if (originalImage != null) {
+            if (originalImage != null ) {
                 setTitle("PSE Image - Visualizando: Imagem original");
                 mainImage = originalImage;
                 showImage();
+            }
+            if(originalSecondImage != null) {
+            	secondImage = originalSecondImage;
+            	showSecondImage();
             }
         });
         timelineButtonPanel1.add(originalButton);
@@ -429,7 +448,7 @@ public class PSE extends JFrame {
         });
         f7Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     JTextField yField = new JTextField(3);
                     JTextField weightField = new JTextField(9);
@@ -472,7 +491,7 @@ public class PSE extends JFrame {
                             convolucaoLinhas = tempLinhas;
                             convolucaoColunas = tempColunas;
                             for (int i = 0; i < stringPesos.length; i++) {
-                                convolucaoPesos.add(Integer.parseInt(stringPesos[i]));
+                                convolucaoPesos.add(Integer.parseInt(stringPesos[i].trim()));
                             }
                         } catch (Exception e) {
                             JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
@@ -491,7 +510,7 @@ public class PSE extends JFrame {
         });
         f8Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + brilhoFloat);
 
@@ -524,7 +543,7 @@ public class PSE extends JFrame {
         });
         f9Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + contrasteFloat);
 
@@ -557,7 +576,7 @@ public class PSE extends JFrame {
         });
         f10Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + limiarDouble);
 
@@ -594,7 +613,7 @@ public class PSE extends JFrame {
         });
         f11Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField rMinField = new JTextField(3);
                     JTextField gMinField = new JTextField(3);
                     JTextField bMinField = new JTextField(3);
@@ -666,7 +685,7 @@ public class PSE extends JFrame {
         });
         f12Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + interpolacaoFator);
 
@@ -861,6 +880,26 @@ public class PSE extends JFrame {
         }
     }
 
+    private void openSecondImage() {
+        JFileChooser imageChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "Arquivos de imagem", "png", "jpg", "jpeg");
+        imageChooser.setFileFilter(filter);
+        int returnVal = imageChooser.showOpenDialog(drawPanel);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+        //    System.out.println("You chose to open this file: "
+                //    + imageChooser.getSelectedFile().getName());
+            try {
+                secondImage = ImageIO.read(imageChooser.getSelectedFile());
+                originalSecondImage = secondImage;
+                showSecondImage();
+                setTitle("PSE Image - " + imageChooser.getName(imageChooser.getSelectedFile()));
+                resetTimeline();
+            } catch (IOException e) {
+            }
+        }
+    }
+
     private void showImage() {
         if (mainImage != null) {
             if (mainImageLabel != null) {
@@ -919,12 +958,80 @@ public class PSE extends JFrame {
                     histogramPanel.remove(histogramLabel);
                 }
                 histogramLabel = new JLabel(new ImageIcon(tempImage));
+                histogramPanel.add(histogramLabel, BorderLayout.WEST);
+                histogramPanel.repaint();
+                histogramPanel.validate();
+            }
+        }
+    }
+
+    private void showSecondImage() {
+        if (secondImage != null) {
+            if (secondImageLabel != null) {
+                drawPanel.remove(secondImageLabel);
+            }
+            float drawWidth = (float) drawPanel.getSize().getWidth();
+            float drawHeight = (float) drawPanel.getSize().getHeight();
+            float imgWidth = secondImage.getWidth();
+            float imgHeight = secondImage.getHeight();
+            float imgRatio = imgWidth / imgHeight;
+            float drawRatio = drawWidth / drawHeight;
+            float imgWidthNew = imgWidth;
+            float imgHeightNew = imgHeight;
+            if (imgRatio > drawRatio) {
+                imgWidthNew = drawWidth;
+                imgHeightNew = imgHeight * (drawWidth / imgWidth);
+            } else if (imgRatio < drawRatio) {
+                imgWidthNew = imgWidth * (drawHeight / imgHeight);
+                imgHeightNew = drawHeight;
+            } else {
+                imgWidth = drawWidth;
+                imgHeight = drawHeight;
+            }
+            Image tempImage = secondImage.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
+            if (!scaleOff) {
+                secondImageLabel = new JLabel(new ImageIcon(tempImage));
+            } else {
+                secondImageLabel = new JLabel(new ImageIcon(mainImage));
+            }
+            drawPanel.add(secondImageLabel, BorderLayout.EAST);
+            drawPanel.repaint();
+            drawPanel.validate();
+
+            //parte do histograma -- FALTA ARRUMAR ---
+            if (histogramOn) {
+                drawWidth = (float) histogramPanel.getSize().getWidth();
+                drawHeight = (float) histogramPanel.getSize().getHeight();
+                BufferedImage secondHistogram = Histograma(secondImage);
+                imgWidth = secondHistogram.getWidth();
+                imgHeight = secondHistogram.getHeight();
+                imgRatio = imgWidth / imgHeight;
+                drawRatio = drawWidth / drawHeight;
+                imgWidthNew = imgWidth;
+                imgHeightNew = imgHeight;
+                if (imgRatio > drawRatio) {
+                    imgWidthNew = drawWidth;
+                    imgHeightNew = imgHeight * (drawWidth / imgWidth);
+                } else if (imgRatio < drawRatio) {
+                    imgWidthNew = imgWidth * (drawHeight / imgHeight);
+                    imgHeightNew = drawHeight;
+                } else {
+                    imgWidth = drawWidth;
+                    imgHeight = drawHeight;
+                }
+            //    tempImage = mainHistogram.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
+                tempImage = secondHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
+                if (histogramLabel != null) {
+                    histogramPanel.remove(histogramLabel);
+                }
+                histogramLabel = new JLabel(new ImageIcon(tempImage));
                 histogramPanel.add(histogramLabel, BorderLayout.CENTER);
                 histogramPanel.repaint();
                 histogramPanel.validate();
             }
         }
     }
+
 
     private void saveImage() {
         if (mainImage == null) {
@@ -1007,6 +1114,10 @@ public class PSE extends JFrame {
             mainImage = originalImage;
             showImage();
         }
+        if(secondImage != null) {
+        	secondImage = originalSecondImage;
+        	showSecondImage();
+        }
         Component component[] = timelinePanel.getComponents();
         for (int i = timelinePanel.getComponentCount() - 1; i >= 0; i--) {
             JButton button = (JButton) component[i];
@@ -1024,8 +1135,10 @@ public class PSE extends JFrame {
         protected Integer doInBackground() throws Exception {
             setTitle("PSE Image - Processar");
             mainImage = (lastProcessed == 0) ? originalImage : imageHistory.get(lastProcessed - 1);
+            secondImage = (lastProcessed == 0) ? originalSecondImage : imageHistory.get(lastProcessed - 1);
             imageHistory = (lastProcessed == 0) ? new ArrayList<BufferedImage>() : imageHistory;
             showImage();
+            showSecondImage();
             Component component[] = timelinePanel.getComponents();
             for (int i = lastProcessed; i < timelinePanel.getComponentCount(); i++) {
                 JButton button = (JButton) component[i];
@@ -1050,6 +1163,11 @@ public class PSE extends JFrame {
                     imageHistory.add(i, mainImage);
                     showImage();
                 }
+                if(secondImage != null) {
+                	functionChooser(defaultText);
+                	imageHistory.add(i, secondImage);
+                	showSecondImage();
+                }
                 try {
                     TimeUnit.MILLISECONDS.sleep(300);
                 } catch (Exception e) {
@@ -1069,42 +1187,60 @@ public class PSE extends JFrame {
         private boolean functionChooser(String name) {
             if (name.equals(f1)) {
                 mainImage = EscalaDeCinza(mainImage);
+                secondImage = EscalaDeCinza(secondImage);
             } else if (name.equals(f2)) {
                 mainImage = Negativo(mainImage);
+                secondImage = Negativo(secondImage);
             } else if (name.equals(f3)) {
                 mainImage = Media(mainImage);
+                secondImage = Media(secondImage);
             } else if (name.equals(f4)) {
                 mainImage = Gaussiano(mainImage);
+                secondImage = Gaussiano(secondImage);
             } else if (name.equals(f5)) {
                 mainImage = Laplaciano(mainImage);
+                secondImage = Laplaciano(secondImage);
             } else if (name.equals(f6)) {
                 mainImage = Sobel(mainImage);
+                secondImage = Sobel(secondImage);
             } else if (name.equals(f7)) {
                 mainImage = Convolucao(mainImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
+                secondImage = Convolucao(secondImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
             } else if (name.equals(f8)) {
                 mainImage = Brilho(mainImage, brilhoFloat);
+                secondImage = Brilho(secondImage, brilhoFloat);
             } else if (name.equals(f9)) {
                 mainImage = Contraste(mainImage, contrasteFloat);
+                secondImage = Contraste(secondImage, contrasteFloat);
             } else if (name.equals(f10)) {
                 if (limiarDouble != -1) {
                     mainImage = Limiar(mainImage, limiarDouble);
+                    secondImage = Limiar(secondImage, limiarDouble);
                 } else {
                     mainImage = LGP(mainImage);
+                    secondImage = LGP(secondImage);
                 }
             } else if (name.equals(f11)) {
                 mainImage = Segmentacao(mainImage, filtroRGB);
+                secondImage = Segmentacao(secondImage, filtroRGB);
             } else if (name.equals(f12)) {
                 mainImage = Interpolacao(mainImage, interpolacaoFator);
+                secondImage = Interpolacao(secondImage, interpolacaoFator);
             } else if (name.equals(f16)) {
                 mainImage = HoughTransformLine(mainImage);
+                secondImage = HoughTransformLine(secondImage);
             } else if (name.equals(f17)) {
                 mainImage = Mediana(mainImage);
+                secondImage = Mediana(secondImage);
             } else if (name.equals(f18)) {
                 mainImage = Moda(mainImage);
+                secondImage = Moda(secondImage);
             } else if (name.equals(f19)) {
                 mainImage = Minimo(mainImage);
+                secondImage = Minimo(secondImage);
             } else if (name.equals(f20)) {
                 mainImage = Maximo(mainImage);
+                secondImage = Maximo (secondImage);
             } 
             return true;
         }
