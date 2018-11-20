@@ -47,7 +47,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class PSE extends JFrame {
     private final int borderX = 35;
     private final int borderY = 55;
-    private int windowX = 1000;
+    private int windowX = 1200;
     private int windowY = 650;
     private int timelineButton1X = 285;
     private int timelineButton2X = 285;
@@ -66,7 +66,9 @@ public class PSE extends JFrame {
     private JPanel drawPanel;
     private JPanel drawPanel2;
     private JFrame histogramFrame;
+    private JFrame histogramFrame2;
     private JPanel histogramPanel;
+    private JPanel histogramPanel2;
     private BufferedImage originalImage;
     private BufferedImage originalSecondImage;
     private BufferedImage mainImage;
@@ -75,6 +77,7 @@ public class PSE extends JFrame {
     private JLabel mainImageLabel;
     private JLabel secondImageLabel;
     private JLabel histogramLabel;
+    private JLabel histogramLabel2;
     private Boolean mustProcess = true;
     private int lastProcessed = 0;
 
@@ -104,10 +107,7 @@ public class PSE extends JFrame {
 
     // Descrições para os botões
     private final String opentip = "Clique para abrir uma imagem.";
-    private final String openSecondtip = "Clique para abrir uma segunda imagem.";
     private final String processtip = "Clique para processar a imagem seguindo a ordem definida no timeline (à direita).";
-    private final String originaltip = "Clique para mudar a visualização para a imagem original.";
-    private final String resulttip = "Clique para mudar a visualização para a imagem resultada do processamento no timeline (à esquerda).";
     private final String savetip = "Clique para salvar a imagem atualmente sendo visualizada.";
     private final String quittip = "Clique para fechar o programa. (Não salva a imagem!).";
     private final String resettip = "Clique para resetar a imagem de volta à original e resetar o timeline.";
@@ -268,6 +268,24 @@ public class PSE extends JFrame {
         histogramPanel = new JPanel();
         histogramPanel.setPreferredSize(new Dimension(300, 300));
         histogramFrame.add(histogramPanel);
+        
+        // Histograma 2
+        histogramFrame2 = new JFrame(f15);
+        histogramFrame2.setLayout(new FlowLayout());
+        histogramFrame2.setSize(new Dimension(310, 325));
+        histogramFrame2.getContentPane().setBackground(Color.DARK_GRAY);
+        histogramFrame2.setLocationRelativeTo(null);
+        histogramFrame2.setAlwaysOnTop(true);
+        histogramFrame2.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        GraphicsEnvironment ge2 = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice defaultScreen2 = ge.getDefaultScreenDevice();
+        Rectangle rect2 = defaultScreen2.getDefaultConfiguration().getBounds();
+        int x2 = (int) rect.getMaxX() - histogramFrame2.getWidth();
+        int y2 = (int) rect.getMaxY() - histogramFrame2.getHeight();
+        histogramFrame2.setLocation(x, y);
+        histogramPanel2 = new JPanel();
+        histogramPanel2.setPreferredSize(new Dimension(300, 300));
+        histogramFrame2.add(histogramPanel2);
 
         // TimeLine Button Panel 1
         // -------------------------------------------------------------------------
@@ -287,16 +305,6 @@ public class PSE extends JFrame {
         openButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(openButton);
 
-         // Open Second Image
-         JButton openSecondButton = new JButton("2ª");
-         openSecondButton.setToolTipText("<html><p width=\"300\">" + openSecondtip + "</p></html>");
-         openSecondButton.addActionListener((ActionEvent event) -> {
-             setTitle("PSE Image - Abrir");
-             openSecondImage();
-         });
-         openSecondButton.setBackground(Color.WHITE);
-         timelineButtonPanel1.add(openSecondButton);
-        
         // Process
         JButton processButton = new JButton("Processar");
         processButton.setToolTipText("<html><p width=\"300\">" + processtip + "</p></html>");
@@ -308,22 +316,6 @@ public class PSE extends JFrame {
         processButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(processButton);
         
-        // View original image
-        JButton originalButton = new JButton("Original");
-        originalButton.setToolTipText("<html><p width=\"300\">" + originaltip + "</p></html>");
-        originalButton.addActionListener((ActionEvent event) -> {
-            if (originalImage != null ) {
-                setTitle("PSE Image - Visualizando: Imagem original");
-                mainImage = originalImage;
-                showImage();
-            }
-            if(originalSecondImage != null) {
-            	secondImage = originalSecondImage;
-            	showSecondImage();
-            }
-        });
-        timelineButtonPanel1.add(originalButton);
-
         // TimeLine Panel
         // -------------------------------------------------------------------------
         timelinePanel = new JPanel();
@@ -339,27 +331,6 @@ public class PSE extends JFrame {
         timelineButtonPanel2.setLayout(new GridLayout(1, 2));
         timelineButtonPanel2.setBackground(Color.GRAY);
         add(timelineButtonPanel2);
-        
-        // View result image
-        JButton resultButton = new JButton("Resultado");
-        resultButton.setToolTipText("<html><p width=\"300\">" + resulttip + "</p></html>");
-        resultButton.addActionListener((ActionEvent event) -> {
-            if (mainImage != null) {
-                if (mustProcess) {
-                    new ProcessFunctionsWorker().execute();
-                    while (mustProcess != false) {
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(1000);
-                        } catch (Exception e) {
-                        }
-                    }
-                }
-                setTitle("PSE Image - Visualizando: Imagem resultado");
-                mainImage = imageHistory.get(imageHistory.size() - 1);
-                showImage();
-            }
-        });
-        timelineButtonPanel2.add(resultButton);
         
         // Save Image
         JButton saveButton = new JButton("Salvar");
@@ -741,11 +712,13 @@ public class PSE extends JFrame {
                 histogramOn = true;
                 setTitle("PSE Image - " + f15);
                 histogramFrame.setVisible(true);
+                histogramFrame2.setVisible(true);
                 showImage();
             } else {
                 histogramOn = false;
                 setTitle("PSE Image");
                 histogramFrame.setVisible(false);
+                histogramFrame2.setVisible(true);
             }
         });
         
@@ -869,6 +842,7 @@ public class PSE extends JFrame {
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     }
 
+    // Opens the help on the web
     public static void openWebpage(String urlString) {
         try {
             Desktop.getDesktop().browse(new URL(urlString).toURI());
@@ -877,6 +851,7 @@ public class PSE extends JFrame {
         }
     }
 
+    // Opens a dialog to choose an image to open
     private void openImage() {
         JFileChooser imageChooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -891,26 +866,6 @@ public class PSE extends JFrame {
                 secondImage = mainImage;
                 originalImage = mainImage;
                 showImage();
-                showSecondImage();
-                setTitle("PSE Image - " + imageChooser.getName(imageChooser.getSelectedFile()));
-                resetTimeline();
-            } catch (IOException e) {
-            }
-        }
-    }
-
-    private void openSecondImage() {
-        JFileChooser imageChooser = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter(
-                "Arquivos de imagem", "png", "jpg", "jpeg");
-        imageChooser.setFileFilter(filter);
-        int returnVal = imageChooser.showOpenDialog(drawPanel);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-        //    System.out.println("You chose to open this file: "
-                //    + imageChooser.getSelectedFile().getName());
-            try {
-                secondImage = ImageIO.read(imageChooser.getSelectedFile());
-                originalSecondImage = secondImage;
                 showSecondImage();
                 setTitle("PSE Image - " + imageChooser.getName(imageChooser.getSelectedFile()));
                 resetTimeline();
@@ -977,7 +932,7 @@ public class PSE extends JFrame {
                     histogramPanel.remove(histogramLabel);
                 }
                 histogramLabel = new JLabel(new ImageIcon(tempImage));
-                histogramPanel.add(histogramLabel, BorderLayout.WEST);
+                histogramPanel.add(histogramLabel, BorderLayout.EAST);
                 histogramPanel.repaint();
                 histogramPanel.validate();
             }
@@ -1020,8 +975,8 @@ public class PSE extends JFrame {
 
             //parte do histograma -- FALTA ARRUMAR ---
             if (histogramOn) {
-                drawWidth = (float) histogramPanel.getSize().getWidth();
-                drawHeight = (float) histogramPanel.getSize().getHeight();
+                drawWidth = (float) histogramPanel2.getSize().getWidth();
+                drawHeight = (float) histogramPanel2.getSize().getHeight();
                 BufferedImage secondHistogram = Histograma(secondImage);
                 imgWidth = secondHistogram.getWidth();
                 imgHeight = secondHistogram.getHeight();
@@ -1041,13 +996,13 @@ public class PSE extends JFrame {
                 }
             //    tempImage = mainHistogram.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
                 tempImage = secondHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
-                if (histogramLabel != null) {
-                    histogramPanel.remove(histogramLabel);
+                if (histogramLabel2 != null) {
+                    histogramPanel2.remove(histogramLabel2);
                 }
-                histogramLabel = new JLabel(new ImageIcon(tempImage));
-                histogramPanel.add(histogramLabel, BorderLayout.CENTER);
-                histogramPanel.repaint();
-                histogramPanel.validate();
+                histogramLabel2 = new JLabel(new ImageIcon(tempImage));
+                histogramPanel2.add(histogramLabel2, BorderLayout.WEST);
+                histogramPanel2.repaint();
+                histogramPanel2.validate();
             }
         }
     }
@@ -1206,68 +1161,46 @@ public class PSE extends JFrame {
         private boolean functionChooser(String name) {
             if (name.equals(f1)) {
                 mainImage = EscalaDeCinza(mainImage);
-                // secondImage = EscalaDeCinza(secondImage);
             } else if (name.equals(f2)) {
                 mainImage = Negativo(mainImage);
-                // secondImage = Negativo(secondImage);
             } else if (name.equals(f3)) {
                 mainImage = Media(mainImage);
-                // secondImage = Media(secondImage);
             } else if (name.equals(f4)) {
                 mainImage = Gaussiano(mainImage);
-                // secondImage = Gaussiano(secondImage);
             } else if (name.equals(f5)) {
                 mainImage = Laplaciano(mainImage);
-                // secondImage = Laplaciano(secondImage);
             } else if (name.equals(f6)) {
                 mainImage = Sobel(mainImage);
-                // secondImage = Sobel(secondImage);
             } else if (name.equals(f7)) {
                 mainImage = Convolucao(mainImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
-                // secondImage = Convolucao(secondImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
             } else if (name.equals(f8)) {
                 mainImage = Brilho(mainImage, brilhoFloat);
-                // secondImage = Brilho(secondImage, brilhoFloat);
             } else if (name.equals(f9)) {
                 mainImage = Contraste(mainImage, contrasteFloat);
-                // secondImage = Contraste(secondImage, contrasteFloat);
             } else if (name.equals(f10)) {
                 if (limiarDouble != -1) {
                     mainImage = Limiar(mainImage, limiarDouble);
-                    // secondImage = Limiar(secondImage, limiarDouble);
                 } else {
                     mainImage = LGP(mainImage);
-                    // secondImage = LGP(secondImage);
                 }
             } else if (name.equals(f11)) {
                 mainImage = Segmentacao(mainImage, filtroRGB);
-                // secondImage = Segmentacao(secondImage, filtroRGB);
             } else if (name.equals(f12)) {
                 mainImage = Interpolacao(mainImage, interpolacaoFator);
-                // secondImage = Interpolacao(secondImage, interpolacaoFator);
             } else if (name.equals(f16)) {
                 mainImage = HoughTransformLine(mainImage);
-                // secondImage = HoughTransformLine(secondImage);
             } else if (name.equals(f17)) {
                 mainImage = EscalaDeCinza(mainImage);
-                // secondImage = EscalaDeCinza(secondImage);
                 mainImage = Mediana(mainImage);
-                // secondImage = Mediana(secondImage);
             } else if (name.equals(f18)) {
                 mainImage = EscalaDeCinza(mainImage);
-                // secondImage = EscalaDeCinza(secondImage);
                 mainImage = Moda(mainImage);
-                // secondImage = Moda(secondImage);
             } else if (name.equals(f19)) {
                 mainImage = EscalaDeCinza(mainImage);
-                // secondImage = EscalaDeCinza(secondImage);
                 mainImage = Minimo(mainImage);
-                // secondImage = Minimo(secondImage);
             } else if (name.equals(f20)) {
                 mainImage = EscalaDeCinza(mainImage);
-                // secondImage = EscalaDeCinza(secondImage);
                 mainImage = Maximo(mainImage);
-                // secondImage = Maximo (secondImage);
             } 
             return true;
         }
