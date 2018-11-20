@@ -64,6 +64,7 @@ public class PSE extends JFrame {
     private JPanel timelineButtonPanel2;
     private JPanel buttonPanel;
     private JPanel drawPanel;
+    private JPanel drawPanel2;
     private JFrame histogramFrame;
     private JPanel histogramPanel;
     private BufferedImage originalImage;
@@ -226,12 +227,21 @@ public class PSE extends JFrame {
                 }
                 
                 if (drawPanel != null) {
-                    drawPanel.setPreferredSize(new Dimension(gridX, gridY));
-                    drawPanel.setSize(new Dimension(gridX, gridY));
-                    drawPanel.setMinimumSize(new Dimension(gridX, gridY));
-                    drawPanel.setMaximumSize(new Dimension(gridX, gridY));
+                    drawPanel.setPreferredSize(new Dimension(gridX/2, gridY));
+                    drawPanel.setSize(new Dimension(gridX/2, gridY));
+                    drawPanel.setMinimumSize(new Dimension(gridX/2, gridY));
+                    drawPanel.setMaximumSize(new Dimension(gridX/2, gridY));
                     drawPanel.repaint();
                     drawPanel.validate();
+                }
+
+                if (drawPanel2 != null) {
+                    drawPanel2.setPreferredSize(new Dimension(gridX/2, gridY));
+                    drawPanel2.setSize(new Dimension(gridX/2, gridY));
+                    drawPanel2.setMinimumSize(new Dimension(gridX/2, gridY));
+                    drawPanel2.setMaximumSize(new Dimension(gridX/2, gridY));
+                    drawPanel2.repaint();
+                    drawPanel2.validate();
                 }
                 
                 component.repaint();
@@ -287,7 +297,6 @@ public class PSE extends JFrame {
          openSecondButton.setBackground(Color.WHITE);
          timelineButtonPanel1.add(openSecondButton);
         
-//        
         // Process
         JButton processButton = new JButton("Processar");
         processButton.setToolTipText("<html><p width=\"300\">" + processtip + "</p></html>");
@@ -848,6 +857,14 @@ public class PSE extends JFrame {
         drawPanel.setBackground(Color.GRAY);
         add(drawPanel);
 
+        // Draw Panel 2
+        // -------------------------------------------------------------------------
+        drawPanel2 = new JPanel();
+        drawPanel2.setPreferredSize(new Dimension(gridX, gridY));
+        drawPanel2.setLayout(new BorderLayout());
+        drawPanel2.setBackground(Color.GRAY);
+        add(drawPanel2);
+
         // Tooltip configuration
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     }
@@ -871,8 +888,10 @@ public class PSE extends JFrame {
                 //    + imageChooser.getSelectedFile().getName());
             try {
                 mainImage = ImageIO.read(imageChooser.getSelectedFile());
+                secondImage = mainImage;
                 originalImage = mainImage;
                 showImage();
+                showSecondImage();
                 setTitle("PSE Image - " + imageChooser.getName(imageChooser.getSelectedFile()));
                 resetTimeline();
             } catch (IOException e) {
@@ -963,15 +982,16 @@ public class PSE extends JFrame {
                 histogramPanel.validate();
             }
         }
+
     }
 
     private void showSecondImage() {
         if (secondImage != null) {
             if (secondImageLabel != null) {
-                drawPanel.remove(secondImageLabel);
+                drawPanel2.remove(secondImageLabel);
             }
-            float drawWidth = (float) drawPanel.getSize().getWidth();
-            float drawHeight = (float) drawPanel.getSize().getHeight();
+            float drawWidth = (float) drawPanel2.getSize().getWidth();
+            float drawHeight = (float) drawPanel2.getSize().getHeight();
             float imgWidth = secondImage.getWidth();
             float imgHeight = secondImage.getHeight();
             float imgRatio = imgWidth / imgHeight;
@@ -994,9 +1014,9 @@ public class PSE extends JFrame {
             } else {
                 secondImageLabel = new JLabel(new ImageIcon(mainImage));
             }
-            drawPanel.add(secondImageLabel, BorderLayout.EAST);
-            drawPanel.repaint();
-            drawPanel.validate();
+            drawPanel2.add(secondImageLabel, BorderLayout.EAST);
+            drawPanel2.repaint();
+            drawPanel2.validate();
 
             //parte do histograma -- FALTA ARRUMAR ---
             if (histogramOn) {
@@ -1031,7 +1051,6 @@ public class PSE extends JFrame {
             }
         }
     }
-
 
     private void saveImage() {
         if (mainImage == null) {
@@ -1187,60 +1206,68 @@ public class PSE extends JFrame {
         private boolean functionChooser(String name) {
             if (name.equals(f1)) {
                 mainImage = EscalaDeCinza(mainImage);
-                secondImage = EscalaDeCinza(secondImage);
+                // secondImage = EscalaDeCinza(secondImage);
             } else if (name.equals(f2)) {
                 mainImage = Negativo(mainImage);
-                secondImage = Negativo(secondImage);
+                // secondImage = Negativo(secondImage);
             } else if (name.equals(f3)) {
                 mainImage = Media(mainImage);
-                secondImage = Media(secondImage);
+                // secondImage = Media(secondImage);
             } else if (name.equals(f4)) {
                 mainImage = Gaussiano(mainImage);
-                secondImage = Gaussiano(secondImage);
+                // secondImage = Gaussiano(secondImage);
             } else if (name.equals(f5)) {
                 mainImage = Laplaciano(mainImage);
-                secondImage = Laplaciano(secondImage);
+                // secondImage = Laplaciano(secondImage);
             } else if (name.equals(f6)) {
                 mainImage = Sobel(mainImage);
-                secondImage = Sobel(secondImage);
+                // secondImage = Sobel(secondImage);
             } else if (name.equals(f7)) {
                 mainImage = Convolucao(mainImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
-                secondImage = Convolucao(secondImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
+                // secondImage = Convolucao(secondImage, convolucaoLinhas, convolucaoColunas, convolucaoPesos);
             } else if (name.equals(f8)) {
                 mainImage = Brilho(mainImage, brilhoFloat);
-                secondImage = Brilho(secondImage, brilhoFloat);
+                // secondImage = Brilho(secondImage, brilhoFloat);
             } else if (name.equals(f9)) {
                 mainImage = Contraste(mainImage, contrasteFloat);
-                secondImage = Contraste(secondImage, contrasteFloat);
+                // secondImage = Contraste(secondImage, contrasteFloat);
             } else if (name.equals(f10)) {
                 if (limiarDouble != -1) {
                     mainImage = Limiar(mainImage, limiarDouble);
-                    secondImage = Limiar(secondImage, limiarDouble);
+                    // secondImage = Limiar(secondImage, limiarDouble);
                 } else {
                     mainImage = LGP(mainImage);
-                    secondImage = LGP(secondImage);
+                    // secondImage = LGP(secondImage);
                 }
             } else if (name.equals(f11)) {
                 mainImage = Segmentacao(mainImage, filtroRGB);
-                secondImage = Segmentacao(secondImage, filtroRGB);
+                // secondImage = Segmentacao(secondImage, filtroRGB);
             } else if (name.equals(f12)) {
                 mainImage = Interpolacao(mainImage, interpolacaoFator);
-                secondImage = Interpolacao(secondImage, interpolacaoFator);
+                // secondImage = Interpolacao(secondImage, interpolacaoFator);
             } else if (name.equals(f16)) {
                 mainImage = HoughTransformLine(mainImage);
-                secondImage = HoughTransformLine(secondImage);
+                // secondImage = HoughTransformLine(secondImage);
             } else if (name.equals(f17)) {
+                mainImage = EscalaDeCinza(mainImage);
+                // secondImage = EscalaDeCinza(secondImage);
                 mainImage = Mediana(mainImage);
-                secondImage = Mediana(secondImage);
+                // secondImage = Mediana(secondImage);
             } else if (name.equals(f18)) {
+                mainImage = EscalaDeCinza(mainImage);
+                // secondImage = EscalaDeCinza(secondImage);
                 mainImage = Moda(mainImage);
-                secondImage = Moda(secondImage);
+                // secondImage = Moda(secondImage);
             } else if (name.equals(f19)) {
+                mainImage = EscalaDeCinza(mainImage);
+                // secondImage = EscalaDeCinza(secondImage);
                 mainImage = Minimo(mainImage);
-                secondImage = Minimo(secondImage);
+                // secondImage = Minimo(secondImage);
             } else if (name.equals(f20)) {
+                mainImage = EscalaDeCinza(mainImage);
+                // secondImage = EscalaDeCinza(secondImage);
                 mainImage = Maximo(mainImage);
-                secondImage = Maximo (secondImage);
+                // secondImage = Maximo (secondImage);
             } 
             return true;
         }
