@@ -149,7 +149,8 @@ public class PSE extends JFrame {
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {
             try {
-                UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+                // UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -179,13 +180,9 @@ public class PSE extends JFrame {
                 Dimension size = component.getBounds().getSize();
                 windowX = (int) Math.round(size.getWidth()) - borderX;
                 windowY = (int) Math.round(size.getHeight()) - borderY;
-                //timelineButton1X = 180;
-                //timelineButton2X = 180;
                 timelineX = windowX - timelineButton1X - timelineButton2X;
-                //timelineY = 50;
                 timelineButton1Y = timelineY;
                 timelineButton2Y = timelineY;
-                //buttonX = 125;
                 buttonY = windowY - timelineY;
                 gridX = windowX - buttonX;
                 gridY = windowY - timelineY;
@@ -252,6 +249,10 @@ public class PSE extends JFrame {
         );
 
         // Histogram Frame & Panel
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice defaultScreen = ge.getDefaultScreenDevice();
+        Rectangle rect = defaultScreen.getDefaultConfiguration().getBounds();
+        
         histogramFrame = new JFrame(f15);
         histogramFrame.setLayout(new FlowLayout());
         histogramFrame.setSize(new Dimension(310, 325));
@@ -259,9 +260,6 @@ public class PSE extends JFrame {
         histogramFrame.setLocationRelativeTo(null);
         histogramFrame.setAlwaysOnTop(true);
         histogramFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice defaultScreen = ge.getDefaultScreenDevice();
-        Rectangle rect = defaultScreen.getDefaultConfiguration().getBounds();
         int x = (int) rect.getMaxX() - 2*(histogramFrame.getWidth());
         int y = (int) rect.getMaxY() - histogramFrame.getHeight();
         histogramFrame.setLocation(x, y);
@@ -269,7 +267,7 @@ public class PSE extends JFrame {
         histogramPanel.setPreferredSize(new Dimension(300, 300));
         histogramFrame.add(histogramPanel);
         
-        // Histograma 2
+        // Histograma 2 Frame & Panel
         histogramFrame2 = new JFrame("Histograma 2");
         histogramFrame2.setLayout(new FlowLayout());
         histogramFrame2.setSize(new Dimension(310, 325));
@@ -711,11 +709,12 @@ public class PSE extends JFrame {
                 histogramFrame.setVisible(true);
                 histogramFrame2.setVisible(true);
                 showImage();
+                showSecondImage();
             } else {
                 histogramOn = false;
                 setTitle("PSE Image");
                 histogramFrame.setVisible(false);
-                histogramFrame2.setVisible(true);
+                histogramFrame2.setVisible(false);
             }
         });
         
@@ -795,29 +794,29 @@ public class PSE extends JFrame {
         f99Button.setBackground(Color.WHITE);
 
         // Add function buttons in desired order
-        buttonPanel.add(f1Button); // Cinza
-        buttonPanel.add(f2Button); // Negativo
-        buttonPanel.add(f9Button); // Contraste
-        buttonPanel.add(f8Button); // Brilho
-        buttonPanel.add(f3Button); // Media
-        buttonPanel.add(f12Button);// Interpolação
-        buttonPanel.add(f7Button); // Convolução
-        buttonPanel.add(f4Button); // Gaussiano
-        buttonPanel.add(f5Button); // Laplaciano
-        buttonPanel.add(f6Button); // Sobel
-        buttonPanel.add(f13Button);// Hough Linha
-        buttonPanel.add(f16Button);// Hough Círculo
-        buttonPanel.add(f10Button);// Limiar
-        buttonPanel.add(f11Button);// Cor
-        buttonPanel.add(f14Button);// EMQ
-        buttonPanel.add(f98Button);// Tamanho original
-        buttonPanel.add(f15Button);// Histograma
-        buttonPanel.add(f16Button);// HoughLine
-        buttonPanel.add(f17Button);// Mediana
-        buttonPanel.add(f18Button);// Moda
-        buttonPanel.add(f19Button);// Mínimo
-        buttonPanel.add(f20Button);// Máximo
-        buttonPanel.add(f99Button);// Resetar
+        buttonPanel.add(f1Button);  // Cinza
+        buttonPanel.add(f2Button);  // Negativo
+        buttonPanel.add(f9Button);  // Contraste
+        buttonPanel.add(f8Button);  // Brilho
+        buttonPanel.add(f3Button);  // Media
+        buttonPanel.add(f12Button); // Interpolação
+        buttonPanel.add(f7Button);  // Convolução
+        buttonPanel.add(f4Button);  // Gaussiano
+        buttonPanel.add(f5Button);  // Laplaciano
+        buttonPanel.add(f6Button);  // Sobel
+        buttonPanel.add(f13Button); // Hough Linha
+        buttonPanel.add(f16Button); // Hough Círculo
+        buttonPanel.add(f10Button); // Limiar
+        buttonPanel.add(f11Button); // Cor
+        buttonPanel.add(f14Button); // EMQ
+        buttonPanel.add(f98Button); // Tamanho original
+        buttonPanel.add(f15Button); // Histograma
+        buttonPanel.add(f16Button); // HoughLine
+        buttonPanel.add(f17Button); // Mediana
+        buttonPanel.add(f18Button); // Moda
+        buttonPanel.add(f19Button); // Mínimo
+        buttonPanel.add(f20Button); // Máximo
+        buttonPanel.add(f99Button); // Resetar
 
         // Draw Panel
         // -------------------------------------------------------------------------
@@ -856,11 +855,9 @@ public class PSE extends JFrame {
         imageChooser.setFileFilter(filter);
         int returnVal = imageChooser.showOpenDialog(drawPanel);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-        //    System.out.println("You chose to open this file: "
-                //    + imageChooser.getSelectedFile().getName());
             try {
                 mainImage = ImageIO.read(imageChooser.getSelectedFile());
-                secondImage = mainImage;
+                secondImage = ImageIO.read(imageChooser.getSelectedFile());
                 originalImage = mainImage;
                 showImage();
                 showSecondImage();
@@ -903,6 +900,7 @@ public class PSE extends JFrame {
             drawPanel.add(mainImageLabel, BorderLayout.CENTER);
             drawPanel.repaint();
             drawPanel.validate();
+
             if (histogramOn) {
                 drawWidth = (float) histogramPanel.getSize().getWidth();
                 drawHeight = (float) histogramPanel.getSize().getHeight();
@@ -923,7 +921,6 @@ public class PSE extends JFrame {
                     imgWidth = drawWidth;
                     imgHeight = drawHeight;
                 }
-            //    tempImage = mainHistogram.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
                 tempImage = mainHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
                 if (histogramLabel != null) {
                     histogramPanel.remove(histogramLabel);
@@ -964,9 +961,9 @@ public class PSE extends JFrame {
             if (!scaleOff) {
                 secondImageLabel = new JLabel(new ImageIcon(tempImage));
             } else {
-                secondImageLabel = new JLabel(new ImageIcon(mainImage));
+                secondImageLabel = new JLabel(new ImageIcon(secondImage));
             }
-            drawPanel2.add(secondImageLabel, BorderLayout.EAST);
+            drawPanel2.add(secondImageLabel, BorderLayout.CENTER);
             drawPanel2.repaint();
             drawPanel2.validate();
 
@@ -991,13 +988,12 @@ public class PSE extends JFrame {
                     imgWidth = drawWidth;
                     imgHeight = drawHeight;
                 }
-            //    tempImage = mainHistogram.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
                 tempImage = secondHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
                 if (histogramLabel2 != null) {
                     histogramPanel2.remove(histogramLabel2);
                 }
                 histogramLabel2 = new JLabel(new ImageIcon(tempImage));
-                histogramPanel2.add(histogramLabel2, BorderLayout.WEST);
+                histogramPanel2.add(histogramLabel2, BorderLayout.EAST);
                 histogramPanel2.repaint();
                 histogramPanel2.validate();
             }
@@ -1086,7 +1082,7 @@ public class PSE extends JFrame {
             showImage();
         }
         if(secondImage != null) {
-        	secondImage = originalSecondImage;
+        	secondImage = originalImage;
         	showSecondImage();
         }
         Component component[] = timelinePanel.getComponents();
@@ -1483,8 +1479,6 @@ public class PSE extends JFrame {
         return ResultImage;
     }
 
-
-
     public static BufferedImage Maximo(BufferedImage imagem) {
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
@@ -1535,7 +1529,6 @@ public class PSE extends JFrame {
         ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
         return ResultImage;
     }
-
 
     public static BufferedImage Gaussiano(BufferedImage imagem) {
         //imagem resultante
