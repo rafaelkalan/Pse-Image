@@ -262,7 +262,7 @@ public class PSE extends JFrame {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice defaultScreen = ge.getDefaultScreenDevice();
         Rectangle rect = defaultScreen.getDefaultConfiguration().getBounds();
-        int x = (int) rect.getMaxX() - histogramFrame.getWidth();
+        int x = (int) rect.getMaxX() - 2*(histogramFrame.getWidth());
         int y = (int) rect.getMaxY() - histogramFrame.getHeight();
         histogramFrame.setLocation(x, y);
         histogramPanel = new JPanel();
@@ -270,19 +270,16 @@ public class PSE extends JFrame {
         histogramFrame.add(histogramPanel);
         
         // Histograma 2
-        histogramFrame2 = new JFrame(f15);
+        histogramFrame2 = new JFrame("Histograma 2");
         histogramFrame2.setLayout(new FlowLayout());
         histogramFrame2.setSize(new Dimension(310, 325));
         histogramFrame2.getContentPane().setBackground(Color.DARK_GRAY);
         histogramFrame2.setLocationRelativeTo(null);
         histogramFrame2.setAlwaysOnTop(true);
         histogramFrame2.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-        GraphicsEnvironment ge2 = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        GraphicsDevice defaultScreen2 = ge.getDefaultScreenDevice();
-        Rectangle rect2 = defaultScreen2.getDefaultConfiguration().getBounds();
         int x2 = (int) rect.getMaxX() - histogramFrame2.getWidth();
         int y2 = (int) rect.getMaxY() - histogramFrame2.getHeight();
-        histogramFrame2.setLocation(x, y);
+        histogramFrame2.setLocation(x2, y2);
         histogramPanel2 = new JPanel();
         histogramPanel2.setPreferredSize(new Dimension(300, 300));
         histogramFrame2.add(histogramPanel2);
