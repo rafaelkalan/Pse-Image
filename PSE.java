@@ -967,7 +967,6 @@ public class PSE extends JFrame {
             drawPanel2.repaint();
             drawPanel2.validate();
 
-            //parte do histograma -- FALTA ARRUMAR ---
             if (histogramOn) {
                 drawWidth = (float) histogramPanel2.getSize().getWidth();
                 drawHeight = (float) histogramPanel2.getSize().getHeight();
@@ -2183,7 +2182,6 @@ public class PSE extends JFrame {
 
     public static BufferedImage HoughTransformLine(BufferedImage imagem) {
         try {
-
             HoughTransformLine HTL = new HoughTransformLine(imagem);
             Vector<HoughLine> lines = HTL.getLines(4);
             HTL.drawHoughLines(lines);
