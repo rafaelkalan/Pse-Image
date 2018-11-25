@@ -1392,8 +1392,6 @@ public class PSE extends JFrame {
         int r = 0, g = 0, b = 0, p = 0;
         int rgb = 0;
 
-        int processed = 0;
-
         //pegar coluna e linha da imagem
         int coluna = imagem.getWidth();
         int linha = imagem.getHeight();
