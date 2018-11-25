@@ -1171,8 +1171,8 @@ public class PSE extends JFrame {
         @Override
         protected Integer doInBackground() throws Exception {
             setTitle("PSE Image - Processar");
-            mainImage = (lastProcessed == 0) ? originalImage : imageHistory.get(lastProcessed - 1);
-            secondImage = (lastProcessed == 0) ? originalSecondImage : imageHistory.get(lastProcessed - 1);
+            // mainImage = (lastProcessed == 0) ? originalImage : imageHistory.get(lastProcessed - 1);
+            // secondImage = (lastProcessed == 0) ? originalSecondImage : imageHistory.get(lastProcessed - 1);
             imageHistory = (lastProcessed == 0) ? new ArrayList<BufferedImage>() : imageHistory;
             showImage();
             showSecondImage();
