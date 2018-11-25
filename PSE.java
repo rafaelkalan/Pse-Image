@@ -43,6 +43,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.BorderFactory;
+import java.nio.charset.Charset;
 
 public class PSE extends JFrame {
     private final int borderX = 35;
@@ -55,14 +57,20 @@ public class PSE extends JFrame {
     private int timelineY = 40;
     private int timelineButton1Y = timelineY;
     private int timelineButton2Y = timelineY;
-    private int buttonX = 100;
+    private int buttonX = 125;
     private int buttonY = windowY - timelineY;
     private int gridX = windowX - buttonX;
     private int gridY = windowY - timelineY;
     private JPanel timelinePanel;
     private JPanel timelineButtonPanel1;
     private JPanel timelineButtonPanel2;
-    private JPanel buttonPanel;
+    private JPanel master;
+    private JPanel passaAltaPanel;
+    private JPanel passaBaixaPanel;
+    private JPanel naoLinearPanel;
+    private JPanel intensidadePanel;
+    private JPanel outrosPanel;
+    private JPanel diversosPanel;
     private JPanel drawPanel;
     private JPanel drawPanel2;
     private JFrame histogramFrame;
@@ -80,6 +88,7 @@ public class PSE extends JFrame {
     private JLabel histogramLabel2;
     private Boolean mustProcess = true;
     private int lastProcessed = 0;
+    private int yPassaAlta = 500;
 
     // Nomes das funções
     private final String f1 = "Cinza";
@@ -88,7 +97,7 @@ public class PSE extends JFrame {
     private final String f4 = "Gaussiano";
     private final String f5 = "Laplaciano";
     private final String f6 = "Sobel";
-    private final String f7 = "Convolução";
+    private final String f7 = "Convolucao";
     private final String f8 = "Brilho";
     private final String f9 = "Contraste";
     private final String f10 = "Limiar";
@@ -100,8 +109,8 @@ public class PSE extends JFrame {
     private final String f16 = "Linha";
     private final String f17 = "Mediana";
     private final String f18 = "Moda";
-    private final String f19 = "Mínimo";
-    private final String f20 = "Máximo";
+    private final String f19 = "Minimo";
+    private final String f20 = "Maximo";
     private final String f98 = "Tam. Original";
     private final String f99 = "Resetar";
 
@@ -146,8 +155,9 @@ public class PSE extends JFrame {
     private Boolean histogramOn = false;
     private Boolean scaleOff = false;
 
+    
     public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
+	    EventQueue.invokeLater(() -> {
             try {
                 // UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
                 UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
@@ -214,15 +224,15 @@ public class PSE extends JFrame {
                     timelineButtonPanel2.validate();
                 }
                 
-                if (buttonPanel != null) {
-                    buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-                    buttonPanel.setSize(new Dimension(buttonX, buttonY));
-                    buttonPanel.setMinimumSize(new Dimension(buttonX, buttonY));
-                    buttonPanel.setMaximumSize(new Dimension(buttonX, buttonY));
-                    buttonPanel.repaint();
-                    buttonPanel.validate();
+        		if (master != null) {
+                    master.setPreferredSize(new Dimension(buttonX, buttonY));
+                    master.setSize(new Dimension(buttonX, buttonY));
+                    master.setMinimumSize(new Dimension(buttonX, buttonY));
+                    master.setMaximumSize(new Dimension(buttonX, buttonY));
+                    master.repaint();
+                    master.validate();
                 }
-                
+
                 if (drawPanel != null) {
                     drawPanel.setPreferredSize(new Dimension(gridX/2, gridY));
                     drawPanel.setSize(new Dimension(gridX/2, gridY));
@@ -357,13 +367,61 @@ public class PSE extends JFrame {
         helpButton.setBackground(Color.WHITE);
         timelineButtonPanel2.add(helpButton);
 
-        // Button Panel
+        // Button Panel Passa Alta
         // -------------------------------------------------------------------------
-        buttonPanel = new JPanel();
-        buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-        buttonPanel.setLayout(new GridLayout(22, 1));
-        buttonPanel.setBackground(Color.DARK_GRAY);
-        add(buttonPanel);
+        passaAltaPanel = new JPanel();
+        passaAltaPanel.setPreferredSize(new Dimension(buttonX, 120));
+        passaAltaPanel.setLayout(new GridLayout(3, 1));
+        passaAltaPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Filtro Passa Alta"));
+        passaAltaPanel.setVisible(true);
+
+        // Button Panel PassaBaixa
+        passaBaixaPanel = new JPanel();
+        passaBaixaPanel.setPreferredSize(new Dimension(buttonX, 120));
+        passaBaixaPanel.setLayout(new GridLayout(3, 1));
+        passaBaixaPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Filtro Passa Baixa"));
+        passaBaixaPanel.setVisible(true);
+
+        naoLinearPanel = new JPanel();
+        naoLinearPanel.setPreferredSize(new Dimension(buttonX, 120));
+        naoLinearPanel.setLayout(new GridLayout(3,1));
+        naoLinearPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Filtro Nao-Linear"));
+
+        //Transformação de Intensidade Panel
+        intensidadePanel = new JPanel();
+        intensidadePanel.setPreferredSize(new Dimension(buttonX, 120));
+        intensidadePanel.setLayout(new GridLayout(4,1));
+        intensidadePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Trans. Intensidade"));
+
+        //Outros Panel
+        outrosPanel = new JPanel();
+        outrosPanel.setPreferredSize(new Dimension(buttonX, 120)); 
+        outrosPanel.setLayout(new GridLayout(3,1));
+        outrosPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Outros"));
+
+
+        //Diversos Panel
+        diversosPanel = new JPanel();
+        diversosPanel.setPreferredSize(new Dimension(buttonX, 120)); 
+        diversosPanel.setLayout(new GridLayout(4,1));
+        diversosPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Diversos"));
+
+
+        //Painel Master
+
+        master = new JPanel();
+        master.setLayout(new GridLayout(6,1));
+        master.setPreferredSize(new Dimension(buttonX, buttonY));
+        master.setBackground(Color.DARK_GRAY);     
+        master.add(outrosPanel, new Integer(0), 0);
+        master.add(diversosPanel, new Integer(0), 0);
+        master.add(naoLinearPanel, new Integer(2), 0);
+        master.add(passaAltaPanel, new Integer(0), 0);
+        master.add(passaBaixaPanel, new Integer(1), 0);
+        master.add(intensidadePanel, new Integer(3), 0);
+        add(master);
+
+
         
         // Func1
         JButton f1Button = new JButton(f1);
@@ -380,7 +438,6 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f2);
             addTimeline(f2);
         });
-        buttonPanel.add(f2Button);
         
         // Func3
         JButton f3Button = new JButton(f3);
@@ -794,36 +851,49 @@ public class PSE extends JFrame {
         f99Button.setBackground(Color.WHITE);
 
         // Add function buttons in desired order
-        buttonPanel.add(f1Button);  // Cinza
-        buttonPanel.add(f2Button);  // Negativo
-        buttonPanel.add(f9Button);  // Contraste
-        buttonPanel.add(f8Button);  // Brilho
-        buttonPanel.add(f3Button);  // Media
-        buttonPanel.add(f12Button); // Interpolação
-        buttonPanel.add(f7Button);  // Convolução
-        buttonPanel.add(f4Button);  // Gaussiano
-        buttonPanel.add(f5Button);  // Laplaciano
-        buttonPanel.add(f6Button);  // Sobel
-        buttonPanel.add(f13Button); // Hough Linha
-        buttonPanel.add(f16Button); // Hough Círculo
-        buttonPanel.add(f10Button); // Limiar
-        buttonPanel.add(f11Button); // Cor
-        buttonPanel.add(f14Button); // EMQ
-        buttonPanel.add(f98Button); // Tamanho original
-        buttonPanel.add(f15Button); // Histograma
-        buttonPanel.add(f16Button); // HoughLine
-        buttonPanel.add(f17Button); // Mediana
-        buttonPanel.add(f18Button); // Moda
-        buttonPanel.add(f19Button); // Mínimo
-        buttonPanel.add(f20Button); // Máximo
-        buttonPanel.add(f99Button); // Resetar
+        //Filtros Passa Baixa
+        passaBaixaPanel.add(f3Button);  // Media
+        passaBaixaPanel.add(f17Button); // Mediana
+        passaBaixaPanel.add(f4Button);  // Gaussiano
 
-        // Draw Panel
+        //Filtro Passa Alta
+        passaAltaPanel.add(f2Button);  // Negativo
+   		passaAltaPanel.add(f5Button);  // Laplaciano
+       	passaAltaPanel.add(f6Button);  // Sobel
+
+       	//Filtros Nao lineares
+        naoLinearPanel.add(f20Button); // Máximo
+        naoLinearPanel.add(f19Button); // Mínimo
+        naoLinearPanel.add(f18Button); // Moda
+
+        //Transformacoes de Intensidade
+        intensidadePanel.add(f1Button);  // Cinza
+        intensidadePanel.add(f9Button);  // ;Contraste
+        intensidadePanel.add(f8Button);  // Brilho
+        intensidadePanel.add(f10Button); // Limiar
+
+        //Diversos Panel        	
+        diversosPanel.add(f12Button); // Interpolação
+        diversosPanel.add(f7Button);  // Convolução]
+        diversosPanel.add(f11Button); // Cor
+        diversosPanel.add(f14Button); // EMQ
+
+       //Outros
+        outrosPanel.add(f15Button); // Histograma
+        outrosPanel.add(f98Button); // Tamanho original
+		outrosPanel.add(f99Button); // Resetar
+	 // outrosPanel.add(f13Button); // Hough Linha
+  	//  outrosPanel.add(f16Button); // Hough Círculo
+  	//  outrosPanel.add(f16Button); // HoughLine
+   
+
+        // Draw Panel 
         // -------------------------------------------------------------------------
         drawPanel = new JPanel();
         drawPanel.setPreferredSize(new Dimension(gridX, gridY));
         drawPanel.setLayout(new BorderLayout());
         drawPanel.setBackground(Color.GRAY);
+        drawPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Imagem alterada"));
         add(drawPanel);
 
         // Draw Panel 2
@@ -832,6 +902,7 @@ public class PSE extends JFrame {
         drawPanel2.setPreferredSize(new Dimension(gridX, gridY));
         drawPanel2.setLayout(new BorderLayout());
         drawPanel2.setBackground(Color.GRAY);
+        drawPanel2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Imagem original"));
         add(drawPanel2);
 
         // Tooltip configuration
@@ -1307,7 +1378,7 @@ public class PSE extends JFrame {
     public static BufferedImage Moda(BufferedImage imagem) {
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
-        ArrayList<Integer> colors = new ArrayList();
+        ArrayList<Integer> colors = new ArrayList <Integer>();
 
         //cores primarias
         int r = 0, g = 0, b = 0, p = 0;
@@ -1380,7 +1451,7 @@ public class PSE extends JFrame {
     public static BufferedImage Mediana(BufferedImage imagem) {
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
-        ArrayList<Integer> colors = new ArrayList();
+        ArrayList<Integer> colors = new ArrayList <Integer> ();
 
         //cores primarias
         int r = 0, g = 0, b = 0;
@@ -1431,7 +1502,7 @@ public class PSE extends JFrame {
     public static BufferedImage Minimo(BufferedImage imagem) {
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
-        ArrayList<Integer> colors = new ArrayList();
+        ArrayList<Integer> colors = new ArrayList <Integer>();
 
         //cores primarias
         int r = 0, g = 0, b = 0;
@@ -1481,7 +1552,7 @@ public class PSE extends JFrame {
     public static BufferedImage Maximo(BufferedImage imagem) {
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
-        ArrayList<Integer> colors = new ArrayList();
+        ArrayList<Integer> colors = new ArrayList <Integer>();
 
         //cores primarias
         int r = 0, g = 0, b = 0;
