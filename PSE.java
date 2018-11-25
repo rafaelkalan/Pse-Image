@@ -1375,6 +1375,14 @@ public class PSE extends JFrame {
         return ResultImage;
     }
 
+    public static int regraDeTres(int from, int to) {
+        int result;
+
+        result = (to*8)/from;
+        
+        return result;
+    }
+
     public static BufferedImage Moda(BufferedImage imagem) {
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
@@ -1383,6 +1391,8 @@ public class PSE extends JFrame {
         //cores primarias
         int r = 0, g = 0, b = 0, p = 0;
         int rgb = 0;
+
+        int processed = 0;
 
         //pegar coluna e linha da imagem
         int coluna = imagem.getWidth();
@@ -1402,14 +1412,15 @@ public class PSE extends JFrame {
 
                 // depois de pegar os pixels na mascara, ordena as intensidades
                 Collections.sort(colors);
-
+                
                 //define a intensidade que mais repete
-                int[] count = new int[colors.get(colors.size()-1)];
-                int maior = 0;
+                int[] count = new int[9];
+                int maior = -9999999;
                 
                 // contar as intensidades
                 for (int c = 0; c < colors.size(); c++) {
-                    count[colors.get(c)]++;
+                    int pos = regraDeTres(colors.get(0), colors.get(c));
+                    count[pos]++;
                 }
 
                 // achar o maior numero de ocorrencias
@@ -1437,7 +1448,7 @@ public class PSE extends JFrame {
                 
                 // setar o respectivel pixel na nova imagem
                 ResultImage.setRGB(j, i, tempColor.getRGB());
-                
+
                 // zerar valor das cores primarias e limpar lista de intensidades
                 r = g = b = p = 0;
                 colors.clear();
