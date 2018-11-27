@@ -138,10 +138,10 @@ public class PSE extends JFrame {
     private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
     private final String f16tip = "Hough Linha:<br>(*Clique para calcular gerar a detecção de linhas pela transformada de Hough*)<br>";
-    private final String f17tip = "Filtro de mediana<br>";
-    private final String f18tip = "Filtro de moda<br>";
-    private final String f19tip = "Filtro de mínimo<br>";
-    private final String f20tip = "Filtro de máximo<br>";
+    private final String f17tip = "Filtro de mediana<br>Com uma máscara 3x3, percorre a imagem e atribui ao pixel central da máscara a mediana dos valores presentes na máscara";
+    private final String f18tip = "Filtro de moda<br>Com uma máscara 3x3, percorre a imagem e atribui ao pixel central da máscara a moda dos valores presentes na máscara";
+    private final String f19tip = "Filtro de mínimo<br>Com uma máscara 3x3, percorre a imagem e atribui ao pixel central da máscara o menor valor presente na máscara";
+    private final String f20tip = "Filtro de máximo<br>Com uma máscara 3x3, percorre a imagem e atribui ao pixel central da máscara o maior valor presente na máscara";
 
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
@@ -265,31 +265,31 @@ public class PSE extends JFrame {
         
         histogramFrame = new JFrame(f15);
         histogramFrame.setLayout(new FlowLayout());
-        histogramFrame.setSize(new Dimension(310, 325));
+        histogramFrame.setSize(new Dimension(800, 600));
         histogramFrame.getContentPane().setBackground(Color.DARK_GRAY);
         histogramFrame.setLocationRelativeTo(null);
-        histogramFrame.setAlwaysOnTop(true);
+        histogramFrame.setAlwaysOnTop(false);
         histogramFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         int x = (int) rect.getMaxX() - 2*(histogramFrame.getWidth());
         int y = (int) rect.getMaxY() - histogramFrame.getHeight();
         histogramFrame.setLocation(x, y);
         histogramPanel = new JPanel();
-        histogramPanel.setPreferredSize(new Dimension(300, 300));
+        histogramPanel.setPreferredSize(new Dimension(750, 550));
         histogramFrame.add(histogramPanel);
         
-        // Histograma 2 Frame & Panel
+        // Histogram 2 Frame & Panel
         histogramFrame2 = new JFrame("Histograma 2");
         histogramFrame2.setLayout(new FlowLayout());
-        histogramFrame2.setSize(new Dimension(310, 325));
+        histogramFrame2.setSize(new Dimension(800, 600));
         histogramFrame2.getContentPane().setBackground(Color.DARK_GRAY);
         histogramFrame2.setLocationRelativeTo(null);
-        histogramFrame2.setAlwaysOnTop(true);
+        histogramFrame2.setAlwaysOnTop(false);
         histogramFrame2.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         int x2 = (int) rect.getMaxX() - histogramFrame2.getWidth();
         int y2 = (int) rect.getMaxY() - histogramFrame2.getHeight();
         histogramFrame2.setLocation(x2, y2);
         histogramPanel2 = new JPanel();
-        histogramPanel2.setPreferredSize(new Dimension(300, 300));
+        histogramPanel2.setPreferredSize(new Dimension(750, 550));
         histogramFrame2.add(histogramPanel2);
 
         // TimeLine Button Panel 1
@@ -992,7 +992,7 @@ public class PSE extends JFrame {
                     imgWidth = drawWidth;
                     imgHeight = drawHeight;
                 }
-                tempImage = mainHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
+                tempImage = mainHistogram.getScaledInstance(750, 550, Image.SCALE_SMOOTH);
                 if (histogramLabel != null) {
                     histogramPanel.remove(histogramLabel);
                 }
@@ -1058,7 +1058,7 @@ public class PSE extends JFrame {
                     imgWidth = drawWidth;
                     imgHeight = drawHeight;
                 }
-                tempImage = secondHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
+                tempImage = secondHistogram.getScaledInstance(750, 550, Image.SCALE_SMOOTH);
                 if (histogramLabel2 != null) {
                     histogramPanel2.remove(histogramLabel2);
                 }
@@ -1375,6 +1375,14 @@ public class PSE extends JFrame {
         return ResultImage;
     }
 
+    public static int regraDeTres(int from, int to) {
+        int result;
+
+        result = (to*8)/from;
+        
+        return result;
+    }
+
     public static BufferedImage Moda(BufferedImage imagem) {
         //imagem resultante
         BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
@@ -1402,14 +1410,15 @@ public class PSE extends JFrame {
 
                 // depois de pegar os pixels na mascara, ordena as intensidades
                 Collections.sort(colors);
-
+                
                 //define a intensidade que mais repete
-                int[] count = new int[colors.get(colors.size()-1)];
-                int maior = 0;
+                int[] count = new int[9];
+                int maior = -9999999;
                 
                 // contar as intensidades
                 for (int c = 0; c < colors.size(); c++) {
-                    count[colors.get(c)]++;
+                    int pos = regraDeTres(colors.get(0), colors.get(c));
+                    count[pos]++;
                 }
 
                 // achar o maior numero de ocorrencias
@@ -1437,7 +1446,7 @@ public class PSE extends JFrame {
                 
                 // setar o respectivel pixel na nova imagem
                 ResultImage.setRGB(j, i, tempColor.getRGB());
-                
+
                 // zerar valor das cores primarias e limpar lista de intensidades
                 r = g = b = p = 0;
                 colors.clear();
@@ -2054,92 +2063,81 @@ public class PSE extends JFrame {
     public static BufferedImage Histograma(BufferedImage imagem) {
 
         //Cria a imagem resultante
-        BufferedImage ResultImage = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
+        BufferedImage ResultImage = new BufferedImage(750, 550, BufferedImage.TYPE_INT_RGB);
+
         //Instancia variaveis para auxiliar as configurações do grafico de histograma
-        int width = imagem.getWidth();      // lagura
-        int height = imagem.getHeight();    // altura
+        int width = 750;      // lagura
+        int height = 550;    // altura
         int padding = 40;           // espaçamento para a régua
         int labelPadding = 40;          // espaçamento para o texto
         Color lineColor = new Color(44, 102, 230, 180);     // Cor da Linha
-        Color pointColor = new Color(100, 100, 100, 180);   // Cor do Ponto
+        Color rLine = new Color(255, 0, 0, 180);
+        Color gLine = new Color(0, 255, 0, 180);
+        Color bLine = new Color(0, 0, 255, 180);
+        // Color pointColor = new Color(100, 100, 100, 180);   // Cor do Ponto
         Color gridColor = new Color(200, 200, 200, 200);    // Cor do Grid
         final Stroke GRAPH_STROKE = new BasicStroke(4f);    // Espessura da Linha
         int pointWidth = 8;                 // Espessura do Ponto
-        int numberYDivisions = 10;              // Numero Máximo de Divisões/Linhas em Y
         int[] scores = new int[6];              // Array que armazena as intensidades de cada intervalo
-        for (int i = 0; i < scores.length; i++) {             // {0-50, 50-100, 100-200, 200-255}
-            scores[i] = 0;
-        }
+        int[] rScore = new int[256];
+        int[] gScore = new int[256];
+        int[] bScore = new int[256];
 
         int r = 0, g = 0, b = 0;                 // Variaveis R, G , B
+
         //Fazer as intensidades
         for (int i = 1; i + 1 < imagem.getHeight(); i++) {
             for (int j = 1; j + 1 < imagem.getWidth(); j++) {
                 //rgb
                 int rgb = (int) imagem.getRGB(j, i);
                 r = (int) ((rgb & 0x00FF0000) >>> 16);
+                rScore[r]++;
                 g = (int) ((rgb & 0x0000FF00) >>> 8);
+                gScore[g]++;
                 b = (int) ((rgb & 0x000000FF));
-
-                // Para cada intervalo incrementa a intensidade
-                if (r <= 50 || g <= 50 || b <= 50) {     // 0-50
-                    scores[0]++;
-                } else if ((r > 50 && r <= 100) || (g > 50 && g <= 100) || (b > 50 && b <= 100)) { // 50-100
-                    scores[2]++;
-                } else if ((r > 100 && r <= 150) || (g > 100 && g <= 150) || (b > 100 && b <= 150)) { // 100-150
-                    scores[3]++;
-                } else if ((r > 150 && r <= 200) || (g > 150 && g <= 200) || (b > 150 && b <= 200)) { // 150-200
-                    scores[4]++;
-                } else if ((r > 200 || g > 200 || b > 200)) { // 200-255
-                    scores[5]++;
-                }
+                bScore[b]++;
             }
         }
 
-        width = 300;
-        height = 300;
+        width = 750;
+        height = 550;
+
         Graphics2D g2 = ResultImage.createGraphics();   // Cria um gráfico dentro da Imagem Resultante
         g2.setColor(Color.WHITE);           // Torna o fundo da imagem branco
         g2.fillRect(0, 0, width, height);            //Para o tamanho da imagem
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-        double xScale = ((double) width - (2 * padding) - labelPadding) / (scores.length - 1);  // Escala de X
-        double yScale = ((double) height - 2 * padding - labelPadding) / (maxVal(scores) - 0);  // Escala de Y
+        double xScale = ((double) width - (2 * padding) - labelPadding) / (rScore.length - 1);  // Escala de X
+        double yScale = ((double) height - 2 * padding - labelPadding) / (maxVal(rScore) - 0);  // Escala de Y
 
-        ArrayList<Point> graphPoints = new ArrayList<Point>();    // Cria uma Lista de Pontos
+        ArrayList<Point> rPoints = new ArrayList<Point>();
+        ArrayList<Point> gPoints = new ArrayList<Point>();
+        ArrayList<Point> bPoints = new ArrayList<Point>();
 
-        for (int i = 0; i < scores.length; i++) {
+        for (int i = 0; i < rScore.length; i++) {
             int x1 = (int) (i * xScale + padding + labelPadding);
-            int y1 = (int) ((maxVal(scores) - scores[i]) * yScale + padding);
-            graphPoints.add(new Point(x1, y1));
+            int y1 = (int) ((maxVal(rScore) - rScore[i]) * yScale + padding);
+            rPoints.add(new Point(x1, y1));
         }
 
-        g2.setColor(Color.WHITE);   // Trona o fundo do Gráfico Branco
-        g2.fillRect(padding + labelPadding, padding, width - (2 * padding) - labelPadding, height - 2 * padding - labelPadding);
-        g2.setColor(Color.BLACK);   // Torna o texto preto
-
-        // Cria grid lines para o eixo y.
-        for (int i = 0; i < numberYDivisions + 1; i++) {
-            int x0 = padding + labelPadding;
-            int x1 = pointWidth + padding + labelPadding;
-            int y0 = height - ((i * (height - padding * 2 - labelPadding)) / numberYDivisions + padding + labelPadding);
-            int y1 = y0;
-
-            if (scores.length > 0) {
-                g2.setColor(gridColor);
-                g2.drawLine(padding + labelPadding + 1 + pointWidth, y0, width - padding, y1);
-                g2.setColor(Color.BLACK);
-                String yLabel = ((int) (maxVal(scores) / numberYDivisions)) * i + "";
-                FontMetrics metrics = g2.getFontMetrics();
-                int labelWidth = metrics.stringWidth(yLabel);
-                g2.drawString(yLabel, x0 - labelWidth - 5, y0 + (metrics.getHeight() / 2) - 3);
-
-            }
-
-            g2.drawLine(x0, y0, x1, y1);
+        for (int i = 0; i < gScore.length; i++) {
+            int x1 = (int) (i * xScale + padding + labelPadding);
+            int y1 = (int) ((maxVal(gScore) - gScore[i]) * yScale + padding);
+            gPoints.add(new Point(x1, y1));
         }
 
-        // e para o eixo x
+        for (int i = 0; i < bScore.length; i++) {
+            int x1 = (int) (i * xScale + padding + labelPadding);
+            int y1 = (int) ((maxVal(bScore) - bScore[i]) * yScale + padding);
+            bPoints.add(new Point(x1, y1));
+        }
+
+        g2.setColor(Color.WHITE);   // Torna o fundo do Gráfico Branco
+        // g2.fillRect(padding + labelPadding, padding, width - (2 * padding) - labelPadding, height - 2 * padding - labelPadding);
+        g2.fillRect(0, 0, width, height);
+        g2.setColor(lineColor);   // Torna o texto preto
+
+        // Cria grid lines para o eixo  x
         int[] labels = {0, 50, 100, 150, 200, 255};
         for (int i = 0; i < scores.length; i++) {
             if (scores.length > 1) {
@@ -2164,29 +2162,78 @@ public class PSE extends JFrame {
         // cria os eixos x e y  
         g2.drawLine(padding + labelPadding, height - padding - labelPadding, padding + labelPadding, padding);
         g2.drawLine(padding + labelPadding, height - padding - labelPadding, width - padding, height - padding - labelPadding);
+        
         // e desenha as linhas até os pontos
+
+        /* RED */
         Stroke oldStroke = g2.getStroke();
-        g2.setColor(lineColor);
+        g2.setColor(rLine);
         g2.setStroke(GRAPH_STROKE);
 
-        for (int i = 0; i < graphPoints.size(); i++) {
-            int x1 = graphPoints.get(i).x;
-            int y1 = graphPoints.get(i).y;
-            int x2 = i * (width - padding * 2 - labelPadding) / (scores.length - 1) + padding + labelPadding;
+        for (int i = 0; i < rPoints.size(); i++) {
+            int x1 = rPoints.get(i).x;
+            int y1 = rPoints.get(i).y;
+            int x2 = i * (width - padding * 2 - labelPadding) / (rScore.length - 1) + padding + labelPadding;
             int y2 = height - padding - labelPadding;
             g2.drawLine(x1, y1, x2, y2);
         }
 
-        g2.setStroke(oldStroke);
-        g2.setColor(pointColor);
+        // g2.setStroke(oldStroke);
+        // g2.setColor(pointColor);
 
-        for (int i = 0; i < graphPoints.size(); i++) {
-            int x = graphPoints.get(i).x - pointWidth / 2;
-            int y = graphPoints.get(i).y - pointWidth / 2;
-            int ovalW = pointWidth;
-            int ovalH = pointWidth;
-            g2.fillOval(x, y, ovalW, ovalH);
+        // for (int i = 0; i < rPoints.size(); i++) {
+        //     int x = rPoints.get(i).x - pointWidth / 2;
+        //     int y = rPoints.get(i).y - pointWidth / 2;
+        //     int ovalW = pointWidth;
+        //     int ovalH = pointWidth;
+        //     g2.fillOval(x, y, ovalW, ovalH);
+        // }
+
+        /* GREEN */
+        g2.setColor(gLine);
+        g2.setStroke(GRAPH_STROKE);
+
+        for (int i = 0; i < gPoints.size(); i++) {
+            int x1 = gPoints.get(i).x;
+            int y1 = gPoints.get(i).y;
+            int x2 = i * (width - padding * 2 - labelPadding) / (gScore.length - 1) + padding + labelPadding;
+            int y2 = height - padding - labelPadding;
+            g2.drawLine(x1, y1, x2, y2);
         }
+
+        // g2.setStroke(oldStroke);
+        // g2.setColor(pointColor);
+
+        // for (int i = 0; i < gPoints.size(); i++) {
+        //     int x = gPoints.get(i).x - pointWidth / 2;
+        //     int y = gPoints.get(i).y - pointWidth / 2;
+        //     int ovalW = pointWidth;
+        //     int ovalH = pointWidth;
+        //     g2.fillOval(x, y, ovalW, ovalH);
+        // }
+
+        /* BLUE */
+        g2.setColor(bLine);
+        g2.setStroke(GRAPH_STROKE);
+
+        for (int i = 0; i < bPoints.size(); i++) {
+            int x1 = bPoints.get(i).x;
+            int y1 = bPoints.get(i).y;
+            int x2 = i * (width - padding * 2 - labelPadding) / (bScore.length - 1) + padding + labelPadding;
+            int y2 = height - padding - labelPadding;
+            g2.drawLine(x1, y1, x2, y2);
+        }
+
+        // g2.setStroke(oldStroke);
+        // g2.setColor(pointColor);
+
+        // for (int i = 0; i < bPoints.size(); i++) {
+        //     int x = bPoints.get(i).x - pointWidth / 2;
+        //     int y = bPoints.get(i).y - pointWidth / 2;
+        //     int ovalW = pointWidth;
+        //     int ovalH = pointWidth;
+        //     g2.fillOval(x, y, ovalW, ovalH);
+        // }
 
         return ResultImage;
     }
