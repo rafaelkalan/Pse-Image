@@ -371,7 +371,7 @@ public class PSE extends JFrame {
         // -------------------------------------------------------------------------
         passaAltaPanel = new JPanel();
         passaAltaPanel.setPreferredSize(new Dimension(buttonX, 120));
-        passaAltaPanel.setLayout(new GridLayout(3, 1));
+        passaAltaPanel.setLayout(new GridLayout(2, 1));
         passaAltaPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Filtro Passa Alta"));
         passaAltaPanel.setVisible(true);
 
@@ -389,8 +389,8 @@ public class PSE extends JFrame {
 
         //Transformação de Intensidade Panel
         intensidadePanel = new JPanel();
-        intensidadePanel.setPreferredSize(new Dimension(buttonX, 120));
-        intensidadePanel.setLayout(new GridLayout(4,1));
+        intensidadePanel.setPreferredSize(new Dimension(buttonX, buttonY));
+        intensidadePanel.setLayout(new GridLayout(5,1));
         intensidadePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Trans. Intensidade"));
 
         //Outros Panel
@@ -857,7 +857,6 @@ public class PSE extends JFrame {
         passaBaixaPanel.add(f4Button);  // Gaussiano
 
         //Filtro Passa Alta
-        passaAltaPanel.add(f2Button);  // Negativo
    		passaAltaPanel.add(f5Button);  // Laplaciano
        	passaAltaPanel.add(f6Button);  // Sobel
 
@@ -871,6 +870,8 @@ public class PSE extends JFrame {
         intensidadePanel.add(f9Button);  // ;Contraste
         intensidadePanel.add(f8Button);  // Brilho
         intensidadePanel.add(f10Button); // Limiar
+        intensidadePanel.add(f2Button);  // Negativo
+
 
         //Diversos Panel        	
         diversosPanel.add(f12Button); // Interpolação
@@ -882,9 +883,9 @@ public class PSE extends JFrame {
         outrosPanel.add(f15Button); // Histograma
         outrosPanel.add(f98Button); // Tamanho original
 		outrosPanel.add(f99Button); // Resetar
-	 // outrosPanel.add(f13Button); // Hough Linha
-  	//  outrosPanel.add(f16Button); // Hough Círculo
-  	//  outrosPanel.add(f16Button); // HoughLine
+	 	// outrosPanel.add(f13Button); // Hough Linha
+  	 	// outrosPanel.add(f16Button); // Hough Círculo
+  	 	// outrosPanel.add(f16Button); // HoughLine
    
 
         // Draw Panel 
