@@ -1,4 +1,3 @@
-
 import java.awt.*;
 import java.awt.BasicStroke;
 import java.awt.geom.Line2D;
@@ -44,12 +43,13 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.BorderFactory;
+import java.nio.charset.Charset;
 
 public class PSE extends JFrame {
-
     private final int borderX = 35;
     private final int borderY = 55;
-    private int windowX = 1000;
+    private int windowX = 1200;
     private int windowY = 650;
     private int timelineButton1X = 285;
     private int timelineButton2X = 285;
@@ -57,24 +57,39 @@ public class PSE extends JFrame {
     private int timelineY = 40;
     private int timelineButton1Y = timelineY;
     private int timelineButton2Y = timelineY;
-    private int buttonX = 100;
+    private int buttonX = 125;
     private int buttonY = windowY - timelineY;
     private int gridX = windowX - buttonX;
     private int gridY = windowY - timelineY;
     private JPanel timelinePanel;
     private JPanel timelineButtonPanel1;
     private JPanel timelineButtonPanel2;
-    private JPanel buttonPanel;
+    private JPanel master;
+    private JPanel passaAltaPanel;
+    private JPanel passaBaixaPanel;
+    private JPanel naoLinearPanel;
+    private JPanel intensidadePanel;
+    private JPanel outrosPanel;
+    private JPanel diversosPanel;
     private JPanel drawPanel;
+    private JPanel drawPanel2;
     private JFrame histogramFrame;
+    private JFrame histogramFrame2;
     private JPanel histogramPanel;
+    private JPanel histogramPanel2;
     private BufferedImage originalImage;
+    private BufferedImage originalSecondImage;
     private BufferedImage mainImage;
+    private BufferedImage secondImage;
     private ArrayList<BufferedImage> imageHistory;
     private JLabel mainImageLabel;
+    private JLabel secondImageLabel;
     private JLabel histogramLabel;
+    private JLabel histogramLabel2;
     private Boolean mustProcess = true;
     private int lastProcessed = 0;
+    private int yPassaAlta = 500;
+
     // Nomes das funções
     private final String f1 = "Cinza";
     private final String f2 = "Negativo";
@@ -82,7 +97,7 @@ public class PSE extends JFrame {
     private final String f4 = "Gaussiano";
     private final String f5 = "Laplaciano";
     private final String f6 = "Sobel";
-    private final String f7 = "Convolução";
+    private final String f7 = "Convolucao";
     private final String f8 = "Brilho";
     private final String f9 = "Contraste";
     private final String f10 = "Limiar";
@@ -92,34 +107,42 @@ public class PSE extends JFrame {
     private final String f14 = "EMQ";
     private final String f15 = "Histograma";
     private final String f16 = "Linha";
+    private final String f17 = "Mediana";
+    private final String f18 = "Moda";
+    private final String f19 = "Minimo";
+    private final String f20 = "Maximo";
     private final String f98 = "Tam. Original";
     private final String f99 = "Resetar";
+
     // Descrições para os botões
     private final String opentip = "Clique para abrir uma imagem.";
     private final String processtip = "Clique para processar a imagem seguindo a ordem definida no timeline (à direita).";
-    private final String originaltip = "Clique para mudar a visualização para a imagem original.";
-    private final String resulttip = "Clique para mudar a visualização para a imagem resultada do processamento no timeline (à esquerda).";
     private final String savetip = "Clique para salvar a imagem atualmente sendo visualizada.";
     private final String quittip = "Clique para fechar o programa. (Não salva a imagem!).";
     private final String resettip = "Clique para resetar a imagem de volta à original e resetar o timeline.";
     private final String sizetip = "Mostrar tamanho original:<br>(*Clique para ligar/desligar visualização da imagem em seu tamanho original*)";
     private final String timelinetip = "Clique esquerdo para visualizar esta etapa.<br>Clique direito para remover esta etapa.";
-    private final String f1tip = "Escala de Cinza:<br><br>Transforma a imágem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
+    private final String f1tip = "Escala de Cinza:<br><br>Transforma a imagem para tons de cinza.<br><br>Geralmente usada para preparar a imagem para outros filtros / transformações.";
     private final String f2tip = "Filtro Negativo:<br><br>Inverte todos os tons da imágem.<br><br>Geralmente usado para transformar uma imagem obtida em sua forma negativa para a sua positiva (imagem normal).";
     private final String f3tip = "Filtro de Média:<br><br>Percorre a imagem substituindo cada pixel pela média de seus vizinhos.<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
     private final String f4tip = "Filtro Gaussiano:<br><br>Percorre a imagem aplicando um efeito \"borrado\".<br><br>Geralmente usado para pre-processar a imagem, removendo ruído, para melhorar o resultado de processamentos subsequentes.";
     private final String f5tip = "Operador de Laplace:<br><br>Percorre a imagem calculando a divergěncia de gradientes, identificando áreas de mudança rápida (bordas).<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem.";
     private final String f6tip = "Operador de Sobel:<br><br>Percorre a imagem calculando as normais dos gradientes, identificando potenciais bordas.<br><br>Geralmente usado para detecção de bordas, usualmente após operações que reduzem ruído / suavizam a imagem. ";
-    private final String f7tip = "Filtro de Convolução:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem substituindo cada pixel pela média ponderada de seus vizinhos a partir de uma matriz de convolução.<br><br>Filtro de propósito geral usado quando se quer um maior controle no processamento da imagem.";
-    private final String f8tip = "Filtro de Brilho:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o brilho de cada pixel.<br><br>Geralmente usado para corrigir uma imagem que está muito clara ou escura, dificultando o seu processamento.";
-    private final String f9tip = "Filtro de Contraste:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
-    private final String f10tip = "Limiar Global Padrão:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem para verificar a média do valor de intensidade dos pixels, e usa essa média para gerar uma nova imagem binária repartindo o pixels por esse valor. O limiar pode ser configurado para usar um valor fornecido, ao inves do valor da média.";
-    private final String f11tip = "Filtro de Cor:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem verificando cada pixel, gerando uma imagem binária a partir daqueles que estiverem dentro do escopo de cor permitido.<br><br>Geralmente usado quando é fácil retirar da imagem a parte desejada pela sua cor distinta.";
-    private final String f12tip = "Interpolação:<br>(*Clique com o botão direito para configurar*)<br><br>Percorre a imagem e interpola os pixels para gerar uma nova imagem gerada a partir do fator de escala definido na configuração. <br><br> Geralmente usado para escalar uma imagem quando necessário.";
+    private final String f7tip = "Filtro de Convolução:<br><br>Percorre a imagem substituindo cada pixel pela média ponderada de seus vizinhos a partir de uma matriz de convolução.<br><br>Filtro de propósito geral usado quando se quer um maior controle no processamento da imagem.";
+    private final String f8tip = "Filtro de Brilho:<br><br>Percorre a imagem aumentando ou reduzindo o brilho de cada pixel.<br><br>Geralmente usado para corrigir uma imagem que está muito clara ou escura, dificultando o seu processamento.";
+    private final String f9tip = "Filtro de Contraste:<br><br>Percorre a imagem aumentando ou reduzindo o contraste.<br><br>Geralmente usado para corrigir uma imagem que esta muito suave ou ruidosa.";
+    private final String f10tip = "Limiar Global Padrão:<br><br>Percorre a imagem para verificar a média do valor de intensidade dos pixels, e usa essa média para gerar uma nova imagem binária repartindo o pixels por esse valor. O limiar pode ser configurado para usar um valor fornecido, ao inves do valor da média.";
+    private final String f11tip = "Filtro de Cor:<br><br>Percorre a imagem verificando cada pixel, gerando uma imagem binária a partir daqueles que estiverem dentro do escopo de cor permitido.<br><br>Geralmente usado quando é fácil retirar da imagem a parte desejada pela sua cor distinta.";
+    private final String f12tip = "Interpolação:<br><br>Percorre a imagem e interpola os pixels para gerar uma nova imagem gerada a partir do fator de escala definido na configuração. <br><br> Geralmente usado para escalar uma imagem quando necessário.";
     private final String f13tip = "Hough Linha:<br><br>";
     private final String f14tip = "Erro Médio Quadrático:<br>(*Clique para calcular o EMQ da imagem atualmente sendo visualizada*)";
     private final String f15tip = "Histograma:<br>(*Clique para ligar/desligar visualização do Histograma*)";
     private final String f16tip = "Hough Linha:<br>(*Clique para calcular gerar a detecção de linhas pela transformada de Hough*)<br>";
+    private final String f17tip = "Filtro de mediana<br>Com uma máscara 3x3, percorre a imagem e atribui ao pixel central da máscara a mediana dos valores presentes na máscara";
+    private final String f18tip = "Filtro de moda<br>Com uma máscara 3x3, percorre a imagem e atribui ao pixel central da máscara a moda dos valores presentes na máscara";
+    private final String f19tip = "Filtro de mínimo<br>Com uma máscara 3x3, percorre a imagem e atribui ao pixel central da máscara o menor valor presente na máscara";
+    private final String f20tip = "Filtro de máximo<br>Com uma máscara 3x3, percorre a imagem e atribui ao pixel central da máscara o maior valor presente na máscara";
+
     // Argumentos das funções que precisam deles
     private int convolucaoLinhas = 3;
     private int convolucaoColunas = 3;
@@ -132,10 +155,12 @@ public class PSE extends JFrame {
     private Boolean histogramOn = false;
     private Boolean scaleOff = false;
 
+    
     public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
+	    EventQueue.invokeLater(() -> {
             try {
-                UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+                // UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -157,6 +182,7 @@ public class PSE extends JFrame {
         getContentPane().setBackground(Color.DARK_GRAY);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+
         // Resizing
         addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent evt) {
@@ -164,16 +190,13 @@ public class PSE extends JFrame {
                 Dimension size = component.getBounds().getSize();
                 windowX = (int) Math.round(size.getWidth()) - borderX;
                 windowY = (int) Math.round(size.getHeight()) - borderY;
-                //timelineButton1X = 180;
-                //timelineButton2X = 180;
                 timelineX = windowX - timelineButton1X - timelineButton2X;
-                //timelineY = 50;
                 timelineButton1Y = timelineY;
                 timelineButton2Y = timelineY;
-                //buttonX = 125;
                 buttonY = windowY - timelineY;
                 gridX = windowX - buttonX;
                 gridY = windowY - timelineY;
+                
                 if (timelinePanel != null) {
                     timelinePanel.setPreferredSize(new Dimension(timelineX, timelineY));
                     timelinePanel.setSize(new Dimension(timelineX, timelineY));
@@ -182,6 +205,7 @@ public class PSE extends JFrame {
                     timelinePanel.repaint();
                     timelinePanel.validate();
                 }
+                
                 if (timelineButtonPanel1 != null) {
                     timelineButtonPanel1.setPreferredSize(new Dimension(timelineButton1X, timelineButton1Y));
                     timelineButtonPanel1.setSize(new Dimension(timelineButton1X, timelineButton1Y));
@@ -190,6 +214,7 @@ public class PSE extends JFrame {
                     timelineButtonPanel1.repaint();
                     timelineButtonPanel1.validate();
                 }
+                
                 if (timelineButtonPanel2 != null) {
                     timelineButtonPanel2.setPreferredSize(new Dimension(timelineButton2X, timelineButton2Y));
                     timelineButtonPanel2.setSize(new Dimension(timelineButton2X, timelineButton2Y));
@@ -198,22 +223,34 @@ public class PSE extends JFrame {
                     timelineButtonPanel2.repaint();
                     timelineButtonPanel2.validate();
                 }
-                if (buttonPanel != null) {
-                    buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-                    buttonPanel.setSize(new Dimension(buttonX, buttonY));
-                    buttonPanel.setMinimumSize(new Dimension(buttonX, buttonY));
-                    buttonPanel.setMaximumSize(new Dimension(buttonX, buttonY));
-                    buttonPanel.repaint();
-                    buttonPanel.validate();
+                
+        		if (master != null) {
+                    master.setPreferredSize(new Dimension(buttonX, buttonY));
+                    master.setSize(new Dimension(buttonX, buttonY));
+                    master.setMinimumSize(new Dimension(buttonX, buttonY));
+                    master.setMaximumSize(new Dimension(buttonX, buttonY));
+                    master.repaint();
+                    master.validate();
                 }
+
                 if (drawPanel != null) {
-                    drawPanel.setPreferredSize(new Dimension(gridX, gridY));
-                    drawPanel.setSize(new Dimension(gridX, gridY));
-                    drawPanel.setMinimumSize(new Dimension(gridX, gridY));
-                    drawPanel.setMaximumSize(new Dimension(gridX, gridY));
+                    drawPanel.setPreferredSize(new Dimension(gridX/2, gridY));
+                    drawPanel.setSize(new Dimension(gridX/2, gridY));
+                    drawPanel.setMinimumSize(new Dimension(gridX/2, gridY));
+                    drawPanel.setMaximumSize(new Dimension(gridX/2, gridY));
                     drawPanel.repaint();
                     drawPanel.validate();
                 }
+
+                if (drawPanel2 != null) {
+                    drawPanel2.setPreferredSize(new Dimension(gridX/2, gridY));
+                    drawPanel2.setSize(new Dimension(gridX/2, gridY));
+                    drawPanel2.setMinimumSize(new Dimension(gridX/2, gridY));
+                    drawPanel2.setMaximumSize(new Dimension(gridX/2, gridY));
+                    drawPanel2.repaint();
+                    drawPanel2.validate();
+                }
+                
                 component.repaint();
                 component.validate();
                 showImage();
@@ -222,22 +259,38 @@ public class PSE extends JFrame {
         );
 
         // Histogram Frame & Panel
-        histogramFrame = new JFrame(f15);
-        histogramFrame.setLayout(new FlowLayout());
-        histogramFrame.setSize(new Dimension(310, 325));
-        histogramFrame.getContentPane().setBackground(Color.DARK_GRAY);
-        histogramFrame.setLocationRelativeTo(null);
-        histogramFrame.setAlwaysOnTop(true);
-        histogramFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice defaultScreen = ge.getDefaultScreenDevice();
         Rectangle rect = defaultScreen.getDefaultConfiguration().getBounds();
-        int x = (int) rect.getMaxX() - histogramFrame.getWidth();
+        
+        histogramFrame = new JFrame(f15);
+        histogramFrame.setLayout(new FlowLayout());
+        histogramFrame.setSize(new Dimension(800, 600));
+        histogramFrame.getContentPane().setBackground(Color.DARK_GRAY);
+        histogramFrame.setLocationRelativeTo(null);
+        histogramFrame.setAlwaysOnTop(false);
+        histogramFrame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        int x = (int) rect.getMaxX() - 2*(histogramFrame.getWidth());
         int y = (int) rect.getMaxY() - histogramFrame.getHeight();
         histogramFrame.setLocation(x, y);
         histogramPanel = new JPanel();
-        histogramPanel.setPreferredSize(new Dimension(300, 300));
+        histogramPanel.setPreferredSize(new Dimension(750, 550));
         histogramFrame.add(histogramPanel);
+        
+        // Histogram 2 Frame & Panel
+        histogramFrame2 = new JFrame("Histograma 2");
+        histogramFrame2.setLayout(new FlowLayout());
+        histogramFrame2.setSize(new Dimension(800, 600));
+        histogramFrame2.getContentPane().setBackground(Color.DARK_GRAY);
+        histogramFrame2.setLocationRelativeTo(null);
+        histogramFrame2.setAlwaysOnTop(false);
+        histogramFrame2.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+        int x2 = (int) rect.getMaxX() - histogramFrame2.getWidth();
+        int y2 = (int) rect.getMaxY() - histogramFrame2.getHeight();
+        histogramFrame2.setLocation(x2, y2);
+        histogramPanel2 = new JPanel();
+        histogramPanel2.setPreferredSize(new Dimension(750, 550));
+        histogramFrame2.add(histogramPanel2);
 
         // TimeLine Button Panel 1
         // -------------------------------------------------------------------------
@@ -246,6 +299,7 @@ public class PSE extends JFrame {
         timelineButtonPanel1.setLayout(new GridLayout(1, 2));
         timelineButtonPanel1.setBackground(Color.GRAY);
         add(timelineButtonPanel1);
+
         // Open Image
         JButton openButton = new JButton("Abrir");
         openButton.setToolTipText("<html><p width=\"300\">" + opentip + "</p></html>");
@@ -255,28 +309,18 @@ public class PSE extends JFrame {
         });
         openButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(openButton);
+
         // Process
         JButton processButton = new JButton("Processar");
         processButton.setToolTipText("<html><p width=\"300\">" + processtip + "</p></html>");
         processButton.addActionListener((ActionEvent event) -> {
-            if (mainImage != null) {
+            if (mainImage != null || secondImage != null) {
                 new ProcessFunctionsWorker().execute();
             }
         });
         processButton.setBackground(Color.WHITE);
         timelineButtonPanel1.add(processButton);
-        // View original image
-        JButton originalButton = new JButton("Original");
-        originalButton.setToolTipText("<html><p width=\"300\">" + originaltip + "</p></html>");
-        originalButton.addActionListener((ActionEvent event) -> {
-            if (originalImage != null) {
-                setTitle("PSE Image - Visualizando: Imagem original");
-                mainImage = originalImage;
-                showImage();
-            }
-        });
-        timelineButtonPanel1.add(originalButton);
-
+        
         // TimeLine Panel
         // -------------------------------------------------------------------------
         timelinePanel = new JPanel();
@@ -292,26 +336,7 @@ public class PSE extends JFrame {
         timelineButtonPanel2.setLayout(new GridLayout(1, 2));
         timelineButtonPanel2.setBackground(Color.GRAY);
         add(timelineButtonPanel2);
-        // View result image
-        JButton resultButton = new JButton("Resultado");
-        resultButton.setToolTipText("<html><p width=\"300\">" + resulttip + "</p></html>");
-        resultButton.addActionListener((ActionEvent event) -> {
-            if (mainImage != null) {
-                if (mustProcess) {
-                    new ProcessFunctionsWorker().execute();
-                    while (mustProcess != false) {
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(1000);
-                        } catch (Exception e) {
-                        }
-                    }
-                }
-                setTitle("PSE Image - Visualizando: Imagem resultado");
-                mainImage = imageHistory.get(imageHistory.size() - 1);
-                showImage();
-            }
-        });
-        timelineButtonPanel2.add(resultButton);
+        
         // Save Image
         JButton saveButton = new JButton("Salvar");
         saveButton.setToolTipText("<html><p width=\"300\">" + savetip + "</p></html>");
@@ -321,6 +346,7 @@ public class PSE extends JFrame {
         });
         saveButton.setBackground(Color.WHITE);
         timelineButtonPanel2.add(saveButton);
+        
         // Exit Image
         JButton exitButton = new JButton("Fechar");
         exitButton.setToolTipText("<html><p width=\"300\">" + quittip + "</p></html>");
@@ -329,7 +355,8 @@ public class PSE extends JFrame {
             System.exit(0);
         });
         exitButton.setBackground(Color.WHITE);
-//        timelineButtonPanel2.add(exitButton);
+        //timelineButtonPanel2.add(exitButton);
+        
         // Help Image
         JButton helpButton = new JButton("Ajuda");
         helpButton.setToolTipText("<html><p width=\"300\">" + quittip + "</p></html>");
@@ -340,13 +367,62 @@ public class PSE extends JFrame {
         helpButton.setBackground(Color.WHITE);
         timelineButtonPanel2.add(helpButton);
 
-        // Button Panel
+        // Button Panel Passa Alta
         // -------------------------------------------------------------------------
-        buttonPanel = new JPanel();
-        buttonPanel.setPreferredSize(new Dimension(buttonX, buttonY));
-        buttonPanel.setLayout(new GridLayout(18, 1));
-        buttonPanel.setBackground(Color.DARK_GRAY);
-        add(buttonPanel);
+        passaAltaPanel = new JPanel();
+        passaAltaPanel.setPreferredSize(new Dimension(buttonX, 120));
+        passaAltaPanel.setLayout(new GridLayout(2, 1));
+        passaAltaPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Filtro Passa Alta"));
+        passaAltaPanel.setVisible(true);
+
+        // Button Panel PassaBaixa
+        passaBaixaPanel = new JPanel();
+        passaBaixaPanel.setPreferredSize(new Dimension(buttonX, 120));
+        passaBaixaPanel.setLayout(new GridLayout(3, 1));
+        passaBaixaPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Filtro Passa Baixa"));
+        passaBaixaPanel.setVisible(true);
+
+        naoLinearPanel = new JPanel();
+        naoLinearPanel.setPreferredSize(new Dimension(buttonX, 120));
+        naoLinearPanel.setLayout(new GridLayout(3,1));
+        naoLinearPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Filtro Nao-Linear"));
+
+        //Transformação de Intensidade Panel
+        intensidadePanel = new JPanel();
+        intensidadePanel.setPreferredSize(new Dimension(buttonX, buttonY));
+        intensidadePanel.setLayout(new GridLayout(5,1));
+        intensidadePanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Trans. Intensidade"));
+
+        //Outros Panel
+        outrosPanel = new JPanel();
+        outrosPanel.setPreferredSize(new Dimension(buttonX, 120)); 
+        outrosPanel.setLayout(new GridLayout(3,1));
+        outrosPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Outros"));
+
+
+        //Diversos Panel
+        diversosPanel = new JPanel();
+        diversosPanel.setPreferredSize(new Dimension(buttonX, 120)); 
+        diversosPanel.setLayout(new GridLayout(4,1));
+        diversosPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Diversos"));
+
+
+        //Painel Master
+
+        master = new JPanel();
+        master.setLayout(new GridLayout(6,1));
+        master.setPreferredSize(new Dimension(buttonX, buttonY));
+        master.setBackground(Color.DARK_GRAY);     
+        master.add(outrosPanel, new Integer(0), 0);
+        master.add(diversosPanel, new Integer(0), 0);
+        master.add(naoLinearPanel, new Integer(2), 0);
+        master.add(passaAltaPanel, new Integer(0), 0);
+        master.add(passaBaixaPanel, new Integer(1), 0);
+        master.add(intensidadePanel, new Integer(3), 0);
+        add(master);
+
+
+        
         // Func1
         JButton f1Button = new JButton(f1);
         f1Button.setToolTipText("<html><p width=\"300\">" + f1tip + "</p></html>");
@@ -354,6 +430,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f1);
             addTimeline(f1);
         });
+        
         // Func2
         JButton f2Button = new JButton(f2);
         f2Button.setToolTipText("<html><p width=\"300\">" + f2tip + "</p></html>");
@@ -361,7 +438,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f2);
             addTimeline(f2);
         });
-        buttonPanel.add(f2Button);
+        
         // Func3
         JButton f3Button = new JButton(f3);
         f3Button.setToolTipText("<html><p width=\"300\">" + f3tip + "</p></html>");
@@ -369,6 +446,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f3);
             addTimeline(f3);
         });
+        
         // Func4
         JButton f4Button = new JButton(f4);
         f4Button.setToolTipText("<html><p width=\"300\">" + f4tip + "</p></html>");
@@ -376,6 +454,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f4);
             addTimeline(f4);
         });
+        
         // Func5
         JButton f5Button = new JButton(f5);
         f5Button.setToolTipText("<html><p width=\"300\">" + f5tip + "</p></html>");
@@ -383,6 +462,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f5);
             addTimeline(f5);
         });
+        
         // Func6
         JButton f6Button = new JButton(f6);
         f6Button.setToolTipText("<html><p width=\"300\">" + f6tip + "</p></html>");
@@ -390,6 +470,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f6);
             addTimeline(f6);
         });
+        
         // Func7 (Convolução)
         JButton f7Button = new JButton(f7);
         f7Button.setToolTipText("<html><p width=\"300\">" + f7tip + "</p></html>");
@@ -399,7 +480,7 @@ public class PSE extends JFrame {
         });
         f7Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     JTextField yField = new JTextField(3);
                     JTextField weightField = new JTextField(9);
@@ -442,7 +523,7 @@ public class PSE extends JFrame {
                             convolucaoLinhas = tempLinhas;
                             convolucaoColunas = tempColunas;
                             for (int i = 0; i < stringPesos.length; i++) {
-                                convolucaoPesos.add(Integer.parseInt(stringPesos[i]));
+                                convolucaoPesos.add(Integer.parseInt(stringPesos[i].trim()));
                             }
                         } catch (Exception e) {
                             JOptionPane.showMessageDialog(new JFrame(), "Parâmetros inválidos!");
@@ -451,6 +532,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func8 (Brilho)
         JButton f8Button = new JButton(f8);
         f8Button.setToolTipText("<html><p width=\"300\">" + f8tip + "</p></html>");
@@ -460,7 +542,7 @@ public class PSE extends JFrame {
         });
         f8Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + brilhoFloat);
 
@@ -483,6 +565,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func9 (Contraste)
         JButton f9Button = new JButton(f9);
         f9Button.setToolTipText("<html><p width=\"300\">" + f9tip + "</p></html>");
@@ -492,7 +575,7 @@ public class PSE extends JFrame {
         });
         f9Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + contrasteFloat);
 
@@ -515,6 +598,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func10
         JButton f10Button = new JButton(f10);
         f10Button.setToolTipText("<html><p width=\"300\">" + f10tip + "</p></html>");
@@ -524,7 +608,7 @@ public class PSE extends JFrame {
         });
         f10Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + limiarDouble);
 
@@ -551,6 +635,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func11
         JButton f11Button = new JButton(f11);
         f11Button.setToolTipText("<html><p width=\"300\">" + f11tip + "</p></html>");
@@ -560,7 +645,7 @@ public class PSE extends JFrame {
         });
         f11Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField rMinField = new JTextField(3);
                     JTextField gMinField = new JTextField(3);
                     JTextField bMinField = new JTextField(3);
@@ -622,6 +707,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func12
         JButton f12Button = new JButton(f12);
         f12Button.setToolTipText("<html><p width=\"300\">" + f12tip + "</p></html>");
@@ -631,7 +717,7 @@ public class PSE extends JFrame {
         });
         f12Button.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent click) {
-                if (SwingUtilities.isRightMouseButton(click)) {
+                if (SwingUtilities.isLeftMouseButton(click)) {
                     JTextField xField = new JTextField(3);
                     xField.setText("" + interpolacaoFator);
 
@@ -658,6 +744,7 @@ public class PSE extends JFrame {
                 }
             }
         });
+        
         // Func14 (EMQ)
         JButton f14Button = new JButton(f14);
         f14Button.setToolTipText("<html><p width=\"300\">" + f14tip + "</p></html>");
@@ -667,7 +754,8 @@ public class PSE extends JFrame {
                 JOptionPane.showMessageDialog(new JFrame(), calculoEMQ(originalImage, mainImage));
             }
         });
-//        // Func15 (Histograma)
+        
+        // Func15 (Histograma)
         JToggleButton f15Button = new JToggleButton(f15);
         f15Button.setToolTipText("<html><p width=\"300\">" + f15tip + "</p></html>");
         f15Button.addItemListener((ItemEvent event) -> {
@@ -676,13 +764,17 @@ public class PSE extends JFrame {
                 histogramOn = true;
                 setTitle("PSE Image - " + f15);
                 histogramFrame.setVisible(true);
+                histogramFrame2.setVisible(true);
                 showImage();
+                showSecondImage();
             } else {
                 histogramOn = false;
                 setTitle("PSE Image");
                 histogramFrame.setVisible(false);
+                histogramFrame2.setVisible(false);
             }
         });
+        
         // Func13
         JButton f13Button = new JButton(f13);
         f13Button.setToolTipText("<html><p width=\"300\">" + f13tip + "</p></html>");
@@ -690,6 +782,7 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f13);
             addTimeline(f13);
         });
+        
         // Func98 (Tamanho Original)
         JToggleButton f98Button = new JToggleButton(f98);
         f98Button.setToolTipText("<html><p width=\"300\">" + sizetip + "</p></html>");
@@ -705,6 +798,7 @@ public class PSE extends JFrame {
                 showImage();
             }
         });
+        
         // Func16
         JButton f16Button = new JButton(f16);
         f16Button.setToolTipText("<html><p width=\"300\">" + f16tip + "</p></html>");
@@ -712,6 +806,41 @@ public class PSE extends JFrame {
             setTitle("PSE Image - " + f16);
             addTimeline(f16);
         });
+
+        // Func17 (Mediana)
+        JButton f17Button = new JButton(f17);
+        f17Button.setToolTipText("<html><p width=\"300\">" + f17tip + "</p></html>");
+        f17Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f17);
+            addTimeline(f17);
+        });
+
+        // Func18 (Moda)
+        JButton f18Button = new JButton(f18);
+        f18Button.setToolTipText("<html><p width=\"300\">" + f18tip + "</p></html>");
+        f18Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f18);
+            addTimeline(f18);
+        });
+
+        // Func19 (Mínimo)
+        JButton f19Button = new JButton(f19);
+        f19Button.setToolTipText("<html><p width=\"300\">" + f19tip + "</p></html>");
+        f19Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f19);
+            addTimeline(f19);
+        });
+        
+
+        // Func20 (Máximo)
+        JButton f20Button = new JButton(f20);
+        f20Button.setToolTipText("<html><p width=\"300\">" + f20tip + "</p></html>");
+        f20Button.addActionListener((ActionEvent event) -> {
+            setTitle("PSE Image - " + f20);
+            addTimeline(f20);
+        });
+
+
         // Func99
         JButton f99Button = new JButton(f99);
         f99Button.setToolTipText("<html><p width=\"300\">" + resettip + "</p></html>");
@@ -722,38 +851,66 @@ public class PSE extends JFrame {
         f99Button.setBackground(Color.WHITE);
 
         // Add function buttons in desired order
-        buttonPanel.add(f1Button); // Cinza
-        buttonPanel.add(f2Button); // Negativo
-        buttonPanel.add(f9Button); // Contraste
-        buttonPanel.add(f8Button); // Brilho
-        buttonPanel.add(f3Button); // Media
-        buttonPanel.add(f12Button);// Interpolação
-        buttonPanel.add(f7Button); // Convolução
-        buttonPanel.add(f4Button); // Gaussiano
-        buttonPanel.add(f5Button); // Laplaciano
-        buttonPanel.add(f6Button); // Sobel
-        buttonPanel.add(f13Button);// Hough Linha
-        buttonPanel.add(f16Button);// Hough Círculo
-        buttonPanel.add(f10Button);// Limiar
-        buttonPanel.add(f11Button);// Cor
-        buttonPanel.add(f14Button);// EMQ
-        buttonPanel.add(f98Button);// Tamanho original
-        buttonPanel.add(f15Button);// Histograma
-        buttonPanel.add(f16Button);// HoughLine
-        buttonPanel.add(f99Button);// Resetar
+        //Filtros Passa Baixa
+        passaBaixaPanel.add(f3Button);  // Media
+        passaBaixaPanel.add(f17Button); // Mediana
+        passaBaixaPanel.add(f4Button);  // Gaussiano
 
-        // Draw Panel
+        //Filtro Passa Alta
+   		passaAltaPanel.add(f5Button);  // Laplaciano
+       	passaAltaPanel.add(f6Button);  // Sobel
+
+       	//Filtros Nao lineares
+        naoLinearPanel.add(f20Button); // Máximo
+        naoLinearPanel.add(f19Button); // Mínimo
+        naoLinearPanel.add(f18Button); // Moda
+
+        //Transformacoes de Intensidade
+        intensidadePanel.add(f1Button);  // Cinza
+        intensidadePanel.add(f9Button);  // ;Contraste
+        intensidadePanel.add(f8Button);  // Brilho
+        intensidadePanel.add(f10Button); // Limiar
+        intensidadePanel.add(f2Button);  // Negativo
+
+
+        //Diversos Panel        	
+        diversosPanel.add(f12Button); // Interpolação
+        diversosPanel.add(f7Button);  // Convolução]
+        diversosPanel.add(f11Button); // Cor
+        diversosPanel.add(f14Button); // EMQ
+
+       //Outros
+        outrosPanel.add(f15Button); // Histograma
+        outrosPanel.add(f98Button); // Tamanho original
+		outrosPanel.add(f99Button); // Resetar
+	 	// outrosPanel.add(f13Button); // Hough Linha
+  	 	// outrosPanel.add(f16Button); // Hough Círculo
+  	 	// outrosPanel.add(f16Button); // HoughLine
+   
+
+        // Draw Panel 
         // -------------------------------------------------------------------------
         drawPanel = new JPanel();
         drawPanel.setPreferredSize(new Dimension(gridX, gridY));
         drawPanel.setLayout(new BorderLayout());
         drawPanel.setBackground(Color.GRAY);
+        drawPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Imagem alterada"));
         add(drawPanel);
+
+        // Draw Panel 2
+        // -------------------------------------------------------------------------
+        drawPanel2 = new JPanel();
+        drawPanel2.setPreferredSize(new Dimension(gridX, gridY));
+        drawPanel2.setLayout(new BorderLayout());
+        drawPanel2.setBackground(Color.GRAY);
+        drawPanel2.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Imagem original"));
+        add(drawPanel2);
 
         // Tooltip configuration
         ToolTipManager.sharedInstance().setDismissDelay(Integer.MAX_VALUE);
     }
 
+    // Opens the help on the web
     public static void openWebpage(String urlString) {
         try {
             Desktop.getDesktop().browse(new URL(urlString).toURI());
@@ -762,6 +919,7 @@ public class PSE extends JFrame {
         }
     }
 
+    // Opens a dialog to choose an image to open
     private void openImage() {
         JFileChooser imageChooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter(
@@ -769,12 +927,12 @@ public class PSE extends JFrame {
         imageChooser.setFileFilter(filter);
         int returnVal = imageChooser.showOpenDialog(drawPanel);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-//            System.out.println("You chose to open this file: "
-//                    + imageChooser.getSelectedFile().getName());
             try {
                 mainImage = ImageIO.read(imageChooser.getSelectedFile());
+                secondImage = ImageIO.read(imageChooser.getSelectedFile());
                 originalImage = mainImage;
                 showImage();
+                showSecondImage();
                 setTitle("PSE Image - " + imageChooser.getName(imageChooser.getSelectedFile()));
                 resetTimeline();
             } catch (IOException e) {
@@ -814,6 +972,7 @@ public class PSE extends JFrame {
             drawPanel.add(mainImageLabel, BorderLayout.CENTER);
             drawPanel.repaint();
             drawPanel.validate();
+
             if (histogramOn) {
                 drawWidth = (float) histogramPanel.getSize().getWidth();
                 drawHeight = (float) histogramPanel.getSize().getHeight();
@@ -834,15 +993,80 @@ public class PSE extends JFrame {
                     imgWidth = drawWidth;
                     imgHeight = drawHeight;
                 }
-//                tempImage = mainHistogram.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
-                tempImage = mainHistogram.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
+                tempImage = mainHistogram.getScaledInstance(750, 550, Image.SCALE_SMOOTH);
                 if (histogramLabel != null) {
                     histogramPanel.remove(histogramLabel);
                 }
                 histogramLabel = new JLabel(new ImageIcon(tempImage));
-                histogramPanel.add(histogramLabel, BorderLayout.CENTER);
+                histogramPanel.add(histogramLabel, BorderLayout.EAST);
                 histogramPanel.repaint();
                 histogramPanel.validate();
+            }
+        }
+
+    }
+
+    private void showSecondImage() {
+        if (secondImage != null) {
+            if (secondImageLabel != null) {
+                drawPanel2.remove(secondImageLabel);
+            }
+            float drawWidth = (float) drawPanel2.getSize().getWidth();
+            float drawHeight = (float) drawPanel2.getSize().getHeight();
+            float imgWidth = secondImage.getWidth();
+            float imgHeight = secondImage.getHeight();
+            float imgRatio = imgWidth / imgHeight;
+            float drawRatio = drawWidth / drawHeight;
+            float imgWidthNew = imgWidth;
+            float imgHeightNew = imgHeight;
+            if (imgRatio > drawRatio) {
+                imgWidthNew = drawWidth;
+                imgHeightNew = imgHeight * (drawWidth / imgWidth);
+            } else if (imgRatio < drawRatio) {
+                imgWidthNew = imgWidth * (drawHeight / imgHeight);
+                imgHeightNew = drawHeight;
+            } else {
+                imgWidth = drawWidth;
+                imgHeight = drawHeight;
+            }
+            Image tempImage = secondImage.getScaledInstance(Math.round(imgWidthNew), Math.round(imgHeightNew), Image.SCALE_SMOOTH);
+            if (!scaleOff) {
+                secondImageLabel = new JLabel(new ImageIcon(tempImage));
+            } else {
+                secondImageLabel = new JLabel(new ImageIcon(secondImage));
+            }
+            drawPanel2.add(secondImageLabel, BorderLayout.CENTER);
+            drawPanel2.repaint();
+            drawPanel2.validate();
+
+            if (histogramOn) {
+                drawWidth = (float) histogramPanel2.getSize().getWidth();
+                drawHeight = (float) histogramPanel2.getSize().getHeight();
+                BufferedImage secondHistogram = Histograma(secondImage);
+                imgWidth = secondHistogram.getWidth();
+                imgHeight = secondHistogram.getHeight();
+                imgRatio = imgWidth / imgHeight;
+                drawRatio = drawWidth / drawHeight;
+                imgWidthNew = imgWidth;
+                imgHeightNew = imgHeight;
+                if (imgRatio > drawRatio) {
+                    imgWidthNew = drawWidth;
+                    imgHeightNew = imgHeight * (drawWidth / imgWidth);
+                } else if (imgRatio < drawRatio) {
+                    imgWidthNew = imgWidth * (drawHeight / imgHeight);
+                    imgHeightNew = drawHeight;
+                } else {
+                    imgWidth = drawWidth;
+                    imgHeight = drawHeight;
+                }
+                tempImage = secondHistogram.getScaledInstance(750, 550, Image.SCALE_SMOOTH);
+                if (histogramLabel2 != null) {
+                    histogramPanel2.remove(histogramLabel2);
+                }
+                histogramLabel2 = new JLabel(new ImageIcon(tempImage));
+                histogramPanel2.add(histogramLabel2, BorderLayout.EAST);
+                histogramPanel2.repaint();
+                histogramPanel2.validate();
             }
         }
     }
@@ -928,6 +1152,10 @@ public class PSE extends JFrame {
             mainImage = originalImage;
             showImage();
         }
+        if(secondImage != null) {
+        	secondImage = originalImage;
+        	showSecondImage();
+        }
         Component component[] = timelinePanel.getComponents();
         for (int i = timelinePanel.getComponentCount() - 1; i >= 0; i--) {
             JButton button = (JButton) component[i];
@@ -944,9 +1172,11 @@ public class PSE extends JFrame {
         @Override
         protected Integer doInBackground() throws Exception {
             setTitle("PSE Image - Processar");
-            mainImage = (lastProcessed == 0) ? originalImage : imageHistory.get(lastProcessed - 1);
+            // mainImage = (lastProcessed == 0) ? originalImage : imageHistory.get(lastProcessed - 1);
+            // secondImage = (lastProcessed == 0) ? originalSecondImage : imageHistory.get(lastProcessed - 1);
             imageHistory = (lastProcessed == 0) ? new ArrayList<BufferedImage>() : imageHistory;
             showImage();
+            showSecondImage();
             Component component[] = timelinePanel.getComponents();
             for (int i = lastProcessed; i < timelinePanel.getComponentCount(); i++) {
                 JButton button = (JButton) component[i];
@@ -970,6 +1200,11 @@ public class PSE extends JFrame {
                     functionChooser(defaultText);
                     imageHistory.add(i, mainImage);
                     showImage();
+                }
+                if(secondImage != null) {
+                	functionChooser(defaultText);
+                	imageHistory.add(i, secondImage);
+                	showSecondImage();
                 }
                 try {
                     TimeUnit.MILLISECONDS.sleep(300);
@@ -1018,7 +1253,19 @@ public class PSE extends JFrame {
                 mainImage = Interpolacao(mainImage, interpolacaoFator);
             } else if (name.equals(f16)) {
                 mainImage = HoughTransformLine(mainImage);
-            }
+            } else if (name.equals(f17)) {
+                mainImage = EscalaDeCinza(mainImage);
+                mainImage = Mediana(mainImage);
+            } else if (name.equals(f18)) {
+                mainImage = EscalaDeCinza(mainImage);
+                mainImage = Moda(mainImage);
+            } else if (name.equals(f19)) {
+                mainImage = EscalaDeCinza(mainImage);
+                mainImage = Minimo(mainImage);
+            } else if (name.equals(f20)) {
+                mainImage = EscalaDeCinza(mainImage);
+                mainImage = Maximo(mainImage);
+            } 
             return true;
         }
     }
@@ -1087,8 +1334,8 @@ public class PSE extends JFrame {
 
         //mascara de média
         int[][] mascaraMedia = {{1, 1, 1},
-        {1, 1, 1},
-        {1, 1, 1}};
+                                {1, 1, 1},
+                                {1, 1, 1}};
         //soma dos valores da máscara
         int valorMascara = 9;
 
@@ -1125,6 +1372,240 @@ public class PSE extends JFrame {
                 r = g = b = 0;
             }
         }
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
+        return ResultImage;
+    }
+
+    public static int regraDeTres(int from, int to) {
+        int result;
+
+        result = (to*8)/from;
+        
+        return result;
+    }
+
+    public static BufferedImage Moda(BufferedImage imagem) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+        ArrayList<Integer> colors = new ArrayList <Integer>();
+
+        //cores primarias
+        int r = 0, g = 0, b = 0, p = 0;
+        int rgb = 0;
+
+        //pegar coluna e linha da imagem
+        int coluna = imagem.getWidth();
+        int linha = imagem.getHeight();
+
+        // percorre todos os pixels da imagem
+        for (int i = 1; i + 1 < linha; i++) {
+            for (int j = 1; j + 1 < coluna; j++) {
+                //percorre a máscara
+                for (int l = -1; l <= 1; l++) {
+                    for (int k = -1; k <= 1; k++) {
+                        //rgb = rgb do pixel
+                        rgb = imagem.getRGB(j + k, i + l);
+                        colors.add(rgb);
+                    }
+                }
+
+                // depois de pegar os pixels na mascara, ordena as intensidades
+                Collections.sort(colors);
+                
+                //define a intensidade que mais repete
+                int[] count = new int[9];
+                int maior = -9999999;
+                
+                // contar as intensidades
+                for (int c = 0; c < colors.size(); c++) {
+                    int pos = regraDeTres(colors.get(0), colors.get(c));
+                    count[pos]++;
+                }
+
+                // achar o maior numero de ocorrencias
+                maior = count[0];
+                for (int c = 1; c < count.length; c++) {
+                    if (maior < count[c]) {
+                        maior = count[c];
+                    }
+                }
+
+                // achar a intensidade de maior numero de ocorrencias
+                for (p = 0; p < count.length; p++) {
+                    if (count[p] == maior) {
+                        break;
+                    }
+                }
+
+                int cor = colors.get(p);
+                r = ((cor & 0x00FF0000) >>> 16);
+                g = ((cor & 0x0000FF00) >>> 8);
+                b = (cor & 0x000000FF);
+
+                // nova cor do pixel
+                Color tempColor = new Color(r, g, b);
+                
+                // setar o respectivel pixel na nova imagem
+                ResultImage.setRGB(j, i, tempColor.getRGB());
+
+                // zerar valor das cores primarias e limpar lista de intensidades
+                r = g = b = p = 0;
+                colors.clear();
+            }
+        }
+
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
+        return ResultImage;
+    }
+
+    public static BufferedImage Mediana(BufferedImage imagem) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+        ArrayList<Integer> colors = new ArrayList <Integer> ();
+
+        //cores primarias
+        int r = 0, g = 0, b = 0;
+        int rgb = 0;
+
+        //pegar coluna e linha da imagem
+        int coluna = imagem.getWidth();
+        int linha = imagem.getHeight();
+
+        // percorre todos os pixels da imagem
+        for (int i = 1; i + 1 < linha; i++) {
+            for (int j = 1; j + 1 < coluna; j++) {
+                //percorre a máscara
+                for (int l = -1; l <= 1; l++) {
+                    for (int k = -1; k <= 1; k++) {
+                        //rgb = rgb do pixel
+                        rgb = imagem.getRGB(j + k, i + l);
+                        colors.add(rgb);
+                    }
+                }
+
+                // depois de pegar os pixels na mascara, ordena as intensidades
+                Collections.sort(colors);
+
+                // define qual intensidade escolher e decompoe em RGB//
+                int posicao = (int)(colors.size()/2);
+                int cor = colors.get(posicao);
+                r = ((cor & 0x00FF0000) >>> 16);
+                g = ((cor & 0x0000FF00) >>> 8);
+                b = (cor & 0x000000FF);
+
+                // nova cor do pixel
+                Color tempColor = new Color(r, g, b);
+                
+                // setar o respectivel pixel na nova imagem
+                ResultImage.setRGB(j, i, tempColor.getRGB());
+                
+                // zerar valor das cores primarias e limpar lista de intensidades
+                r = g = b = 0;
+                colors.clear();
+            }
+        }
+
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
+        return ResultImage;
+    }
+
+    public static BufferedImage Minimo(BufferedImage imagem) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+        ArrayList<Integer> colors = new ArrayList <Integer>();
+
+        //cores primarias
+        int r = 0, g = 0, b = 0;
+        int rgb = 0;
+
+        //pegar coluna e linha da imagem
+        int coluna = imagem.getWidth();
+        int linha = imagem.getHeight();
+
+        // percorre todos os pixels da imagem
+        for (int i = 1; i + 1 < linha; i++) {
+            for (int j = 1; j + 1 < coluna; j++) {
+                //percorre a máscara
+                for (int l = -1; l <= 1; l++) {
+                    for (int k = -1; k <= 1; k++) {
+                        //rgb = rgb do pixel
+                        rgb = imagem.getRGB(j + k, i + l);
+                        colors.add(rgb);
+                    }
+                }
+
+                // depois de pegar os pixels na mascara, ordena as intensidades
+                Collections.sort(colors);
+
+                // define qual intensidade escolher e decompoe em RGB
+                int cor = colors.get(0);
+                r = ((cor & 0x00FF0000) >>> 16);
+                g = ((cor & 0x0000FF00) >>> 8);
+                b = (cor & 0x000000FF);
+
+                // nova cor do pixel
+                Color tempColor = new Color(r, g, b);
+                
+                // setar o respectivel pixel na nova imagem
+                ResultImage.setRGB(j, i, tempColor.getRGB());
+                
+                // zerar valor das cores primarias e limpar lista de intensidades
+                r = g = b = 0;
+                colors.clear();
+            }
+        }
+
+        ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
+        return ResultImage;
+    }
+
+    public static BufferedImage Maximo(BufferedImage imagem) {
+        //imagem resultante
+        BufferedImage ResultImage = new BufferedImage(imagem.getColorModel(), imagem.copyData(null), imagem.getColorModel().isAlphaPremultiplied(), null);
+        ArrayList<Integer> colors = new ArrayList <Integer>();
+
+        //cores primarias
+        int r = 0, g = 0, b = 0;
+        int rgb = 0;
+
+        //pegar coluna e linha da imagem
+        int coluna = imagem.getWidth();
+        int linha = imagem.getHeight();
+
+        // percorre todos os pixels da imagem
+        for (int i = 1; i + 1 < linha; i++) {
+            for (int j = 1; j + 1 < coluna; j++) {
+                //percorre a máscara
+                for (int l = -1; l <= 1; l++) {
+                    for (int k = -1; k <= 1; k++) {
+                        //rgb = rgb do pixel
+                        rgb = imagem.getRGB(j + k, i + l);
+                        colors.add(rgb);
+                    }
+                }
+
+                // depois de pegar os pixels na mascara, ordena as intensidades
+                Collections.sort(colors);
+
+                // define qual intensidade escolher e decompoe em RGB
+                int posicao = colors.size() - 1;
+                int cor = colors.get(posicao);
+                r = ((cor & 0x00FF0000) >>> 16);
+                g = ((cor & 0x0000FF00) >>> 8);
+                b = (cor & 0x000000FF);
+
+                // nova cor do pixel
+                Color tempColor = new Color(r, g, b);
+                
+                // setar o respectivel pixel na nova imagem
+                ResultImage.setRGB(j, i, tempColor.getRGB());
+                
+                // zerar valor das cores primarias e limpar lista de intensidades
+                r = g = b = 0;
+                colors.clear();
+            }
+        }
+
         ResultImage.getSubimage(1, 1, coluna - 1, linha - 1);
         return ResultImage;
     }
@@ -1583,92 +2064,81 @@ public class PSE extends JFrame {
     public static BufferedImage Histograma(BufferedImage imagem) {
 
         //Cria a imagem resultante
-        BufferedImage ResultImage = new BufferedImage(300, 300, BufferedImage.TYPE_INT_RGB);
+        BufferedImage ResultImage = new BufferedImage(750, 550, BufferedImage.TYPE_INT_RGB);
+
         //Instancia variaveis para auxiliar as configurações do grafico de histograma
-        int width = imagem.getWidth();      // lagura
-        int height = imagem.getHeight();    // altura
+        int width = 750;      // lagura
+        int height = 550;    // altura
         int padding = 40;           // espaçamento para a régua
         int labelPadding = 40;          // espaçamento para o texto
         Color lineColor = new Color(44, 102, 230, 180);     // Cor da Linha
-        Color pointColor = new Color(100, 100, 100, 180);   // Cor do Ponto
+        Color rLine = new Color(255, 0, 0, 180);
+        Color gLine = new Color(0, 255, 0, 180);
+        Color bLine = new Color(0, 0, 255, 180);
+        // Color pointColor = new Color(100, 100, 100, 180);   // Cor do Ponto
         Color gridColor = new Color(200, 200, 200, 200);    // Cor do Grid
         final Stroke GRAPH_STROKE = new BasicStroke(4f);    // Espessura da Linha
         int pointWidth = 8;                 // Espessura do Ponto
-        int numberYDivisions = 10;              // Numero Máximo de Divisões/Linhas em Y
         int[] scores = new int[6];              // Array que armazena as intensidades de cada intervalo
-        for (int i = 0; i < scores.length; i++) {             // {0-50, 50-100, 100-200, 200-255}
-            scores[i] = 0;
-        }
+        int[] rScore = new int[256];
+        int[] gScore = new int[256];
+        int[] bScore = new int[256];
 
         int r = 0, g = 0, b = 0;                 // Variaveis R, G , B
+
         //Fazer as intensidades
         for (int i = 1; i + 1 < imagem.getHeight(); i++) {
             for (int j = 1; j + 1 < imagem.getWidth(); j++) {
                 //rgb
                 int rgb = (int) imagem.getRGB(j, i);
                 r = (int) ((rgb & 0x00FF0000) >>> 16);
+                rScore[r]++;
                 g = (int) ((rgb & 0x0000FF00) >>> 8);
+                gScore[g]++;
                 b = (int) ((rgb & 0x000000FF));
-
-                // Para cada intervalo incrementa a intensidade
-                if (r <= 50 || g <= 50 || b <= 50) {     // 0-50
-                    scores[0]++;
-                } else if ((r > 50 && r <= 100) || (g > 50 && g <= 100) || (b > 50 && b <= 100)) { // 50-100
-                    scores[2]++;
-                } else if ((r > 100 && r <= 150) || (g > 100 && g <= 150) || (b > 100 && b <= 150)) { // 100-150
-                    scores[3]++;
-                } else if ((r > 150 && r <= 200) || (g > 150 && g <= 200) || (b > 150 && b <= 200)) { // 150-200
-                    scores[4]++;
-                } else if ((r > 200 || g > 200 || b > 200)) { // 200-255
-                    scores[5]++;
-                }
+                bScore[b]++;
             }
         }
 
-        width = 300;
-        height = 300;
+        width = 750;
+        height = 550;
+
         Graphics2D g2 = ResultImage.createGraphics();   // Cria um gráfico dentro da Imagem Resultante
         g2.setColor(Color.WHITE);           // Torna o fundo da imagem branco
         g2.fillRect(0, 0, width, height);            //Para o tamanho da imagem
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-        double xScale = ((double) width - (2 * padding) - labelPadding) / (scores.length - 1);  // Escala de X
-        double yScale = ((double) height - 2 * padding - labelPadding) / (maxVal(scores) - 0);  // Escala de Y
+        double xScale = ((double) width - (2 * padding) - labelPadding) / (rScore.length - 1);  // Escala de X
+        double yScale = ((double) height - 2 * padding - labelPadding) / (maxVal(rScore) - 0);  // Escala de Y
 
-        ArrayList<Point> graphPoints = new ArrayList<Point>();    // Cria uma Lista de Pontos
+        ArrayList<Point> rPoints = new ArrayList<Point>();
+        ArrayList<Point> gPoints = new ArrayList<Point>();
+        ArrayList<Point> bPoints = new ArrayList<Point>();
 
-        for (int i = 0; i < scores.length; i++) {
+        for (int i = 0; i < rScore.length; i++) {
             int x1 = (int) (i * xScale + padding + labelPadding);
-            int y1 = (int) ((maxVal(scores) - scores[i]) * yScale + padding);
-            graphPoints.add(new Point(x1, y1));
+            int y1 = (int) ((maxVal(rScore) - rScore[i]) * yScale + padding);
+            rPoints.add(new Point(x1, y1));
         }
 
-        g2.setColor(Color.WHITE);   // Trona o fundo do Gráfico Branco
-        g2.fillRect(padding + labelPadding, padding, width - (2 * padding) - labelPadding, height - 2 * padding - labelPadding);
-        g2.setColor(Color.BLACK);   // Torna o texto preto
-
-        // Cria grid lines para o eixo y.
-        for (int i = 0; i < numberYDivisions + 1; i++) {
-            int x0 = padding + labelPadding;
-            int x1 = pointWidth + padding + labelPadding;
-            int y0 = height - ((i * (height - padding * 2 - labelPadding)) / numberYDivisions + padding + labelPadding);
-            int y1 = y0;
-
-            if (scores.length > 0) {
-                g2.setColor(gridColor);
-                g2.drawLine(padding + labelPadding + 1 + pointWidth, y0, width - padding, y1);
-                g2.setColor(Color.BLACK);
-                String yLabel = ((int) (maxVal(scores) / numberYDivisions)) * i + "";
-                FontMetrics metrics = g2.getFontMetrics();
-                int labelWidth = metrics.stringWidth(yLabel);
-                g2.drawString(yLabel, x0 - labelWidth - 5, y0 + (metrics.getHeight() / 2) - 3);
-
-            }
-
-            g2.drawLine(x0, y0, x1, y1);
+        for (int i = 0; i < gScore.length; i++) {
+            int x1 = (int) (i * xScale + padding + labelPadding);
+            int y1 = (int) ((maxVal(gScore) - gScore[i]) * yScale + padding);
+            gPoints.add(new Point(x1, y1));
         }
 
-        // e para o eixo x
+        for (int i = 0; i < bScore.length; i++) {
+            int x1 = (int) (i * xScale + padding + labelPadding);
+            int y1 = (int) ((maxVal(bScore) - bScore[i]) * yScale + padding);
+            bPoints.add(new Point(x1, y1));
+        }
+
+        g2.setColor(Color.WHITE);   // Torna o fundo do Gráfico Branco
+        // g2.fillRect(padding + labelPadding, padding, width - (2 * padding) - labelPadding, height - 2 * padding - labelPadding);
+        g2.fillRect(0, 0, width, height);
+        g2.setColor(lineColor);   // Torna o texto preto
+
+        // Cria grid lines para o eixo  x
         int[] labels = {0, 50, 100, 150, 200, 255};
         for (int i = 0; i < scores.length; i++) {
             if (scores.length > 1) {
@@ -1693,29 +2163,78 @@ public class PSE extends JFrame {
         // cria os eixos x e y  
         g2.drawLine(padding + labelPadding, height - padding - labelPadding, padding + labelPadding, padding);
         g2.drawLine(padding + labelPadding, height - padding - labelPadding, width - padding, height - padding - labelPadding);
+        
         // e desenha as linhas até os pontos
+
+        /* RED */
         Stroke oldStroke = g2.getStroke();
-        g2.setColor(lineColor);
+        g2.setColor(rLine);
         g2.setStroke(GRAPH_STROKE);
 
-        for (int i = 0; i < graphPoints.size(); i++) {
-            int x1 = graphPoints.get(i).x;
-            int y1 = graphPoints.get(i).y;
-            int x2 = i * (width - padding * 2 - labelPadding) / (scores.length - 1) + padding + labelPadding;
+        for (int i = 0; i < rPoints.size(); i++) {
+            int x1 = rPoints.get(i).x;
+            int y1 = rPoints.get(i).y;
+            int x2 = i * (width - padding * 2 - labelPadding) / (rScore.length - 1) + padding + labelPadding;
             int y2 = height - padding - labelPadding;
             g2.drawLine(x1, y1, x2, y2);
         }
 
-        g2.setStroke(oldStroke);
-        g2.setColor(pointColor);
+        // g2.setStroke(oldStroke);
+        // g2.setColor(pointColor);
 
-        for (int i = 0; i < graphPoints.size(); i++) {
-            int x = graphPoints.get(i).x - pointWidth / 2;
-            int y = graphPoints.get(i).y - pointWidth / 2;
-            int ovalW = pointWidth;
-            int ovalH = pointWidth;
-            g2.fillOval(x, y, ovalW, ovalH);
+        // for (int i = 0; i < rPoints.size(); i++) {
+        //     int x = rPoints.get(i).x - pointWidth / 2;
+        //     int y = rPoints.get(i).y - pointWidth / 2;
+        //     int ovalW = pointWidth;
+        //     int ovalH = pointWidth;
+        //     g2.fillOval(x, y, ovalW, ovalH);
+        // }
+
+        /* GREEN */
+        g2.setColor(gLine);
+        g2.setStroke(GRAPH_STROKE);
+
+        for (int i = 0; i < gPoints.size(); i++) {
+            int x1 = gPoints.get(i).x;
+            int y1 = gPoints.get(i).y;
+            int x2 = i * (width - padding * 2 - labelPadding) / (gScore.length - 1) + padding + labelPadding;
+            int y2 = height - padding - labelPadding;
+            g2.drawLine(x1, y1, x2, y2);
         }
+
+        // g2.setStroke(oldStroke);
+        // g2.setColor(pointColor);
+
+        // for (int i = 0; i < gPoints.size(); i++) {
+        //     int x = gPoints.get(i).x - pointWidth / 2;
+        //     int y = gPoints.get(i).y - pointWidth / 2;
+        //     int ovalW = pointWidth;
+        //     int ovalH = pointWidth;
+        //     g2.fillOval(x, y, ovalW, ovalH);
+        // }
+
+        /* BLUE */
+        g2.setColor(bLine);
+        g2.setStroke(GRAPH_STROKE);
+
+        for (int i = 0; i < bPoints.size(); i++) {
+            int x1 = bPoints.get(i).x;
+            int y1 = bPoints.get(i).y;
+            int x2 = i * (width - padding * 2 - labelPadding) / (bScore.length - 1) + padding + labelPadding;
+            int y2 = height - padding - labelPadding;
+            g2.drawLine(x1, y1, x2, y2);
+        }
+
+        // g2.setStroke(oldStroke);
+        // g2.setColor(pointColor);
+
+        // for (int i = 0; i < bPoints.size(); i++) {
+        //     int x = bPoints.get(i).x - pointWidth / 2;
+        //     int y = bPoints.get(i).y - pointWidth / 2;
+        //     int ovalW = pointWidth;
+        //     int ovalH = pointWidth;
+        //     g2.fillOval(x, y, ovalW, ovalH);
+        // }
 
         return ResultImage;
     }
@@ -1782,7 +2301,6 @@ public class PSE extends JFrame {
 
     public static BufferedImage HoughTransformLine(BufferedImage imagem) {
         try {
-
             HoughTransformLine HTL = new HoughTransformLine(imagem);
             Vector<HoughLine> lines = HTL.getLines(4);
             HTL.drawHoughLines(lines);
